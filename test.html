@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиленд — Тест</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .test-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 20px 60px;
+    }
+    .test-card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      padding: 40px;
+      max-width: 680px;
+      width: 100%;
+      text-align: center;
+    }
+    .test-progress {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+    .test-progress__bar {
+      height: 100%;
+      background: linear-gradient(90deg, #A29BFE, #6C5CE7);
+      border-radius: 10px;
+      transition: width 0.4s ease;
+    }
+    .test-step { font-size: 0.9rem; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+    .test-question {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.5;
+      margin-bottom: 32px;
+    }
+    .test-options { display: flex; flex-direction: column; gap: 12px; }
+    .test-option {
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 16px 20px;
+      color: rgba(255,255,255,0.85);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      font-family: 'Nunito', sans-serif;
+    }
+    .test-option:hover {
+      background: rgba(162,155,254,0.2);
+      border-color: #A29BFE;
+      color: #fff;
+      transform: translateX(4px);
+    }
+    .test-option.selected {
+      background: rgba(162,155,254,0.3);
+      border-color: #A29BFE;
+      color: #fff;
+    }
+
+    /* Карточки */
+    .cards-wrap { position: relative; width: 340px; height: 220px; margin: 0 auto 24px; }
+    .swipe-card {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      padding: 30px;
+      text-align: center;
+      line-height: 1.5;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .swipe-card.like { border-color: #55EFC4; background: rgba(85,239,196,0.15); }
+    .swipe-card.dislike { border-color: #FF6B6B; background: rgba(255,107,107,0.15); }
+
+    .swipe-btns { display: flex; gap: 20px; justify-content: center; }
+    .swipe-btn {
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      border: 2px solid;
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .swipe-btn--no { border-color: #FF6B6B; color: #FF6B6B; }
+    .swipe-btn--no:hover { background: rgba(255,107,107,0.2); transform: scale(1.1); }
+    .swipe-btn--yes { border-color: #55EFC4; color: #55EFC4; }
+    .swipe-btn--yes:hover { background: rgba(85,239,196,0.2); transform: scale(1.1); }
+
+    .test-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header__inner">
+      <a href="index.html" class="logo" style="text-decoration:none">
+        <span class="logo__icon">🏙️</span>
+        <span class="logo__text">Профиленд</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="test-wrap">
+    <div class="test-card" id="testCard">
+      <div class="test-progress"><div class="test-progress__bar" id="progressBar" style="width:0%"></div></div>
+      <div class="test-step" id="stepLabel"></div>
+      <div id="testContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { text: "Тебе легче работать с людьми или с вещами и данными?", options: [
+        { text: "С людьми — люблю общаться и помогать", weights: { social: 3, education: 2, medical: 2, tourism: 2, service: 1 } },
+        { text: "С вещами — нравится работать руками", weights: { industrial: 3, construction: 2, tech: 1 } },
+        { text: "С данными и информацией", weights: { science: 3, tech: 3, business: 2, media: 1 } },
+        { text: "По-разному, зависит от задачи", weights: { business: 1, media: 1, education: 1 } }
+      ]},
+      { text: "Ты любишь придумывать что-то новое или доводить до идеала готовое?", options: [
+        { text: "Придумывать — обожаю творить с нуля", weights: { creative: 3, gaming: 3, music: 2, media: 2 } },
+        { text: "Доводить до идеала — люблю совершенство", weights: { science: 2, tech: 2, industrial: 2, service: 2 } },
+        { text: "И то и другое одинаково", weights: { creative: 1, tech: 1, business: 1 } }
+      ]},
+      { text: "Тебе важно помогать другим или важнее личный результат?", options: [
+        { text: "Помогать другим — это главное", weights: { medical: 3, social: 3, education: 2 } },
+        { text: "Личный результат и достижения", weights: { sports: 3, business: 2, science: 2 } },
+        { text: "Хочу и помогать, и достигать", weights: { medical: 1, social: 1, sports: 1, business: 1 } }
+      ]},
+      { text: "Ты предпочитаешь работать в команде или самостоятельно?", options: [
+        { text: "В команде — вместе веселее и продуктивнее", weights: { media: 2, sports: 2, creative: 2, gaming: 2 } },
+        { text: "Самостоятельно — люблю делать всё сам", weights: { science: 2, nature: 2, industrial: 2 } },
+        { text: "Могу и так, и так", weights: { business: 1, tech: 1, education: 1 } }
+      ]},
+      { text: "Ты больше усидчивый или активный — не можешь долго сидеть на месте?", options: [
+        { text: "Усидчивый — могу часами работать за столом", weights: { science: 3, tech: 3, business: 2, gaming: 2 } },
+        { text: "Активный — нужно движение и действие", weights: { sports: 3, military: 3, tourism: 2, agro: 2 } },
+        { text: "Среднее — смотря что делать", weights: { media: 1, creative: 1, education: 1 } }
+      ]},
+      { text: "Тебе нравится выступать перед людьми или лучше за кулисами?", options: [
+        { text: "На сцене! Обожаю быть в центре внимания", weights: { creative: 3, music: 3, media: 2, education: 2 } },
+        { text: "За кулисами — люблю создавать, не светиться", weights: { tech: 2, science: 2, industrial: 2, gaming: 2 } },
+        { text: "Зависит от ситуации", weights: { business: 1, social: 1, tourism: 1 } }
+      ]},
+      { text: "Ты любишь природу и животных или тебе ближе техника и технологии?", options: [
+        { text: "Природа и животные — это моё!", weights: { nature: 3, agro: 3, medical: 1 } },
+        { text: "Техника и технологии — люблю гаджеты", weights: { tech: 3, industrial: 3, gaming: 2 } },
+        { text: "Мне интересно и то, и другое", weights: { science: 2, nature: 1, tech: 1 } }
+      ]},
+      { text: "Тебе интереснее думать и анализировать или делать руками?", options: [
+        { text: "Думать и анализировать", weights: { science: 3, business: 3, tech: 2, media: 2 } },
+        { text: "Делать руками — нравится физический результат", weights: { industrial: 3, construction: 3, service: 2, culinary: 2 } },
+        { text: "Совмещать — думать и делать", weights: { creative: 2, gaming: 2, tech: 1 } }
+      ]},
+      { text: "Ты любишь рисковать и пробовать новое или предпочитаешь стабильность?", options: [
+        { text: "Риск и новые приключения — я за!", weights: { military: 3, sports: 2, tourism: 2, media: 2 } },
+        { text: "Стабильность и предсказуемость", weights: { business: 2, education: 2, medical: 2, industrial: 2 } },
+        { text: "Немного риска, но с умом", weights: { gaming: 1, tech: 1, creative: 1 } }
+      ]},
+      { text: "Что тебе важнее в будущей профессии?", options: [
+        { text: "Помогать людям и делать мир лучше", weights: { medical: 3, social: 3, education: 3, nature: 2 } },
+        { text: "Творить и создавать что-то уникальное", weights: { creative: 3, music: 3, gaming: 3, media: 2 } },
+        { text: "Зарабатывать хорошие деньги", weights: { business: 3, tech: 3, industrial: 2 } },
+        { text: "Путешествовать и получать опыт", weights: { tourism: 3, military: 2, media: 2 } }
+      ]}
+    ];
+
+    const scenarios = [
+      { text: "🩺 Ты помогаешь другу разобраться что с ним — находишь причину и советуешь что делать", weights: { medical: 3, social: 2 } },
+      { text: "🎨 Ты рисуешь плакат для школьного мероприятия и придумываешь дизайн сам", weights: { creative: 3, media: 1 } },
+      { text: "🔧 Ты разбираешь сломанный гаджет чтобы понять как он работает", weights: { tech: 3, industrial: 2 } },
+      { text: "🎤 Ты ведёшь школьное мероприятие перед большой аудиторией", weights: { music: 2, creative: 2, media: 3 } },
+      { text: "🌱 Ты ухаживаешь за растениями или животными и наблюдаешь как они растут", weights: { nature: 3, agro: 3 } },
+      { text: "💬 Ты выслушиваешь друга у которого проблемы и помогаешь разобраться", weights: { social: 3, medical: 1, education: 1 } },
+      { text: "📊 Ты составляешь план и таблицу для школьного проекта", weights: { business: 3, science: 2, tech: 1 } },
+      { text: "🍳 Ты готовишь необычное блюдо и экспериментируешь с рецептом", weights: { culinary: 3, creative: 1 } },
+      { text: "🚒 Ты первым бросаешься помочь в опасной ситуации не раздумывая", weights: { military: 3, sports: 2 } },
+      { text: "🎮 Ты придумываешь правила новой игры для друзей", weights: { gaming: 3, creative: 2, education: 1 } }
+    ];
+
+    let scores = {};
+    let currentQ = 0;
+    let phase = 'questions'; // questions | cards
+    let currentCard = 0;
+
+    function updateProgress() {
+      const total = questions.length + scenarios.length;
+      const done = phase === 'questions' ? currentQ : questions.length + currentCard;
+      document.getElementById('progressBar').style.width = (done / total * 100) + '%';
+      document.getElementById('stepLabel').textContent = `Вопрос ${done + 1} из ${total}`;
+    }
+
+    function addWeights(weights) {
+      for (const [k, v] of Object.entries(weights)) {
+        scores[k] = (scores[k] || 0) + v;
+      }
+    }
+
+    function showQuestion() {
+      updateProgress();
+      const q = questions[currentQ];
+      const content = document.getElementById('testContent');
+      content.innerHTML = `
+        <div class="test-question">${q.text}</div>
+        <div class="test-options">
+          ${q.options.map((opt, i) => `
+            <button class="test-option" onclick="answerQ(${i})">${opt.text}</button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function answerQ(i) {
+      addWeights(questions[currentQ].options[i].weights);
+      currentQ++;
+      if (currentQ >= questions.length) {
+        phase = 'cards';
+        showCard();
+      } else {
+        showQuestion();
+      }
+    }
+
+    function showCard() {
+      updateProgress();
+      if (currentCard >= scenarios.length) {
+        finish();
+        return;
+      }
+      const s = scenarios[currentCard];
+      const content = document.getElementById('testContent');
+      content.innerHTML = `
+        <div class="test-label">Нравится или нет?</div>
+        <div class="cards-wrap">
+          <div class="swipe-card" id="swipeCard">${s.text}</div>
+        </div>
+        <div class="swipe-btns">
+          <button class="swipe-btn swipe-btn--no" onclick="answerCard(false)">👎</button>
+          <button class="swipe-btn swipe-btn--yes" onclick="answerCard(true)">👍</button>
+        </div>
+        <p style="color:rgba(255,255,255,0.3);font-size:0.85rem;margin-top:16px">👍 нравится &nbsp;|&nbsp; 👎 не нравится</p>
+      `;
+    }
+
+    function answerCard(liked) {
+      if (liked) {
+        addWeights(scenarios[currentCard].weights);
+        const card = document.getElementById('swipeCard');
+        card.classList.add('like');
+      }
+      currentCard++;
+      setTimeout(showCard, 300);
+    }
+
+    function finish() {
+      const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      const top3 = sorted.slice(0, 3).map(e => e[0]);
+      localStorage.setItem('profiland_result', JSON.stringify({ top3, scores }));
+      window.location.href = 'result.html';
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>

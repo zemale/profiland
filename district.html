@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиленд — Район</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .district-hero {
+      padding: 120px 20px 60px;
+      text-align: center;
+    }
+    .district-hero__emoji { font-size: 5rem; margin-bottom: 16px; display: block; }
+    .district-hero__title { font-size: 2.5rem; font-weight: 900; color: #fff; margin-bottom: 12px; }
+    .district-hero__desc { font-size: 1.1rem; color: rgba(255,255,255,0.7); max-width: 600px; margin: 0 auto 30px; }
+
+    .professions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    .profession-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 28px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .profession-card:hover {
+      transform: translateY(-4px);
+      background: rgba(255,255,255,0.1);
+    }
+    .profession-card__name { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+    .profession-card__desc { font-size: 0.95rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 16px; }
+    .profession-card__skills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .skill-tag {
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.8);
+    }
+    .profession-card__story {
+      background: rgba(255,255,255,0.05);
+      border-left: 3px solid var(--accent-color, #A29BFE);
+      border-radius: 0 10px 10px 0;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.6;
+      font-style: italic;
+    }
+    .profession-card__education {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+    }
+    .profession-card__education span { color: var(--accent-color, #A29BFE); font-weight: 700; }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 50px;
+      background: rgba(255,255,255,0.08);
+      transition: all 0.2s;
+      margin: 30px 20px 0;
+      display: inline-block;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    .section-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 0 0 40px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header__inner">
+      <a href="index.html" class="logo" style="text-decoration:none">
+        <span class="logo__icon">🏙️</span>
+        <span class="logo__text">Профиленд</span>
+      </a>
+      <a href="test.html" class="btn btn--primary">Пройти тест 🚀</a>
+    </div>
+  </header>
+
+  <a href="index.html" class="back-btn">← Все районы</a>
+
+  <div class="district-hero" id="districtHero">
+    <span class="district-hero__emoji" id="districtEmoji"></span>
+    <h1 class="district-hero__title" id="districtTitle"></h1>
+    <p class="district-hero__desc" id="districtDesc"></p>
+  </div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 20px;">
+    <h2 class="section-title">Профессии района</h2>
+  </div>
+  <div class="professions-grid" id="professionsGrid"></div>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <span class="footer__logo">🏙️ Профиленд</span>
+      <span class="footer__copy">Твой город возможностей</span>
+    </div>
+  </footer>
+
+  <script>
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      const res = await fetch('data/professions.json');
+      const data = await res.json();
+      const district = data.districts.find(d => d.id === id);
+
+      if (!district) {
+        document.body.innerHTML = '<div style="color:#fff;text-align:center;padding:100px">Район не найден</div>';
+        return;
+      }
+
+      document.title = `Профиленд — ${district.name}`;
+      document.getElementById('districtEmoji').textContent = district.emoji;
+      document.getElementById('districtTitle').textContent = district.name + ' район';
+      document.getElementById('districtDesc').textContent = district.description;
+      document.documentElement.style.setProperty('--accent-color', district.color);
+
+      const grid = document.getElementById('professionsGrid');
+      district.professions.forEach((prof, i) => {
+        const card = document.createElement('div');
+        card.className = 'profession-card';
+        card.style.borderTopColor = district.color;
+        card.style.borderTopWidth = '3px';
+        card.innerHTML = `
+          <div class="profession-card__name">${prof.name}</div>
+          <div class="profession-card__desc">${prof.description}</div>
+          <div class="profession-card__skills">
+            ${prof.skills.map(s => `<span class="skill-tag">⚡ ${s}</span>`).join('')}
+          </div>
+          <div class="profession-card__story">💬 ${prof.story}</div>
+          <div class="profession-card__education">📚 Где учиться: <span>${prof.education.join(', ')}</span></div>
+        `;
+        setTimeout(() => {
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(20px)';
+          card.style.transition = 'all 0.4s ease';
+          grid.appendChild(card);
+          setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, i * 80 + 50);
+        }, 0);
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

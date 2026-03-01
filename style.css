@@ -1,0 +1,300 @@
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0c29;
+  --bg2: #1a1545;
+  --text: #ffffff;
+  --text-dim: rgba(255,255,255,0.7);
+  --radius: 20px;
+  --transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* === HEADER === */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15, 12, 41, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 12px 24px;
+}
+.header__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+.logo__icon { font-size: 1.8rem; }
+.logo__text {
+  background: linear-gradient(90deg, #a29bfe, #fd79a8, #fdcb6e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* === BUTTONS === */
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 50px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+}
+.btn--primary {
+  background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.5);
+}
+.btn--primary:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(108, 92, 231, 0.7);
+}
+.btn--hero {
+  background: linear-gradient(135deg, #fdcb6e, #e17055, #fd79a8);
+  color: #fff;
+  font-size: 1.2rem;
+  padding: 16px 40px;
+  box-shadow: 0 8px 30px rgba(253, 121, 168, 0.4);
+}
+.btn--hero:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 40px rgba(253, 121, 168, 0.6);
+}
+.btn--district {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 0.85rem;
+  padding: 8px 18px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+  margin-top: 12px;
+}
+.btn--district:hover {
+  background: rgba(255,255,255,0.25);
+  transform: translateY(-1px);
+}
+
+/* === HERO === */
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 100px 24px 80px;
+  overflow: hidden;
+}
+.hero__content { position: relative; z-index: 2; }
+.hero__title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #a29bfe 0%, #fd79a8 40%, #fdcb6e 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.8s ease both;
+}
+.hero__subtitle {
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  animation: fadeInUp 0.8s 0.15s ease both;
+}
+.hero__desc {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.5);
+  max-width: 500px;
+  margin: 0 auto 32px;
+  animation: fadeInUp 0.8s 0.3s ease both;
+}
+.hero .btn--hero { animation: fadeInUp 0.8s 0.45s ease both; }
+
+/* Stars decoration */
+.hero__deco { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.star {
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: 0.4;
+  animation: float 4s ease-in-out infinite;
+}
+.star1 { top: 15%; left: 8%; animation-delay: 0s; }
+.star2 { top: 25%; right: 10%; animation-delay: 0.8s; }
+.star3 { top: 60%; left: 5%; animation-delay: 1.6s; }
+.star4 { top: 70%; right: 8%; animation-delay: 2.4s; }
+.star5 { top: 40%; left: 15%; animation-delay: 3.2s; }
+
+/* === CITY SECTION === */
+.city {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+.city__title {
+  text-align: center;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+.city__subtitle {
+  text-align: center;
+  color: var(--text-dim);
+  margin-bottom: 48px;
+  font-size: 1rem;
+}
+.city__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* === DISTRICT CARD === */
+.district-card {
+  position: relative;
+  border-radius: var(--radius);
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: var(--transition);
+  opacity: 0;
+  transform: translateY(40px) scale(0.95);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+}
+.district-card.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.district-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  transition: opacity 0.3s ease;
+  border-radius: var(--radius);
+}
+.district-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  border-color: rgba(255,255,255,0.2);
+}
+.district-card:hover::before { opacity: 0.25; }
+
+.district-card__glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius) + 2px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  filter: blur(12px);
+}
+.district-card:hover .district-card__glow { opacity: 0.6; }
+
+.district-card__emoji {
+  font-size: 3.5rem;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  transition: transform 0.3s ease;
+}
+.district-card:hover .district-card__emoji {
+  transform: scale(1.15) rotate(-5deg);
+}
+.district-card__name {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.district-card__desc {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.4;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+.district-card:hover .district-card__desc {
+  max-height: 80px;
+  opacity: 1;
+}
+
+/* === FOOTER === */
+.footer {
+  background: rgba(0,0,0,0.3);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 24px;
+}
+.footer__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.footer__logo {
+  font-weight: 900;
+  font-size: 1.1rem;
+  background: linear-gradient(90deg, #a29bfe, #fd79a8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.footer__copy { color: rgba(255,255,255,0.4); font-size: 0.85rem; }
+
+/* === ANIMATIONS === */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(10deg); }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+  .city__grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .city__grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .district-card { padding: 22px 14px; }
+  .district-card__emoji { font-size: 2.8rem; }
+}
+@media (max-width: 480px) {
+  .city__grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .district-card__name { font-size: 0.9rem; }
+}

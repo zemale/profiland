@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиленд — Твои результаты</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .result-hero {
+      text-align: center;
+      padding: 120px 20px 50px;
+    }
+    .result-hero__title {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .result-hero__sub {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 50px;
+    }
+
+    .top-districts {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 900px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+
+    .top-card {
+      background: rgba(255,255,255,0.07);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 32px 28px;
+      text-align: center;
+      min-width: 220px;
+      flex: 1;
+      transition: transform 0.3s;
+      position: relative;
+    }
+    .top-card:hover { transform: translateY(-6px); }
+    .top-card.first { border-color: gold; background: rgba(255,215,0,0.08); }
+    .top-card.second { border-color: silver; background: rgba(192,192,192,0.06); }
+    .top-card.third { border-color: #cd7f32; background: rgba(205,127,50,0.06); }
+
+    .top-card__medal { font-size: 2rem; margin-bottom: 8px; }
+    .top-card__emoji { font-size: 3.5rem; margin-bottom: 12px; display: block; }
+    .top-card__name { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .top-card__desc { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 20px; line-height: 1.5; }
+
+    .result-professions {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+    .result-section-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .prof-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .prof-mini {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 20px;
+    }
+    .prof-mini__name { font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .prof-mini__district { font-size: 0.85rem; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+    .prof-mini__desc { font-size: 0.9rem; color: rgba(255,255,255,0.65); line-height: 1.5; }
+
+    .result-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 0 20px 60px;
+    }
+
+    .advice-block {
+      max-width: 700px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+      background: rgba(162,155,254,0.1);
+      border: 1px solid rgba(162,155,254,0.3);
+      border-radius: 24px;
+      padding: 32px;
+      text-align: center;
+    }
+    .advice-block__title { font-size: 1.3rem; font-weight: 800; color: #A29BFE; margin-bottom: 16px; }
+    .advice-block__text { color: rgba(255,255,255,0.75); line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header__inner">
+      <a href="index.html" class="logo" style="text-decoration:none">
+        <span class="logo__icon">🏙️</span>
+        <span class="logo__text">Профиленд</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="result-hero">
+    <div style="font-size:4rem;margin-bottom:16px">🎉</div>
+    <h1 class="result-hero__title">Твои результаты готовы!</h1>
+    <p class="result-hero__sub">Мы нашли районы Профиленда, которые подходят тебе больше всего</p>
+  </div>
+
+  <div class="top-districts" id="topDistricts"></div>
+
+  <div class="advice-block" id="adviceBlock"></div>
+
+  <div class="result-professions">
+    <h2 class="result-section-title">Профессии для тебя</h2>
+    <div class="prof-grid" id="profGrid"></div>
+  </div>
+
+  <div class="result-actions">
+    <a href="index.html" class="btn btn--primary">🏙️ Исследовать город</a>
+    <a href="test.html" class="btn" style="background:rgba(255,255,255,0.1);color:#fff;text-decoration:none;padding:14px 28px;border-radius:50px;font-weight:700">🔄 Пройти снова</a>
+  </div>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <span class="footer__logo">🏙️ Профиленд</span>
+      <span class="footer__copy">Твой город возможностей</span>
+    </div>
+  </footer>
+
+  <script>
+    const medals = ['🥇', '🥈', '🥉'];
+    const medalClass = ['first', 'second', 'third'];
+
+    const adviceMap = {
+      medical: 'Ты создан(а) помогать людям. Медицина — это призвание, и у тебя есть всё для этого.',
+      social: 'Ты чувствуешь людей и умеешь помогать. Это редкий и ценный дар.',
+      creative: 'Твоё творческое мышление — это суперсила. Мир нуждается в таких людях как ты.',
+      tech: 'Ты мыслишь как инженер. Технологии — это твой язык.',
+      science: 'Ты любопытен(на) и аналитичен(на). Наука ждёт твоих открытий.',
+      gaming: 'Ты создан(а) делать игры — и это серьёзная профессия будущего.',
+      nature: 'Ты чувствуешь живой мир. Природа нуждается в таких защитниках как ты.',
+      business: 'У тебя есть деловая жилка. Ты умеешь видеть возможности там где другие не замечают.',
+      media: 'Ты рождён(а) рассказывать истории. Мир должен тебя услышать.',
+      sports: 'Дух победителя — это про тебя. Спорт — твоя стихия.',
+      culinary: 'Ты превращаешь еду в искусство. Это настоящий талант.',
+      music: 'Музыка — твой язык. Мир станет лучше с твоими звуками.',
+      construction: 'Ты строишь мир вокруг. Буквально.',
+      transport: 'Ты любишь скорость и движение. Весь мир — твоя дорога.',
+      military: 'Смелость и ответственность — твои главные качества.',
+      agro: 'Ты связан(а) с землёй и природой. Это важнейшая профессия.',
+      education: 'Ты умеешь передавать знания. Учитель меняет мир.',
+      service: 'Ты делаешь людей красивее и счастливее. Это тоже искусство.',
+      tourism: 'Весь мир — твоя аудитория. Помогай людям открывать его.',
+      industrial: 'Ты создаёшь вещи своими руками. Это настоящее мастерство.'
+    };
+
+    async function init() {
+      const saved = localStorage.getItem('profiland_result');
+      if (!saved) { window.location.href = 'test.html'; return; }
+      const { top3 } = JSON.parse(saved);
+
+      const res = await fetch('data/professions.json');
+      const data = await res.json();
+
+      // Top districts
+      const topEl = document.getElementById('topDistricts');
+      top3.forEach((id, i) => {
+        const d = data.districts.find(x => x.id === id);
+        if (!d) return;
+        const card = document.createElement('div');
+        card.className = `top-card ${medalClass[i]}`;
+        card.innerHTML = `
+          <div class="top-card__medal">${medals[i]}</div>
+          <span class="top-card__emoji">${d.emoji}</span>
+          <div class="top-card__name">${d.name} район</div>
+          <div class="top-card__desc">${d.description}</div>
+          <a href="district.html?id=${d.id}" class="btn btn--primary" style="font-size:0.9rem;padding:10px 20px">Исследовать →</a>
+        `;
+        topEl.appendChild(card);
+      });
+
+      // Advice
+      const adviceEl = document.getElementById('adviceBlock');
+      const mainDistrict = top3[0];
+      adviceEl.innerHTML = `
+        <div class="advice-block__title">💡 Наш совет для тебя</div>
+        <div class="advice-block__text">${adviceMap[mainDistrict] || 'У тебя разнообразные интересы — это твоя сила!'} Не бойся пробовать разные пути и помни: профессию можно менять. Главное — делать то, что приносит радость.</div>
+      `;
+
+      // Professions from top districts
+      const grid = document.getElementById('profGrid');
+      top3.forEach(id => {
+        const d = data.districts.find(x => x.id === id);
+        if (!d) return;
+        d.professions.slice(0, 3).forEach(prof => {
+          const card = document.createElement('div');
+          card.className = 'prof-mini';
+          card.style.borderTopColor = d.color;
+          card.style.borderTopWidth = '3px';
+          card.innerHTML = `
+            <div class="prof-mini__name">${prof.name}</div>
+            <div class="prof-mini__district">${d.emoji} ${d.name} район</div>
+            <div class="prof-mini__desc">${prof.description}</div>
+          `;
+          grid.appendChild(card);
+        });
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
