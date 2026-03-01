@@ -58,8 +58,9 @@
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      padding-bottom: 20px;
+      padding-bottom: 10px;
       position: relative;
+      min-height: 0;
     }
     .vn-avatar {
       font-size: 8rem;
@@ -84,6 +85,8 @@
       backdrop-filter: blur(20px);
       border-top: 1px solid rgba(255,255,255,0.1);
       padding: 24px 24px 16px;
+      overflow-y: auto;
+      max-height: 60vh;
     }
     .vn-dialog__situation {
       font-size: 0.8rem; font-weight: 700;
@@ -154,13 +157,17 @@
       width: 100%;
       background: linear-gradient(135deg, #A29BFE, #6C5CE7);
       border: none; border-radius: 14px;
-      padding: 14px;
-      color: #fff; font-size: 1rem; font-weight: 800;
+      padding: 16px;
+      color: #fff; font-size: 1.05rem; font-weight: 800;
       cursor: pointer; font-family: 'Nunito', sans-serif;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, transform 0.2s;
       display: none;
+      position: sticky;
+      bottom: 0;
+      margin-top: 12px;
+      box-shadow: 0 -10px 30px rgba(10,10,26,0.8);
     }
-    .vn-next-btn:hover { opacity: 0.9; }
+    .vn-next-btn:hover { opacity: 0.9; transform: scale(1.01); }
     .vn-next-btn.show { display: block; animation: fadeIn 0.3s ease; }
 
     /* Intro / Outro screens */
@@ -351,8 +358,10 @@ function selectChoice(idx) {
   // Accent color for outcome border
   outcomeBox.style.borderLeftColor = choice.score >= 8 ? '#55EFC4' : choice.score >= 4 ? '#FDCB6E' : '#FF6B6B';
 
-  document.getElementById('nextBtn').classList.add('show');
-  document.getElementById('nextBtn').textContent = currentSit + 1 >= scenario.situations.length ? 'Завершить день 🎉' : 'Продолжить →';
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.classList.add('show');
+  nextBtn.textContent = currentSit + 1 >= scenario.situations.length ? 'Завершить день 🎉' : 'Продолжить →';
+  setTimeout(() => nextBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 200);
 }
 
 function nextSituation() {
