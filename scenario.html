@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиленд — День из жизни</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Nunito', sans-serif; background: #0a0a1a; color: #fff; height: 100vh; overflow: hidden; }
+
+    #vn-bg {
+      position: fixed; inset: 0;
+      transition: background 1s ease;
+      z-index: 0;
+    }
+    #vn-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.2) 100%);
+    }
+
+    .vn-scene {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      z-index: 10;
+    }
+
+    /* Header */
+    .vn-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(10px);
+    }
+    .vn-header__title { font-size: 1rem; font-weight: 800; opacity: 0.9; }
+    .vn-header__time {
+      font-size: 1.2rem; font-weight: 900;
+      background: rgba(255,255,255,0.1);
+      padding: 6px 16px; border-radius: 20px;
+    }
+    .vn-header__step { font-size: 0.85rem; opacity: 0.5; }
+
+    /* Progress */
+    .vn-progress {
+      height: 3px;
+      background: rgba(255,255,255,0.1);
+    }
+    .vn-progress__bar {
+      height: 100%;
+      background: linear-gradient(90deg, #A29BFE, #6C5CE7);
+      transition: width 0.5s ease;
+    }
+
+    /* Avatar area */
+    .vn-avatar-area {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 20px;
+      position: relative;
+    }
+    .vn-avatar {
+      font-size: 8rem;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+      transition: transform 0.3s ease;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .vn-avatar.react { animation: react 0.3s ease; }
+    @keyframes react {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    /* Dialog box */
+    .vn-dialog {
+      background: rgba(10,10,26,0.92);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 24px 24px 16px;
+    }
+    .vn-dialog__situation {
+      font-size: 0.8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2px;
+      opacity: 0.4; margin-bottom: 8px;
+    }
+    .vn-dialog__text {
+      font-size: 1.05rem; line-height: 1.7;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 20px;
+      min-height: 60px;
+    }
+
+    /* Choices */
+    .vn-choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+    .vn-choice {
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px 18px;
+      color: rgba(255,255,255,0.85);
+      font-size: 0.95rem; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      font-family: 'Nunito', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+    .vn-choice:hover {
+      background: rgba(162,155,254,0.15);
+      border-color: rgba(162,155,254,0.5);
+      transform: translateX(4px);
+      color: #fff;
+    }
+    .vn-choice.good { border-color: #55EFC4; background: rgba(85,239,196,0.15); }
+    .vn-choice.mid { border-color: #FDCB6E; background: rgba(253,203,110,0.15); }
+    .vn-choice.bad { border-color: #FF6B6B; background: rgba(255,107,107,0.15); }
+
+    /* Outcome */
+    .vn-outcome {
+      background: rgba(255,255,255,0.05);
+      border-left: 3px solid #A29BFE;
+      border-radius: 0 12px 12px 0;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.8);
+      display: none;
+    }
+    .vn-outcome.show { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .vn-score-badge {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .score-10 { background: rgba(85,239,196,0.2); color: #55EFC4; border: 1px solid #55EFC4; }
+    .score-5 { background: rgba(253,203,110,0.2); color: #FDCB6E; border: 1px solid #FDCB6E; }
+    .score-0 { background: rgba(255,107,107,0.2); color: #FF6B6B; border: 1px solid #FF6B6B; }
+
+    .vn-next-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #A29BFE, #6C5CE7);
+      border: none; border-radius: 14px;
+      padding: 14px;
+      color: #fff; font-size: 1rem; font-weight: 800;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      transition: opacity 0.2s;
+      display: none;
+    }
+    .vn-next-btn:hover { opacity: 0.9; }
+    .vn-next-btn.show { display: block; animation: fadeIn 0.3s ease; }
+
+    /* Intro / Outro screens */
+    .vn-fullscreen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 40px;
+      z-index: 20;
+      background: rgba(10,10,26,0.95);
+    }
+    .vn-fullscreen__emoji { font-size: 6rem; margin-bottom: 20px; }
+    .vn-fullscreen__title { font-size: 2rem; font-weight: 900; margin-bottom: 16px; }
+    .vn-fullscreen__text { font-size: 1.05rem; color: rgba(255,255,255,0.7); line-height: 1.8; max-width: 540px; margin-bottom: 32px; }
+    .vn-btn {
+      padding: 16px 36px;
+      background: linear-gradient(135deg, #A29BFE, #6C5CE7);
+      border: none; border-radius: 50px;
+      color: #fff; font-size: 1.1rem; font-weight: 800;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      transition: transform 0.2s;
+    }
+    .vn-btn:hover { transform: scale(1.05); }
+
+    /* Result screen */
+    .vn-result-scores { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; justify-content: center; }
+    .score-circle {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-size: 1.5rem; font-weight: 900;
+      border: 3px solid;
+    }
+    .score-circle span { font-size: 0.65rem; font-weight: 600; opacity: 0.7; }
+  </style>
+</head>
+<body>
+
+<div id="vn-bg"></div>
+
+<!-- Intro screen -->
+<div class="vn-fullscreen" id="introScreen">
+  <div class="vn-fullscreen__emoji" id="introEmoji"></div>
+  <div class="vn-fullscreen__title" id="introTitle"></div>
+  <div class="vn-fullscreen__text" id="introText"></div>
+  <button class="vn-btn" onclick="startGame()">Начать день ▶</button>
+</div>
+
+<!-- Game scene -->
+<div class="vn-scene" id="gameScene" style="display:none">
+  <div class="vn-header">
+    <div class="vn-header__title" id="headerTitle"></div>
+    <div class="vn-header__time" id="headerTime"></div>
+    <div class="vn-header__step" id="headerStep"></div>
+  </div>
+  <div class="vn-progress"><div class="vn-progress__bar" id="progressBar"></div></div>
+
+  <div class="vn-avatar-area">
+    <div class="vn-avatar" id="avatar"></div>
+  </div>
+
+  <div class="vn-dialog">
+    <div class="vn-dialog__situation" id="situationTitle"></div>
+    <div class="vn-dialog__text" id="dialogText"></div>
+    <div class="vn-outcome" id="outcomeBox">
+      <div id="scoreBadge"></div>
+      <div id="outcomeText"></div>
+    </div>
+    <div class="vn-choices" id="choicesBox"></div>
+    <button class="vn-next-btn" id="nextBtn" onclick="nextSituation()">Продолжить →</button>
+  </div>
+</div>
+
+<!-- Outro / Result screen -->
+<div class="vn-fullscreen" id="outroScreen" style="display:none">
+  <div class="vn-fullscreen__emoji" id="outroEmoji"></div>
+  <div class="vn-fullscreen__title">День завершён!</div>
+  <div class="vn-result-scores" id="resultScores"></div>
+  <div class="vn-fullscreen__text" id="outroText"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+    <button class="vn-btn" onclick="window.location.href='index.html'">🏙️ На главную</button>
+    <button class="vn-btn" style="background:rgba(255,255,255,0.1)" onclick="window.location.href=window.location.href">🔄 Пройти снова</button>
+  </div>
+</div>
+
+<script>
+let scenario = null;
+let currentSit = 0;
+let totalScore = 0;
+let scores = [];
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const profId = params.get('prof');
+
+  const res = await fetch('data/scenarios.json');
+  const data = await res.json();
+  scenario = data.scenarios[profId];
+
+  if (!scenario) {
+    document.body.innerHTML = '<div style="color:#fff;text-align:center;padding:100px;font-family:Nunito,sans-serif"><h2>Сценарий не найден</h2><br><a href="index.html" style="color:#A29BFE">← На главную</a></div>';
+    return;
+  }
+
+  document.getElementById('vn-bg').style.background = scenario.bg;
+  document.getElementById('introEmoji').textContent = scenario.avatar;
+  document.getElementById('introTitle').textContent = 'День ' + scenario.profession + 'а';
+  document.getElementById('introText').textContent = scenario.intro;
+  document.getElementById('avatar').textContent = scenario.avatar;
+  document.getElementById('headerTitle').textContent = scenario.profession;
+}
+
+function startGame() {
+  document.getElementById('introScreen').style.display = 'none';
+  document.getElementById('gameScene').style.display = 'flex';
+  showSituation();
+}
+
+function showSituation() {
+  const sit = scenario.situations[currentSit];
+  const total = scenario.situations.length;
+
+  document.getElementById('headerTime').textContent = sit.time;
+  document.getElementById('headerStep').textContent = `${currentSit + 1} / ${total}`;
+  document.getElementById('progressBar').style.width = (currentSit / total * 100) + '%';
+  document.getElementById('situationTitle').textContent = sit.title;
+
+  // Typewriter effect
+  const textEl = document.getElementById('dialogText');
+  textEl.textContent = '';
+  let i = 0;
+  const text = sit.description;
+  const timer = setInterval(() => {
+    textEl.textContent += text[i];
+    i++;
+    if (i >= text.length) clearInterval(timer);
+  }, 18);
+
+  // Choices
+  const box = document.getElementById('choicesBox');
+  box.innerHTML = '';
+  sit.choices.forEach((choice, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'vn-choice';
+    btn.textContent = choice.text;
+    btn.onclick = () => selectChoice(idx);
+    box.appendChild(btn);
+  });
+
+  document.getElementById('outcomeBox').classList.remove('show');
+  document.getElementById('nextBtn').classList.remove('show');
+}
+
+function selectChoice(idx) {
+  const sit = scenario.situations[currentSit];
+  const choice = sit.choices[idx];
+
+  // Disable all choices
+  document.querySelectorAll('.vn-choice').forEach((btn, i) => {
+    btn.onclick = null;
+    if (i === idx) {
+      btn.classList.add(choice.score >= 8 ? 'good' : choice.score >= 4 ? 'mid' : 'bad');
+    } else {
+      btn.style.opacity = '0.3';
+    }
+  });
+
+  // Avatar reaction
+  const avatar = document.getElementById('avatar');
+  avatar.classList.add('react');
+  setTimeout(() => avatar.classList.remove('react'), 300);
+
+  // Show outcome
+  totalScore += choice.score;
+  scores.push(choice.score);
+
+  const outcomeBox = document.getElementById('outcomeBox');
+  const badge = document.getElementById('scoreBadge');
+  const outcomeText = document.getElementById('outcomeText');
+
+  const scoreClass = choice.score >= 8 ? 'score-10' : choice.score >= 4 ? 'score-5' : 'score-0';
+  const scoreLabel = choice.score >= 8 ? '✅ Отличное решение!' : choice.score >= 4 ? '⚡ Неплохо' : '❌ Ошибка';
+  badge.innerHTML = `<span class="vn-score-badge ${scoreClass}">${scoreLabel} +${choice.score} очков</span>`;
+  outcomeText.textContent = choice.outcome;
+  outcomeBox.classList.add('show');
+
+  // Accent color for outcome border
+  outcomeBox.style.borderLeftColor = choice.score >= 8 ? '#55EFC4' : choice.score >= 4 ? '#FDCB6E' : '#FF6B6B';
+
+  document.getElementById('nextBtn').classList.add('show');
+  document.getElementById('nextBtn').textContent = currentSit + 1 >= scenario.situations.length ? 'Завершить день 🎉' : 'Продолжить →';
+}
+
+function nextSituation() {
+  currentSit++;
+  if (currentSit >= scenario.situations.length) {
+    showResult();
+  } else {
+    showSituation();
+  }
+}
+
+function showResult() {
+  document.getElementById('gameScene').style.display = 'none';
+  const outroScreen = document.getElementById('outroScreen');
+  outroScreen.style.display = 'flex';
+
+  const maxScore = scenario.situations.length * 10;
+  const percent = Math.round(totalScore / maxScore * 100);
+
+  document.getElementById('outroEmoji').textContent = scenario.avatar;
+
+  // Score circles
+  const color = percent >= 70 ? '#55EFC4' : percent >= 40 ? '#FDCB6E' : '#FF6B6B';
+  const label = percent >= 70 ? '🏆 Отличный специалист!' : percent >= 40 ? '📈 Есть потенциал!' : '📚 Нужно учиться!';
+
+  document.getElementById('resultScores').innerHTML = `
+    <div class="score-circle" style="border-color:${color};color:${color}">
+      ${percent}%<span>результат</span>
+    </div>
+    <div class="score-circle" style="border-color:#A29BFE;color:#A29BFE">
+      ${totalScore}<span>очков</span>
+    </div>
+    <div class="score-circle" style="border-color:#74B9FF;color:#74B9FF">
+      ${maxScore}<span>максимум</span>
+    </div>
+  `;
+
+  document.getElementById('outroText').innerHTML = `<strong style="color:${color}">${label}</strong><br><br>${scenario.outro}`;
+}
+
+init();
+</script>
+</body>
+</html>
