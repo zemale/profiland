@@ -126,6 +126,58 @@
     .vn-choice.mid { border-color: #FDCB6E; background: rgba(253,203,110,0.15); }
     .vn-choice.bad { border-color: #FF6B6B; background: rgba(255,107,107,0.15); }
 
+    /* Free text input */
+    .vn-freetext {
+      margin-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 14px;
+    }
+    .vn-freetext__label {
+      font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 8px;
+    }
+    .vn-freetext__row {
+      display: flex; gap: 8px;
+    }
+    .vn-freetext__input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(162,155,254,0.25);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-family: 'Nunito', sans-serif;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      min-height: 48px;
+      max-height: 100px;
+    }
+    .vn-freetext__input::placeholder { color: rgba(255,255,255,0.25); }
+    .vn-freetext__input:focus { border-color: rgba(162,155,254,0.6); }
+    .vn-freetext__btn {
+      background: linear-gradient(135deg, #A29BFE, #6C5CE7);
+      border: none; border-radius: 12px;
+      padding: 12px 16px;
+      color: #fff; font-size: 0.9rem; font-weight: 800;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+      align-self: flex-end;
+    }
+    .vn-freetext__btn:hover { opacity: 0.85; }
+    .vn-freetext__btn:disabled { opacity: 0.35; cursor: default; }
+    .vn-freetext__match {
+      font-size: 0.8rem;
+      color: rgba(162,155,254,0.6);
+      margin-top: 6px;
+      font-style: italic;
+      display: none;
+    }
+
     /* Outcome */
     .vn-outcome {
       background: rgba(255,255,255,0.05);
@@ -235,6 +287,14 @@
       <div id="outcomeText"></div>
     </div>
     <div class="vn-choices" id="choicesBox"></div>
+    <div class="vn-freetext" id="freetextBox">
+      <div class="vn-freetext__label">💬 Или напиши свой ответ:</div>
+      <div class="vn-freetext__row">
+        <textarea class="vn-freetext__input" id="freetextInput" placeholder="Что бы ты сделал(а) на месте специалиста?" rows="2"></textarea>
+        <button class="vn-freetext__btn" id="freetextBtn" onclick="submitFreeText()">Ответить</button>
+      </div>
+      <div class="vn-freetext__match" id="freetextMatch"></div>
+    </div>
   </div>
   <button class="vn-next-btn" id="nextBtn" onclick="nextSituation()">Продолжить →</button>
 </div>
@@ -317,21 +377,91 @@ function showSituation() {
 
   document.getElementById('outcomeBox').classList.remove('show');
   document.getElementById('nextBtn').classList.remove('show');
+
+  // Reset free text
+  const ftInput = document.getElementById('freetextInput');
+  const ftBtn = document.getElementById('freetextBtn');
+  const ftMatch = document.getElementById('freetextMatch');
+  if (ftInput) { ftInput.value = ''; ftInput.disabled = false; }
+  if (ftBtn) ftBtn.disabled = false;
+  if (ftMatch) { ftMatch.style.display = 'none'; ftMatch.textContent = ''; }
+  document.getElementById('freetextBox').style.display = 'block';
 }
 
-function selectChoice(idx) {
+// Keyword matching: find which preset choice best matches user's free text
+function matchFreeText(userText, choices) {
+  const normalize = t => t.toLowerCase().replace(/[^а-яёa-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2);
+  const userWords = normalize(userText);
+  if (!userWords.length) return null;
+
+  let best = -1, bestScore = 0;
+  choices.forEach((choice, i) => {
+    const choiceWords = normalize(choice.text);
+    const overlap = userWords.filter(w => choiceWords.some(cw => cw.includes(w) || w.includes(cw))).length;
+    // also check outcome words
+    const outcomeWords = normalize(choice.outcome || '');
+    const outcomeOverlap = userWords.filter(w => outcomeWords.some(cw => cw.includes(w) || w.includes(cw))).length;
+    const total = overlap * 2 + outcomeOverlap;
+    if (total > bestScore) { bestScore = total; best = i; }
+  });
+
+  // require at least 1 matching word for a confident match
+  return bestScore >= 1 ? { idx: best, confidence: bestScore } : null;
+}
+
+function submitFreeText() {
+  const input = document.getElementById('freetextInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const sit = scenario.situations[currentSit];
+  const match = matchFreeText(text, sit.choices);
+
+  // Disable free text area
+  input.disabled = true;
+  document.getElementById('freetextBtn').disabled = true;
+
+  const matchEl = document.getElementById('freetextMatch');
+  matchEl.style.display = 'block';
+
+  if (match) {
+    matchEl.textContent = `Похоже на вариант: «${sit.choices[match.idx].text}»`;
+    // Highlight the matched choice button
+    const btns = document.querySelectorAll('.vn-choice');
+    if (btns[match.idx]) {
+      btns[match.idx].style.opacity = '1';
+      btns[match.idx].style.transform = 'none';
+    }
+    // Slight delay so user sees the match, then reveal outcome
+    setTimeout(() => selectChoice(match.idx, true), 600);
+  } else {
+    // No confident match — give middle score + show what pro usually does
+    matchEl.textContent = '🤔 Нестандартный подход — оцениваем творчески!';
+    // Pick the best choice (highest score) as "what a pro does"
+    const bestIdx = sit.choices.reduce((bi, c, i) => c.score > sit.choices[bi].score ? i : bi, 0);
+    setTimeout(() => selectChoice(bestIdx, true, text), 600);
+  }
+}
+
+function selectChoice(idx, fromFreeText = false, userFreeText = null) {
   const sit = scenario.situations[currentSit];
   const choice = sit.choices[idx];
 
-  // Disable all choices
+  // Disable all choices and free text
   document.querySelectorAll('.vn-choice').forEach((btn, i) => {
     btn.onclick = null;
-    if (i === idx) {
+    if (i === idx && !fromFreeText) {
       btn.classList.add(choice.score >= 8 ? 'good' : choice.score >= 4 ? 'mid' : 'bad');
+    } else if (i === idx && fromFreeText) {
+      btn.classList.add(choice.score >= 8 ? 'good' : choice.score >= 4 ? 'mid' : 'bad');
+      btn.style.opacity = '1';
     } else {
       btn.style.opacity = '0.3';
     }
   });
+  document.getElementById('freetextBox').style.display = 'none';
+  const ftInput = document.getElementById('freetextInput');
+  if (ftInput) ftInput.disabled = true;
 
   // Avatar reaction
   const avatar = document.getElementById('avatar');
@@ -349,7 +479,15 @@ function selectChoice(idx) {
   const scoreClass = choice.score >= 8 ? 'score-10' : choice.score >= 4 ? 'score-5' : 'score-0';
   const scoreLabel = choice.score >= 8 ? '✅ Отличное решение!' : choice.score >= 4 ? '⚡ Неплохо' : '❌ Ошибка';
   badge.innerHTML = `<span class="vn-score-badge ${scoreClass}">${scoreLabel} +${choice.score} очков</span>`;
-  outcomeText.textContent = choice.outcome;
+
+  if (userFreeText) {
+    // Show user's own text + pro feedback
+    outcomeText.innerHTML = `<em style="color:rgba(162,155,254,0.8);font-size:0.9em">Ты написала: «${userFreeText}»</em><br><br>` +
+      `<strong style="font-size:0.85em;opacity:0.6">Опытный специалист обычно: ${sit.choices[idx].text}</strong><br><br>` +
+      choice.outcome;
+  } else {
+    outcomeText.textContent = choice.outcome;
+  }
   outcomeBox.classList.add('show');
 
   // Accent color for outcome border
