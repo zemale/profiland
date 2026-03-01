@@ -156,18 +156,15 @@
     .vn-next-btn {
       width: 100%;
       background: linear-gradient(135deg, #A29BFE, #6C5CE7);
-      border: none; border-radius: 14px;
-      padding: 16px;
+      border: none; border-radius: 0;
+      padding: 18px;
       color: #fff; font-size: 1.05rem; font-weight: 800;
       cursor: pointer; font-family: 'Nunito', sans-serif;
-      transition: opacity 0.2s, transform 0.2s;
+      transition: opacity 0.2s;
       display: none;
-      position: sticky;
-      bottom: 0;
-      margin-top: 12px;
-      box-shadow: 0 -10px 30px rgba(10,10,26,0.8);
+      flex-shrink: 0;
     }
-    .vn-next-btn:hover { opacity: 0.9; transform: scale(1.01); }
+    .vn-next-btn:hover { opacity: 0.85; }
     .vn-next-btn.show { display: block; animation: fadeIn 0.3s ease; }
 
     /* Intro / Outro screens */
@@ -238,8 +235,8 @@
       <div id="outcomeText"></div>
     </div>
     <div class="vn-choices" id="choicesBox"></div>
-    <button class="vn-next-btn" id="nextBtn" onclick="nextSituation()">Продолжить →</button>
   </div>
+  <button class="vn-next-btn" id="nextBtn" onclick="nextSituation()">Продолжить →</button>
 </div>
 
 <!-- Outro / Result screen -->
@@ -361,7 +358,7 @@ function selectChoice(idx) {
   const nextBtn = document.getElementById('nextBtn');
   nextBtn.classList.add('show');
   nextBtn.textContent = currentSit + 1 >= scenario.situations.length ? 'Завершить день 🎉' : 'Продолжить →';
-  setTimeout(() => nextBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 200);
+  setTimeout(() => nextBtn.scrollIntoView({ behavior: 'smooth', block: 'end' }), 200);
 }
 
 function nextSituation() {
