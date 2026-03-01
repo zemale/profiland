@@ -129,8 +129,13 @@
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
-      const res = await fetch('data/professions.json');
+      const [res, scenRes] = await Promise.all([
+        fetch('data/professions.json'),
+        fetch('data/scenarios.json')
+      ]);
       const data = await res.json();
+      const scenData = await scenRes.json();
+      const availableScenarios = Object.keys(scenData.scenarios);
       const district = data.districts.find(d => d.id === id);
 
       if (!district) {
@@ -157,7 +162,7 @@
             ${prof.skills.map(s => `<span class="skill-tag">⚡ ${s}</span>`).join('')}
           </div>
           <div class="profession-card__story">💬 ${prof.story}</div>
-          <a href="scenario.html?prof=${prof.id}" class="btn btn--primary" style="display:block;text-align:center;margin-bottom:12px;text-decoration:none;font-size:0.9rem;padding:10px 16px" onclick="event.stopPropagation()">🎮 Попробовать себя</a>
+          ${availableScenarios.includes(prof.id) ? `<a href="scenario.html?prof=${prof.id}" class="btn btn--primary" style="display:block;text-align:center;margin-bottom:12px;text-decoration:none;font-size:0.9rem;padding:10px 16px" onclick="event.stopPropagation()">🎮 Попробовать себя</a>` : ''}
           <div class="profession-card__education">📚 Где учиться: <span>${prof.education.join(', ')}</span></div>
         `;
         setTimeout(() => {
