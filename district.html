@@ -129,13 +129,16 @@
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
-      const [res, scenRes] = await Promise.all([
+      const [res, scenRes, quizRes] = await Promise.all([
         fetch('data/professions.json'),
-        fetch('data/scenarios.json')
+        fetch('data/scenarios.json'),
+        fetch('data/quizzes.json')
       ]);
       const data = await res.json();
       const scenData = await scenRes.json();
+      const quizData = await quizRes.json();
       const availableScenarios = Object.keys(scenData.scenarios);
+      const availableQuizzes = Object.keys(quizData.quizzes);
       const district = data.districts.find(d => d.id === id);
 
       if (!district) {
@@ -162,7 +165,10 @@
             ${prof.skills.map(s => `<span class="skill-tag">⚡ ${s}</span>`).join('')}
           </div>
           <div class="profession-card__story">💬 ${prof.story}</div>
-          ${availableScenarios.includes(prof.id) ? `<a href="scenario.html?prof=${prof.id}" class="btn btn--primary" style="display:block;text-align:center;margin-bottom:12px;text-decoration:none;font-size:0.9rem;padding:10px 16px" onclick="event.stopPropagation()">🎮 Попробовать себя</a>` : ''}
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+            ${availableScenarios.includes(prof.id) ? `<a href="scenario.html?prof=${prof.id}" class="btn btn--primary" style="flex:1;min-width:120px;text-align:center;text-decoration:none;font-size:0.85rem;padding:9px 12px" onclick="event.stopPropagation()">🎮 Попробовать себя</a>` : ''}
+            ${availableQuizzes.includes(prof.id) ? `<a href="quiz.html?prof=${prof.id}&district=${district.id}" class="btn" style="flex:1;min-width:120px;text-align:center;text-decoration:none;font-size:0.85rem;padding:9px 12px;background:#fff;color:${district.color};border:2px solid ${district.color};border-radius:25px;font-weight:700" onclick="event.stopPropagation()">🧠 Проверь знания</a>` : ''}
+          </div>
           <div class="profession-card__education">📚 Где учиться: <span>${prof.education.join(', ')}</span></div>
         `;
         setTimeout(() => {
