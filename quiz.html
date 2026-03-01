@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Проверь знания — Профиленд</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #f0f4ff; min-height: 100vh; }
+    .quiz-wrap { max-width: 700px; margin: 0 auto; padding: 20px; }
+
+    .quiz-header {
+      text-align: center;
+      padding: 30px 20px 20px;
+    }
+    .quiz-header .prof-emoji { font-size: 4rem; }
+    .quiz-header h1 { font-size: 1.6rem; margin: 10px 0 4px; color: #2d3436; }
+    .quiz-header .subject-tag {
+      display: inline-block;
+      background: var(--quiz-color, #6C5CE7);
+      color: white;
+      border-radius: 20px;
+      padding: 4px 16px;
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
+    .progress-bar-wrap {
+      background: #e0e0e0;
+      border-radius: 10px;
+      height: 10px;
+      margin: 20px 0 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--quiz-color, #6C5CE7);
+      border-radius: 10px;
+      transition: width 0.4s ease;
+    }
+    .progress-text {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #636e72;
+      margin-bottom: 20px;
+    }
+
+    .question-card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .question-text {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #2d3436;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .multi-hint {
+      font-size: 0.8rem;
+      color: #b2bec3;
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+
+    .answers-list { list-style: none; padding: 0; margin: 0; }
+    .answer-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .answer-item:hover:not(.locked) { border-color: var(--quiz-color, #6C5CE7); background: #f8f6ff; }
+    .answer-item.selected { border-color: var(--quiz-color, #6C5CE7); background: #f0ecff; }
+    .answer-item.correct { border-color: #00b894; background: #e8fdf5; }
+    .answer-item.wrong { border-color: #d63031; background: #fff0f0; }
+    .answer-item.missed { border-color: #00b894; background: #e8fdf5; opacity: 0.7; }
+
+    .answer-checkbox {
+      width: 22px; height: 22px;
+      border: 2px solid #b2bec3;
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .answer-item.selected .answer-checkbox { border-color: var(--quiz-color, #6C5CE7); background: var(--quiz-color, #6C5CE7); color: white; }
+    .answer-item.correct .answer-checkbox { border-color: #00b894; background: #00b894; color: white; }
+    .answer-item.wrong .answer-checkbox { border-color: #d63031; background: #d63031; color: white; }
+    .answer-item.missed .answer-checkbox { border-color: #00b894; background: #00b894; color: white; }
+
+    .answer-text { font-size: 1rem; color: #2d3436; line-height: 1.4; }
+
+    .explanation-box {
+      display: none;
+      background: #f8f9fa;
+      border-left: 4px solid var(--quiz-color, #6C5CE7);
+      border-radius: 0 12px 12px 0;
+      padding: 14px 16px;
+      margin-top: 14px;
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.5;
+    }
+    .explanation-box.show { display: block; }
+    .explanation-result {
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+    .explanation-result.ok { color: #00b894; }
+    .explanation-result.fail { color: #d63031; }
+    .explanation-result.partial { color: #e17055; }
+
+    .btn-check {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: var(--quiz-color, #6C5CE7);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      margin-top: 6px;
+    }
+    .btn-check:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+    .btn-check:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-next {
+      display: none;
+      width: 100%;
+      padding: 16px;
+      background: white;
+      color: var(--quiz-color, #6C5CE7);
+      border: 2px solid var(--quiz-color, #6C5CE7);
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.2s;
+    }
+    .btn-next:hover { background: var(--quiz-color, #6C5CE7); color: white; }
+
+    /* RESULT SCREEN */
+    .result-screen {
+      display: none;
+      text-align: center;
+      background: white;
+      border-radius: 24px;
+      padding: 40px 28px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+    }
+    .result-screen.show { display: block; }
+    .result-emoji { font-size: 5rem; margin-bottom: 16px; }
+    .result-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; color: #2d3436; }
+    .result-score {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--quiz-color, #6C5CE7);
+      margin: 16px 0;
+    }
+    .result-score span { font-size: 1.5rem; color: #b2bec3; }
+    .result-message { font-size: 1rem; color: #636e72; margin-bottom: 24px; line-height: 1.6; }
+    .result-subjects {
+      background: #f8f9fa;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .result-subjects h3 { font-size: 1rem; margin-bottom: 12px; color: #2d3436; }
+    .subject-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 0.95rem;
+    }
+    .subject-item:last-child { border-bottom: none; }
+    .result-btns { display: flex; flex-direction: column; gap: 12px; }
+    .btn-retry {
+      padding: 14px;
+      background: var(--quiz-color, #6C5CE7);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-scenario {
+      padding: 14px;
+      background: white;
+      color: var(--quiz-color, #6C5CE7);
+      border: 2px solid var(--quiz-color, #6C5CE7);
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+    }
+    .btn-back {
+      padding: 14px;
+      background: #f0f0f0;
+      color: #636e72;
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+    }
+
+    #loading { text-align: center; padding: 80px 20px; font-size: 1.2rem; color: #636e72; }
+    #error-msg { text-align: center; padding: 60px 20px; color: #d63031; }
+  </style>
+</head>
+<body>
+<div class="quiz-wrap">
+  <div id="loading">⏳ Загружаем викторину...</div>
+  <div id="error-msg" style="display:none"></div>
+
+  <div id="quiz-main" style="display:none">
+    <div class="quiz-header">
+      <div class="prof-emoji" id="hdr-emoji"></div>
+      <h1 id="hdr-title"></h1>
+      <span class="subject-tag" id="hdr-subject"></span>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-text" id="prog-text"></div>
+
+    <div class="question-card" id="q-card">
+      <div class="question-text" id="q-text"></div>
+      <div class="multi-hint" id="q-hint"></div>
+      <ul class="answers-list" id="a-list"></ul>
+      <div class="explanation-box" id="exp-box">
+        <div class="explanation-result" id="exp-result"></div>
+        <div id="exp-text"></div>
+      </div>
+      <button class="btn-check" id="btn-check" disabled onclick="checkAnswer()">Проверить</button>
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">Следующий вопрос →</button>
+    </div>
+  </div>
+
+  <div class="result-screen" id="result-screen">
+    <div class="result-emoji" id="res-emoji"></div>
+    <div class="result-title" id="res-title"></div>
+    <div class="result-score" id="res-score"></div>
+    <div class="result-message" id="res-msg"></div>
+    <div class="result-subjects" id="res-subjects"></div>
+    <div class="result-btns">
+      <button class="btn-retry" onclick="retryQuiz()">🔄 Пройти ещё раз</button>
+      <a class="btn-scenario" id="res-scenario-btn" href="#" style="display:none">🎮 Попробовать себя в профессии</a>
+      <a class="btn-back" id="res-back-btn" href="#">← Назад к профессии</a>
+    </div>
+  </div>
+</div>
+
+<script>
+let quizData = null;
+let questions = [];
+let current = 0;
+let scores = [];
+let selected = new Set();
+let profId = '';
+let districtId = '';
+
+const params = new URLSearchParams(location.search);
+profId = params.get('prof') || '';
+districtId = params.get('district') || '';
+
+async function init() {
+  try {
+    const [qRes, sRes] = await Promise.all([
+      fetch('data/quizzes.json'),
+      fetch('data/scenarios.json')
+    ]);
+    const qData = await qRes.json();
+    const sData = await sRes.json();
+
+    if (!profId || !qData.quizzes[profId]) {
+      showError('Викторина для этой профессии не найдена 😔');
+      return;
+    }
+
+    quizData = qData.quizzes[profId];
+    questions = shuffle([...quizData.questions]);
+
+    document.documentElement.style.setProperty('--quiz-color', quizData.color || '#6C5CE7');
+
+    document.getElementById('hdr-emoji').textContent = quizData.emoji || '📚';
+    document.getElementById('hdr-title').textContent = quizData.profession;
+    document.getElementById('hdr-subject').textContent = '📖 ' + quizData.subjects.join(' · ');
+
+    // scenario button
+    const scenBtn = document.getElementById('res-scenario-btn');
+    if (sData.scenarios[profId]) {
+      scenBtn.href = `scenario.html?prof=${profId}`;
+      scenBtn.style.display = 'block';
+    }
+    document.getElementById('res-back-btn').href = `district.html?id=${districtId}`;
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('quiz-main').style.display = 'block';
+
+    renderQuestion();
+  } catch(e) {
+    showError('Ошибка загрузки данных: ' + e.message);
+  }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  const total = questions.length;
+
+  document.getElementById('prog-fill').style.width = (current / total * 100) + '%';
+  document.getElementById('prog-text').textContent = `Вопрос ${current + 1} из ${total}`;
+
+  document.getElementById('q-text').textContent = q.question;
+
+  const correctCount = q.answers.filter(a => a.correct).length;
+  document.getElementById('q-hint').textContent =
+    correctCount > 1 ? `✅ Несколько правильных ответов (${correctCount})` : '✅ Один правильный ответ';
+
+  const list = document.getElementById('a-list');
+  list.innerHTML = '';
+  selected.clear();
+
+  const shuffled = shuffle([...q.answers]);
+  q._shuffled = shuffled;
+
+  shuffled.forEach((ans, i) => {
+    const li = document.createElement('li');
+    li.className = 'answer-item';
+    li.dataset.idx = i;
+    li.innerHTML = `<div class="answer-checkbox" id="cb-${i}"></div><span class="answer-text">${ans.text}</span>`;
+    li.addEventListener('click', () => toggleAnswer(i));
+    list.appendChild(li);
+  });
+
+  document.getElementById('exp-box').classList.remove('show');
+  document.getElementById('btn-check').style.display = 'block';
+  document.getElementById('btn-check').disabled = true;
+  document.getElementById('btn-next').style.display = 'none';
+
+  // unlock list
+  list.querySelectorAll('.answer-item').forEach(el => el.classList.remove('locked'));
+}
+
+function toggleAnswer(idx) {
+  const items = document.querySelectorAll('.answer-item');
+  const item = items[idx];
+  if (item.classList.contains('locked')) return;
+
+  if (selected.has(idx)) {
+    selected.delete(idx);
+    item.classList.remove('selected');
+    document.getElementById(`cb-${idx}`).textContent = '';
+  } else {
+    selected.add(idx);
+    item.classList.add('selected');
+    document.getElementById(`cb-${idx}`).textContent = '✓';
+  }
+  document.getElementById('btn-check').disabled = selected.size === 0;
+}
+
+function checkAnswer() {
+  const q = questions[current];
+  const shuffled = q._shuffled;
+  const items = document.querySelectorAll('.answer-item');
+
+  // lock
+  items.forEach(el => el.classList.add('locked'));
+
+  let correct = 0, wrong = 0, missed = 0;
+
+  shuffled.forEach((ans, i) => {
+    const item = items[i];
+    item.classList.remove('selected');
+    const cb = document.getElementById(`cb-${i}`);
+
+    if (selected.has(i) && ans.correct) {
+      item.classList.add('correct'); cb.textContent = '✓'; correct++;
+    } else if (selected.has(i) && !ans.correct) {
+      item.classList.add('wrong'); cb.textContent = '✗'; wrong++;
+    } else if (!selected.has(i) && ans.correct) {
+      item.classList.add('missed'); cb.textContent = '✓'; missed++;
+    }
+  });
+
+  const totalCorrect = shuffled.filter(a => a.correct).length;
+  let score = 0;
+  if (wrong === 0 && missed === 0) score = 2;      // perfect
+  else if (correct > 0 && wrong === 0) score = 1;  // partial, no wrong
+  else if (correct > 0) score = 0.5;               // some right, some wrong
+  scores.push(score);
+
+  const expBox = document.getElementById('exp-box');
+  const expResult = document.getElementById('exp-result');
+  const expText = document.getElementById('exp-text');
+
+  if (wrong === 0 && missed === 0) {
+    expResult.className = 'explanation-result ok';
+    expResult.textContent = '🎉 Отлично! Все правильно!';
+  } else if (wrong === 0 && missed > 0) {
+    expResult.className = 'explanation-result partial';
+    expResult.textContent = `💡 Почти! Ты нашёл ${correct} из ${totalCorrect} правильных ответов`;
+  } else {
+    expResult.className = 'explanation-result fail';
+    expResult.textContent = `❌ Не совсем. Правильных ответов было: ${totalCorrect}`;
+  }
+
+  expText.textContent = q.explanation || '';
+  expBox.classList.add('show');
+
+  document.getElementById('btn-check').style.display = 'none';
+
+  const isLast = current === questions.length - 1;
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.style.display = 'block';
+  nextBtn.textContent = isLast ? '📊 Посмотреть результат' : 'Следующий вопрос →';
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz-main').style.display = 'none';
+  const screen = document.getElementById('result-screen');
+  screen.classList.add('show');
+
+  const total = questions.length;
+  const maxScore = total * 2;
+  const got = scores.reduce((a,b) => a+b, 0);
+  const pct = Math.round(got / maxScore * 100);
+
+  document.getElementById('prog-fill').style.width = '100%';
+
+  let emoji, title, msg;
+  if (pct >= 85) {
+    emoji = '🏆'; title = 'Блестяще!';
+    msg = `Ты набрал ${pct}% — это уровень настоящего ${quizData.profession.toLowerCase()}а! Твои знания уже очень близки к профессиональным.`;
+  } else if (pct >= 60) {
+    emoji = '⭐'; title = 'Хороший результат!';
+    msg = `${pct}% — ты хорошо знаешь предметы нужные ${quizData.profession.toLowerCase()}у. Ещё немного практики и будет отлично!`;
+  } else if (pct >= 35) {
+    emoji = '📚'; title = 'Есть куда расти!';
+    msg = `${pct}% — неплохое начало! Изучи темы ниже и попробуй ещё раз.`;
+  } else {
+    emoji = '🌱'; title = 'Начало пути!';
+    msg = `${pct}% — ты только начинаешь знакомство с этой областью. Не сдавайся — все профессионалы когда-то начинали с нуля!`;
+  }
+
+  document.getElementById('res-emoji').textContent = emoji;
+  document.getElementById('res-title').textContent = title;
+  document.getElementById('res-score').innerHTML = `${pct}<span>%</span>`;
+  document.getElementById('res-msg').textContent = msg;
+
+  const subjectsDiv = document.getElementById('res-subjects');
+  const subjectIcons = { 'Биология':'🧬','Химия':'⚗️','Физика':'⚡','Математика':'🔢','Информатика':'💻',
+    'География':'🌍','История':'📜','Русский язык':'📝','Литература':'📖','Обществознание':'🏛️',
+    'Иностранный язык':'🗣️','Музыка':'🎵','ИЗО':'🎨','Физкультура':'🏃','ОБЖ':'🛡️','Черчение':'📐',
+    'Экономика':'💰','Астрономия':'🔭' };
+  subjectsDiv.innerHTML = `<h3>📚 Предметы для этой профессии:</h3>` +
+    quizData.subjects.map(s => `<div class="subject-item">${subjectIcons[s]||'📖'} ${s}</div>`).join('');
+}
+
+function retryQuiz() {
+  current = 0;
+  scores = [];
+  questions = shuffle([...quizData.questions]);
+  document.getElementById('result-screen').classList.remove('show');
+  document.getElementById('quiz-main').style.display = 'block';
+  renderQuestion();
+}
+
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  const e = document.getElementById('error-msg');
+  e.style.display = 'block';
+  e.innerHTML = `<h2>😔</h2><p>${msg}</p><a href="javascript:history.back()">← Назад</a>`;
+}
+
+init();
+</script>
+</body>
+</html>
