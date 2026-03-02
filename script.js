@@ -30,12 +30,16 @@ function createCard(district, index) {
   card.style.background = `linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))`;
   card.style.borderColor = district.color + '40';
 
+  const isLiked = getInterests().includes(district.id);
   card.innerHTML = `
     <div class="district-card__glow" style="background: radial-gradient(circle, ${district.color}, transparent 70%)"></div>
     <div class="district-card__top" style="
       position: absolute; top: 0; left: 0; right: 0; height: 4px;
       background: ${district.color}; border-radius: 20px 20px 0 0;
     "></div>
+    <button class="interest-btn ${isLiked ? 'active' : ''}" data-id="${district.id}" onclick="toggleInterest(event,'${district.id}',this)" title="Мне интересно" style="--c:${district.color}">
+      ${isLiked ? '❤️' : '🤍'}
+    </button>
     <div class="district-card__emoji">${district.emoji}</div>
     <div class="district-card__name">${district.name}</div>
     <div class="district-card__desc">${district.desc}</div>
@@ -83,6 +87,7 @@ function initCity() {
   }, { threshold: 0.1 });
 
   observer.observe(grid);
+  initInterestPanel();
 }
 
 // Smooth scroll for anchor links
@@ -97,3 +102,82 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 });
 
 document.addEventListener('DOMContentLoaded', initCity);
+
+// ── INTERESTS SYSTEM ──
+function getInterests() {
+  return JSON.parse(localStorage.getItem('profiland_interests') || '[]');
+}
+function saveInterests(arr) {
+  localStorage.setItem('profiland_interests', JSON.stringify(arr));
+}
+
+function toggleInterest(e, id, btn) {
+  e.stopPropagation();
+  let interests = getInterests();
+  const wasLiked = interests.includes(id);
+  if (wasLiked) {
+    interests = interests.filter(x => x !== id);
+  } else {
+    interests.push(id);
+  }
+  saveInterests(interests);
+  btn.textContent = wasLiked ? '🤍' : '❤️';
+  btn.classList.toggle('active', !wasLiked);
+
+  // Bounce animation
+  btn.style.transform = 'scale(1.5)';
+  setTimeout(() => btn.style.transform = '', 300);
+
+  updateInterestPanel(interests);
+}
+
+function updateInterestPanel(interests) {
+  let panel = document.getElementById('interest-panel');
+  if (!panel) return;
+
+  if (interests.length === 0) {
+    panel.classList.remove('show');
+    return;
+  }
+
+  const names = interests.map(id => {
+    const d = districts.find(x => x.id === id);
+    return d ? d.emoji + ' ' + d.name : id;
+  });
+
+  panel.querySelector('.ip-count').textContent = interests.length;
+  panel.querySelector('.ip-tags').innerHTML = names.map(n =>
+    `<span class="ip-tag">${n}</span>`
+  ).join('');
+  panel.classList.add('show');
+}
+
+function initInterestPanel() {
+  const panel = document.createElement('div');
+  panel.id = 'interest-panel';
+  panel.innerHTML = `
+    <div class="ip-header">
+      <span>❤️ Тебе интересно <strong class="ip-count">0</strong> ${declRayon(0)}</span>
+      <button class="ip-clear" onclick="clearInterests()">✕</button>
+    </div>
+    <div class="ip-tags"></div>
+    <button class="ip-btn" onclick="window.location.href='recommend.html'">🎯 Помоги определиться →</button>
+  `;
+  document.body.appendChild(panel);
+  updateInterestPanel(getInterests());
+}
+
+function clearInterests() {
+  saveInterests([]);
+  document.querySelectorAll('.interest-btn').forEach(b => {
+    b.textContent = '🤍';
+    b.classList.remove('active');
+  });
+  document.getElementById('interest-panel').classList.remove('show');
+}
+
+function declRayon(n) {
+  if (n % 10 === 1 && n % 100 !== 11) return 'район';
+  if ([2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100)) return 'района';
+  return 'районов';
+}

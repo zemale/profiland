@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Профиленд — Помоги определиться</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      font-family:'Nunito',sans-serif;
+      background:linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%);
+      min-height:100vh;color:#fff;
+    }
+
+    /* Stars */
+    body::before{
+      content:'';position:fixed;inset:0;
+      background:
+        radial-gradient(1px 1px at 15% 20%,rgba(255,255,255,0.7) 0%,transparent 100%),
+        radial-gradient(1px 1px at 55% 10%,rgba(255,255,255,0.5) 0%,transparent 100%),
+        radial-gradient(1px 1px at 80% 35%,rgba(255,255,255,0.6) 0%,transparent 100%),
+        radial-gradient(1px 1px at 30% 70%,rgba(255,255,255,0.4) 0%,transparent 100%),
+        radial-gradient(1px 1px at 70% 80%,rgba(255,255,255,0.5) 0%,transparent 100%);
+      pointer-events:none;z-index:0;
+    }
+
+    .container{
+      position:relative;z-index:1;
+      max-width:620px;margin:0 auto;
+      padding:40px 20px 80px;
+    }
+
+    .back-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      color:rgba(255,255,255,0.4);font-size:0.85rem;font-weight:700;
+      text-decoration:none;margin-bottom:32px;
+      transition:color .2s;
+    }
+    .back-btn:hover{color:#fff;}
+
+    /* ── SCREEN ── */
+    .screen{display:none;}
+    .screen.active{display:block;animation:fadeUp .4s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+    /* ── INTRO ── */
+    .intro__emoji{font-size:4rem;margin-bottom:16px;display:block;text-align:center;}
+    .intro__title{font-size:2rem;font-weight:900;text-align:center;margin-bottom:8px;}
+    .intro__sub{color:rgba(255,255,255,0.5);text-align:center;font-size:0.95rem;line-height:1.7;margin-bottom:12px;}
+    .interest-chips{
+      display:flex;flex-wrap:wrap;gap:8px;
+      justify-content:center;margin-bottom:28px;
+    }
+    .interest-chip{
+      background:rgba(255,255,255,0.08);
+      border:1.5px solid rgba(255,255,255,0.15);
+      border-radius:20px;padding:6px 14px;
+      font-size:0.82rem;font-weight:700;
+    }
+    .big-btn{
+      display:block;width:100%;
+      padding:16px;border:none;border-radius:16px;
+      background:linear-gradient(135deg,#A29BFE,#6C5CE7);
+      color:#fff;font-size:1.05rem;font-weight:800;
+      cursor:pointer;font-family:'Nunito',sans-serif;
+      transition:transform .15s,opacity .2s;
+      text-align:center;text-decoration:none;
+    }
+    .big-btn:hover{transform:scale(1.02);opacity:.9;}
+    .big-btn.outline{
+      background:rgba(255,255,255,0.06);
+      border:1.5px solid rgba(255,255,255,0.15);
+      margin-top:10px;font-size:0.9rem;
+    }
+
+    /* ── QUESTION ── */
+    .q-progress{
+      display:flex;align-items:center;gap:10px;
+      margin-bottom:28px;
+    }
+    .q-progress__bar{
+      flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;
+    }
+    .q-progress__fill{
+      height:100%;background:linear-gradient(90deg,#A29BFE,#6C5CE7);
+      border-radius:3px;transition:width .4s ease;
+    }
+    .q-progress__text{font-size:0.78rem;color:rgba(255,255,255,0.35);white-space:nowrap;}
+
+    .q-emoji{font-size:2.8rem;margin-bottom:12px;display:block;text-align:center;}
+    .q-text{
+      font-size:1.3rem;font-weight:800;text-align:center;
+      line-height:1.4;margin-bottom:24px;
+    }
+    .q-options{display:flex;flex-direction:column;gap:10px;}
+    .q-option{
+      background:rgba(255,255,255,0.05);
+      border:2px solid rgba(255,255,255,0.1);
+      border-radius:14px;padding:14px 18px;
+      color:rgba(255,255,255,0.85);font-size:0.95rem;font-weight:700;
+      cursor:pointer;text-align:left;font-family:'Nunito',sans-serif;
+      transition:all .2s;
+    }
+    .q-option:hover{
+      background:rgba(162,155,254,0.12);
+      border-color:rgba(162,155,254,0.5);
+      transform:translateX(6px);color:#fff;
+    }
+    .q-option.selected{
+      background:rgba(162,155,254,0.2);
+      border-color:#A29BFE;color:#fff;
+    }
+
+    /* ── RESULTS ── */
+    .result__header{text-align:center;margin-bottom:28px;}
+    .result__emoji{font-size:3.5rem;display:block;margin-bottom:8px;}
+    .result__title{font-size:1.6rem;font-weight:900;margin-bottom:6px;}
+    .result__sub{color:rgba(255,255,255,0.5);font-size:0.9rem;line-height:1.6;}
+
+    .result-section{margin-bottom:28px;}
+    .result-section__title{
+      font-size:0.75rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+      color:rgba(255,255,255,0.3);margin-bottom:12px;
+    }
+
+    .prof-cards{display:flex;flex-direction:column;gap:10px;}
+    .prof-card{
+      background:rgba(255,255,255,0.05);
+      border:1.5px solid rgba(255,255,255,0.08);
+      border-radius:16px;padding:14px 16px;
+      display:flex;align-items:center;gap:14px;
+      text-decoration:none;color:#fff;
+      transition:all .2s;
+    }
+    .prof-card:hover{
+      background:rgba(255,255,255,0.09);
+      transform:translateX(4px);
+      border-color:rgba(255,255,255,0.2);
+    }
+    .prof-card__emoji{font-size:1.8rem;flex-shrink:0;}
+    .prof-card__info{flex:1;}
+    .prof-card__name{font-size:0.95rem;font-weight:800;}
+    .prof-card__dist{font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:2px;}
+    .prof-card__match{
+      font-size:0.78rem;font-weight:800;
+      padding:3px 10px;border-radius:10px;
+    }
+
+    .district-recs{display:flex;flex-wrap:wrap;gap:8px;}
+    .dist-rec{
+      display:flex;align-items:center;gap:6px;
+      border-radius:20px;padding:7px 14px;
+      font-size:0.82rem;font-weight:700;color:#fff;
+      text-decoration:none;
+      transition:transform .15s,opacity .2s;
+    }
+    .dist-rec:hover{transform:scale(1.05);opacity:.9;}
+
+    .result-actions{display:flex;flex-direction:column;gap:10px;margin-top:24px;}
+  </style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back-btn">← На главную</a>
+
+  <!-- INTRO -->
+  <div class="screen active" id="screen-intro">
+    <span class="intro__emoji">🎯</span>
+    <div class="intro__title">Помогаем определиться</div>
+    <div class="intro__sub">Ты отметила интересные районы — отлично! Ответь на 3 вопроса, и мы подберём профессии которые подходят именно тебе.</div>
+    <div class="interest-chips" id="introChips"></div>
+    <button class="big-btn" onclick="startQuiz()">Поехали! 🚀</button>
+    <a href="index.html" class="big-btn outline">Вернуться и добавить ещё</a>
+  </div>
+
+  <!-- QUESTIONS -->
+  <div class="screen" id="screen-quiz">
+    <div class="q-progress">
+      <div class="q-progress__bar"><div class="q-progress__fill" id="qProgress"></div></div>
+      <div class="q-progress__text" id="qProgressText"></div>
+    </div>
+    <span class="q-emoji" id="qEmoji"></span>
+    <div class="q-text" id="qText"></div>
+    <div class="q-options" id="qOptions"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="screen-result">
+    <div class="result__header">
+      <span class="result__emoji" id="resultEmoji"></span>
+      <div class="result__title" id="resultTitle"></div>
+      <div class="result__sub" id="resultSub"></div>
+    </div>
+
+    <div class="result-section">
+      <div class="result-section__title">🔥 Топ-профессии для тебя</div>
+      <div class="prof-cards" id="topProfs"></div>
+    </div>
+
+    <div class="result-section">
+      <div class="result-section__title">🏙️ Рекомендованные районы</div>
+      <div class="district-recs" id="distRecs"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="big-btn" onclick="resetAll()">🔄 Пройти заново</button>
+      <a href="index.html" class="big-btn outline">🏙️ На главную</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const DISTRICTS_META = {
+  medical:    { name:'Медицинский', emoji:'🏥', color:'#FF6B6B', tags:['люди','помощь','наука','руки'] },
+  social:     { name:'Социальный',  emoji:'🧠', color:'#4ECDC4', tags:['люди','помощь','общение'] },
+  creative:   { name:'Творческий',  emoji:'🎭', color:'#FFE66D', tags:['творчество','руки','визуал'] },
+  music:      { name:'Музыкальный', emoji:'🎵', color:'#A29BFE', tags:['творчество','перфоманс','звук'] },
+  tech:       { name:'Технологический', emoji:'💻', color:'#6C5CE7', tags:['наука','логика','компьютер','сидячая'] },
+  science:    { name:'Научный',     emoji:'🔬', color:'#00B894', tags:['наука','логика','исследование'] },
+  nature:     { name:'Природный',   emoji:'🌿', color:'#55EFC4', tags:['природа','движение','исследование'] },
+  construction:{ name:'Строительный',emoji:'🏗️',color:'#FDCB6E', tags:['руки','логика','визуал','движение'] },
+  business:   { name:'Деловой',     emoji:'⚖️', color:'#0984E3', tags:['люди','логика','управление'] },
+  media:      { name:'Медиа',       emoji:'📰', color:'#E17055', tags:['творчество','общение','публичность'] },
+  culinary:   { name:'Кулинарный',  emoji:'🍳', color:'#FD79A8', tags:['руки','творчество','помощь'] },
+  transport:  { name:'Транспортный',emoji:'✈️', color:'#74B9FF', tags:['движение','техника','логика'] },
+  military:   { name:'Силовой',     emoji:'🛡️', color:'#636E72', tags:['движение','помощь','дисциплина'] },
+  sports:     { name:'Спортивный',  emoji:'⚽', color:'#00CEC9', tags:['движение','люди','перфоманс'] },
+  agro:       { name:'Аграрный',    emoji:'🌾', color:'#6AB04C', tags:['природа','руки','движение'] },
+  education:  { name:'Образовательный',emoji:'🎓',color:'#F9CA24',tags:['люди','помощь','общение','публичность'] },
+  service:    { name:'Сервисный',   emoji:'💈', color:'#F0932B', tags:['люди','руки','творчество'] },
+  tourism:    { name:'Туристический',emoji:'🗺️',color:'#EB4D4B', tags:['люди','движение','общение','публичность'] },
+  industrial: { name:'Промышленный',emoji:'🔧', color:'#7F8C8D', tags:['руки','техника','логика'] },
+  gaming:     { name:'Игровой',     emoji:'🎮', color:'#9B59B6', tags:['творчество','логика','компьютер','сидячая'] },
+};
+
+const TOP_PROFS = {
+  medical:   [{emoji:'👨‍⚕️',name:'Врач',id:'doctor'},{emoji:'👩‍⚕️',name:'Педиатр',id:'pediatrician'},{emoji:'💊',name:'Фармацевт',id:'pharmacist'}],
+  social:    [{emoji:'🧠',name:'Психолог',id:'psychologist'},{emoji:'🤝',name:'Соцработник',id:'social_worker'},{emoji:'🗣️',name:'Логопед',id:'speech_therapist'}],
+  creative:  [{emoji:'🎨',name:'Дизайнер',id:'designer'},{emoji:'📸',name:'Фотограф',id:'photographer'},{emoji:'🎭',name:'Актёр',id:'actor'}],
+  music:     [{emoji:'🎵',name:'Музыкант',id:'musician'},{emoji:'🎤',name:'Вокалист',id:'vocalist'},{emoji:'🎚️',name:'Звукорежиссёр',id:'sound_engineer'}],
+  tech:      [{emoji:'💻',name:'Программист',id:'programmer'},{emoji:'🎨',name:'UX-дизайнер',id:'ux_designer'},{emoji:'📊',name:'Аналитик данных',id:'data_analyst'}],
+  science:   [{emoji:'🔬',name:'Учёный',id:'scientist'},{emoji:'⚗️',name:'Химик',id:'chemist'},{emoji:'🧮',name:'Математик',id:'mathematician'}],
+  nature:    [{emoji:'🌿',name:'Эколог',id:'ecologist'},{emoji:'🦁',name:'Зоолог',id:'zoologist'},{emoji:'🌊',name:'Океанолог',id:'oceanologist'}],
+  construction:[{emoji:'🏛️',name:'Архитектор',id:'architect'},{emoji:'🏠',name:'Дизайнер интерьеров',id:'interior_designer'},{emoji:'📐',name:'Геодезист',id:'geodesist'}],
+  business:  [{emoji:'📊',name:'Менеджер',id:'manager'},{emoji:'💰',name:'Предприниматель',id:'entrepreneur'},{emoji:'⚖️',name:'Юрист',id:'lawyer'}],
+  media:     [{emoji:'📰',name:'Журналист',id:'journalist'},{emoji:'📱',name:'Блогер',id:'blogger'},{emoji:'📡',name:'Редактор',id:'editor'}],
+  culinary:  [{emoji:'👨‍🍳',name:'Шеф-повар',id:'chef'},{emoji:'🍰',name:'Кондитер',id:'confectioner'},{emoji:'☕',name:'Бариста',id:'barista'}],
+  transport: [{emoji:'✈️',name:'Пилот',id:'pilot'},{emoji:'🚢',name:'Капитан',id:'captain'},{emoji:'🚂',name:'Машинист',id:'train_driver'}],
+  military:  [{emoji:'💂',name:'Военный',id:'military_officer'},{emoji:'👮',name:'Полицейский',id:'police_officer'},{emoji:'🚒',name:'Пожарный',id:'firefighter'}],
+  sports:    [{emoji:'🏃',name:'Спортсмен',id:'athlete'},{emoji:'📋',name:'Тренер',id:'coach'},{emoji:'🏅',name:'Спортивный врач',id:'sports_doctor'}],
+  agro:      [{emoji:'🌾',name:'Агроном',id:'agronomist'},{emoji:'🐄',name:'Зоотехник',id:'zootechnician'},{emoji:'🌲',name:'Лесник',id:'forester'}],
+  education: [{emoji:'📚',name:'Учитель',id:'teacher'},{emoji:'🎓',name:'Педагог',id:'school_teacher'},{emoji:'✏️',name:'Методист',id:'methodologist'}],
+  service:   [{emoji:'✂️',name:'Стилист',id:'stylist'},{emoji:'💆',name:'Массажист',id:'massage_therapist'},{emoji:'💄',name:'Визажист',id:'makeup_artist'}],
+  tourism:   [{emoji:'🗺️',name:'Гид',id:'guide'},{emoji:'🌍',name:'Турменеджер',id:'travel_manager'},{emoji:'🏨',name:'Отельер',id:'hotelier'}],
+  industrial:[{emoji:'⚙️',name:'Инженер',id:'engineer'},{emoji:'🔧',name:'Механик',id:'mechanic'},{emoji:'⚡',name:'Электрик',id:'electrician'}],
+  gaming:    [{emoji:'🎮',name:'Геймдизайнер',id:'game_designer'},{emoji:'🎬',name:'Аниматор',id:'animator'},{emoji:'🕹️',name:'Game Dev',id:'game_developer'}],
+};
+
+// ── QUESTIONS (3 вопроса, адаптированных к интересам) ──
+const BASE_QUESTIONS = [
+  {
+    emoji: '💡',
+    text: 'Как ты лучше всего работаешь?',
+    options: [
+      { text: '🤝 С людьми — команда, общение, помощь', tags: ['люди','общение','помощь','публичность'] },
+      { text: '🔬 Один на один с задачей — думаю, анализирую', tags: ['наука','логика','исследование','сидячая'] },
+      { text: '🤲 Делаю руками — люблю создавать что-то физическое', tags: ['руки','техника','движение'] },
+      { text: '🎨 Придумываю — мне важно творить и выражать себя', tags: ['творчество','визуал','перфоманс'] },
+    ]
+  },
+  {
+    emoji: '🌍',
+    text: 'Где ты хочешь проводить рабочее время?',
+    options: [
+      { text: '🏢 В офисе или студии — уютно и стабильно', tags: ['сидячая','компьютер','логика'] },
+      { text: '🌿 На улице или в движении — не могу сидеть на месте', tags: ['движение','природа','движение'] },
+      { text: '🎭 На сцене или перед камерой — хочу быть заметной', tags: ['публичность','перфоманс','звук'] },
+      { text: '🏥 Там где нужна моя помощь — больница, школа, улица', tags: ['помощь','люди','дисциплина'] },
+    ]
+  },
+  {
+    emoji: '🏆',
+    text: 'Что для тебя главный результат работы?',
+    options: [
+      { text: '😊 Видеть что человеку стало лучше', tags: ['помощь','люди','общение'] },
+      { text: '💡 Решить сложную задачу которую никто не решил', tags: ['наука','логика','исследование'] },
+      { text: '🎨 Создать что-то красивое или необычное', tags: ['творчество','визуал','звук'] },
+      { text: '🏗️ Построить то что будет стоять долго', tags: ['руки','техника','логика'] },
+    ]
+  }
+];
+
+// ── STATE ──
+let interests = [];
+let answers = [];
+let currentQ = 0;
+
+function getInterests() {
+  return JSON.parse(localStorage.getItem('profiland_interests') || '[]');
+}
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  interests = getInterests();
+  if (interests.length === 0) {
+    document.getElementById('screen-intro').innerHTML = `
+      <span class="intro__emoji">🤷</span>
+      <div class="intro__title">Сначала отметь интересы</div>
+      <div class="intro__sub">Вернись на главную и нажми ❤️ на районах которые тебе интересны — тогда мы сможем помочь.</div>
+      <a href="index.html" class="big-btn" style="margin-top:20px">← На главную</a>
+    `;
+    return;
+  }
+  const chips = document.getElementById('introChips');
+  interests.forEach(id => {
+    const d = DISTRICTS_META[id];
+    if (!d) return;
+    const el = document.createElement('span');
+    el.className = 'interest-chip';
+    el.textContent = d.emoji + ' ' + d.name;
+    el.style.borderColor = d.color + '60';
+    chips.appendChild(el);
+  });
+});
+
+function startQuiz() {
+  showScreen('quiz');
+  showQuestion(0);
+}
+
+function showQuestion(idx) {
+  const q = BASE_QUESTIONS[idx];
+  currentQ = idx;
+  const total = BASE_QUESTIONS.length;
+  document.getElementById('qProgress').style.width = (idx / total * 100) + '%';
+  document.getElementById('qProgressText').textContent = `${idx + 1} / ${total}`;
+  document.getElementById('qEmoji').textContent = q.emoji;
+  document.getElementById('qText').textContent = q.text;
+
+  const box = document.getElementById('qOptions');
+  box.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'q-option';
+    btn.textContent = opt.text;
+    btn.onclick = () => selectOption(opt, btn);
+    box.appendChild(btn);
+  });
+}
+
+function selectOption(opt, btn) {
+  document.querySelectorAll('.q-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  answers.push(opt.tags);
+
+  setTimeout(() => {
+    if (currentQ + 1 < BASE_QUESTIONS.length) {
+      showQuestion(currentQ + 1);
+    } else {
+      showResults();
+    }
+  }, 350);
+}
+
+function showResults() {
+  document.getElementById('qProgress').style.width = '100%';
+  showScreen('result');
+
+  // Score districts: interests × answers
+  const scores = {};
+  Object.keys(DISTRICTS_META).forEach(id => { scores[id] = 0; });
+
+  // Boost from marked interests
+  interests.forEach(id => { scores[id] = (scores[id] || 0) + 5; });
+
+  // Boost from answers
+  const answerTags = answers.flat();
+  Object.entries(DISTRICTS_META).forEach(([id, d]) => {
+    d.tags.forEach(tag => {
+      if (answerTags.includes(tag)) scores[id] = (scores[id] || 0) + 2;
+    });
+  });
+
+  // Sort
+  const ranked = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+  const top3Districts = ranked.slice(0,3).map(x=>x[0]);
+
+  // Personality type
+  const allTags = answerTags;
+  let type = { emoji:'🌟', title:'Универсальный специалист', sub:'Тебе интересно многое — это большое преимущество. Ты можешь найти себя на пересечении нескольких областей.' };
+  if (allTags.filter(t=>['люди','помощь','общение'].includes(t)).length >= 3)
+    type = { emoji:'🤝', title:'Помощник и коммуникатор', sub:'Тебе важно работать с людьми и видеть результат своей помощи. Профессии где нужно общаться — твоё.' };
+  else if (allTags.filter(t=>['наука','логика','исследование'].includes(t)).length >= 3)
+    type = { emoji:'🔬', title:'Исследователь и аналитик', sub:'Тебя привлекают сложные задачи и поиск ответов. Наука, технологии и аналитика — твои направления.' };
+  else if (allTags.filter(t=>['творчество','визуал','перфоманс'].includes(t)).length >= 3)
+    type = { emoji:'🎨', title:'Творец и создатель', sub:'Тебе важно выражать себя и создавать новое. Искусство, дизайн и медиа — твоя среда.' };
+  else if (allTags.filter(t=>['движение','руки','техника'].includes(t)).length >= 3)
+    type = { emoji:'⚡', title:'Деятель и практик', sub:'Тебе нужно действовать, создавать, строить. Профессии где есть результат руками — твоё.' };
+
+  document.getElementById('resultEmoji').textContent = type.emoji;
+  document.getElementById('resultTitle').textContent = type.title;
+  document.getElementById('resultSub').textContent = type.sub;
+
+  // Top professions
+  const topProfsEl = document.getElementById('topProfs');
+  topProfsEl.innerHTML = '';
+  const shownProfs = new Set();
+  top3Districts.forEach(distId => {
+    const profs = TOP_PROFS[distId] || [];
+    const prof = profs.find(p => !shownProfs.has(p.id)) || profs[0];
+    if (!prof) return;
+    shownProfs.add(prof.id);
+    const d = DISTRICTS_META[distId];
+    const score = Math.min(99, Math.round(scores[distId] / (5 + answers.length*2) * 100));
+    const card = document.createElement('a');
+    card.className = 'prof-card';
+    card.href = `scenario.html?prof=${prof.id}`;
+    card.style.borderColor = d.color + '40';
+    card.innerHTML = `
+      <div class="prof-card__emoji">${prof.emoji}</div>
+      <div class="prof-card__info">
+        <div class="prof-card__name">${prof.name}</div>
+        <div class="prof-card__dist">${d.emoji} ${d.name}</div>
+      </div>
+      <div class="prof-card__match" style="background:${d.color}22;color:${d.color}">${score}% совпадение</div>
+    `;
+    topProfsEl.appendChild(card);
+  });
+
+  // District recommendations
+  const distRecsEl = document.getElementById('distRecs');
+  distRecsEl.innerHTML = '';
+  top3Districts.forEach(id => {
+    const d = DISTRICTS_META[id];
+    const a = document.createElement('a');
+    a.className = 'dist-rec';
+    a.href = `district.html?id=${id}`;
+    a.style.background = d.color + '25';
+    a.style.border = `1.5px solid ${d.color}50`;
+    a.textContent = d.emoji + ' ' + d.name;
+    distRecsEl.appendChild(a);
+  });
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function resetAll() {
+  answers = [];
+  currentQ = 0;
+  showScreen('intro');
+}
+</script>
+</body>
+</html>

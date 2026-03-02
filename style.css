@@ -298,3 +298,68 @@ body {
   .city__grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .district-card__name { font-size: 0.9rem; }
 }
+
+/* ── INTEREST BUTTON ── */
+.interest-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: rgba(0,0,0,0.3);
+  border: none; border-radius: 50%;
+  width: 34px; height: 34px;
+  font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s, background 0.2s;
+  z-index: 5;
+  backdrop-filter: blur(4px);
+}
+.interest-btn:hover { background: rgba(0,0,0,0.5); }
+.interest-btn.active { background: rgba(255,255,255,0.15); }
+.district-card { position: relative; }
+
+/* ── INTEREST PANEL ── */
+#interest-panel {
+  position: fixed;
+  bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+  background: rgba(15,15,30,0.95);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 16px 20px;
+  width: min(500px, 92vw);
+  z-index: 200;
+  transition: transform 0.4s cubic-bezier(.34,1.4,.64,1);
+  box-shadow: 0 16px 60px rgba(0,0,0,0.5);
+}
+#interest-panel.show { transform: translateX(-50%) translateY(0); }
+.ip-header {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.9rem; font-weight: 700;
+  margin-bottom: 10px; color: rgba(255,255,255,0.8);
+}
+.ip-clear {
+  background: none; border: none; color: rgba(255,255,255,0.3);
+  cursor: pointer; font-size: 1rem; padding: 0 4px;
+}
+.ip-clear:hover { color: #fff; }
+.ip-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 14px;
+}
+.ip-tag {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.7);
+}
+.ip-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #A29BFE, #6C5CE7);
+  border: none; border-radius: 12px;
+  padding: 12px;
+  color: #fff; font-size: 0.95rem; font-weight: 800;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.ip-btn:hover { opacity: 0.85; transform: scale(1.02); }
