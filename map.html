@@ -892,16 +892,16 @@ const STORY_CHARS = [
 
 // Weekly rotating events (based on week number)
 const ALL_EVENTS = [
-  { districtId:'medical', title:'День открытых дверей', emoji:'🏥', desc:'Врачи проводят бесплатные консультации и рассказывают о профессии школьникам. Приходи — узнай как проходит настоящий осмотр!', link:'district.html?id=medical' },
-  { districtId:'tech', title:'Хакатон по ИИ', emoji:'🤖', desc:'Команды за 24 часа придумывают приложения на основе нейросетей. Победитель едет на стажировку. Даже наблюдать — уже вдохновляет.', link:'district.html?id=tech' },
-  { districtId:'creative', title:'Выставка молодых', emoji:'🎨', desc:'Художники и дизайнеры до 20 лет показывают свои работы. Никаких оценок, только восхищение. И каждый может купить понравившуюся картину.', link:'district.html?id=creative' },
-  { districtId:'sports', title:'Финал чемпионата', emoji:'🏆', desc:'Решающий матч городского чемпионата по футболу. Трибуны полные, напряжение запредельное. Местная команда впервые за 5 лет в финале.', link:'district.html?id=sports' },
-  { districtId:'culinary', title:'Гастрофестиваль', emoji:'🍜', desc:'20 шефов готовят уличную еду со всего мира. Можно попробовать тайский суп, аргентинское асадо и узбекский плов — всё в одном месте.', link:'district.html?id=culinary' },
-  { districtId:'gaming', title:'Инди-игры недели', emoji:'🕹️', desc:'Местные разработчики показывают игры сделанные за месяц. Многие начинали с нуля в 14 лет. Поиграй и оставь отзыв — это реально помогает им.', link:'district.html?id=gaming' },
-  { districtId:'science', title:'Ночь науки', emoji:'🔭', desc:'Учёные открывают лаборатории после полуночи. Жидкий азот, настоящие опыты, телескоп на крыше. Звёзды видно даже из города.', link:'district.html?id=science' },
-  { districtId:'music', title:'Живые концерты', emoji:'🎸', desc:'Студенты консерватории и рок-группы играют на одной сцене. Программа меняется каждый час. Вход свободный.', link:'district.html?id=music' },
-  { districtId:'nature', title:'Субботник в парке', emoji:'🌱', desc:'Экологи зовут всех помочь высадить 200 деревьев. Каждый участник получает паспорт своего дерева — и может следить как оно растёт онлайн.', link:'district.html?id=nature' },
-  { districtId:'tourism', title:'Фестиваль путешествий', emoji:'🌍', desc:'Гиды и путешественники рассказывают о самых необычных местах планеты. Слайд-шоу, карты, артефакты. Один рассказ — и ты уже хочешь в дорогу.', link:'district.html?id=tourism' },
+  { id:'medical_openday', districtId:'medical', title:'День открытых дверей', emoji:'🏥', desc:'Педиатр Аня проведёт тебя по больнице: приёмный покой, операционная, детское отделение. Узнай как всё устроено изнутри!' },
+  { id:'tech_hackathon', districtId:'tech', title:'Хакатон по ИИ', emoji:'🤖', desc:'Программист Макс покажет как за 24 часа рождаются настоящие проекты. Нейросети, команды, бессонные ночи и момент победы.' },
+  { id:'creative_exhibition', districtId:'creative', title:'Выставка молодых', emoji:'🎨', desc:'Художник Лера проведёт по залам выставки: живопись, фото, цифровое искусство и скульптуры из неожиданных материалов.' },
+  { id:'sports_final', districtId:'sports', title:'Финал чемпионата', emoji:'🏆', desc:'Тренер Витя берёт тебя за кулисы финального матча: раздевалка, тактика, врач команды и сам матч от первого лица.' },
+  { id:'medical_openday', districtId:'culinary', title:'Гастрофестиваль', emoji:'🍜', desc:'20 шефов готовят уличную еду со всего мира. Можно попробовать тайский суп, аргентинское асадо и узбекский плов.' },
+  { id:'tech_hackathon', districtId:'gaming', title:'Инди-игры недели', emoji:'🕹️', desc:'Местные разработчики показывают игры сделанные за месяц. Многие начинали с нуля в 14 лет.' },
+  { id:'creative_exhibition', districtId:'science', title:'Ночь науки', emoji:'🔭', desc:'Учёные открывают лаборатории после полуночи. Жидкий азот, настоящие опыты, телескоп на крыше.' },
+  { id:'sports_final', districtId:'music', title:'Живые концерты', emoji:'🎸', desc:'Студенты консерватории и рок-группы играют на одной сцене. Программа меняется каждый час.' },
+  { id:'medical_openday', districtId:'nature', title:'Субботник в парке', emoji:'🌱', desc:'Экологи зовут помочь высадить 200 деревьев. Каждый участник получает паспорт своего дерева.' },
+  { id:'tech_hackathon', districtId:'tourism', title:'Фестиваль путешествий', emoji:'🌍', desc:'Гиды рассказывают о самых необычных местах планеты. Слайд-шоу, карты, артефакты.' },
 ];
 
 // Pick 4 events for this week
@@ -983,8 +983,8 @@ function showEventPopup(ev, refEl){
   p.querySelector('.popup__role').textContent = '📅 Событие этой недели';
   p.querySelector('.popup__text').textContent = ev.desc;
   const lnk = p.querySelector('.popup__link');
-  lnk.textContent = '→ Перейти в район';
-  lnk.href = ev.link;
+  lnk.textContent = '▶ Пройти событие';
+  lnk.href = 'event.html?id=' + ev.id;
   positionPopup(p, refEl);
   requestAnimationFrame(() => p.classList.add('show'));
   activePopup = p;

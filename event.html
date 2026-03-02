@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Профиленд — Событие</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Nunito',sans-serif;background:#0a0a1a;color:#fff;height:100vh;overflow:hidden;}
+
+    #vn-bg{position:fixed;inset:0;transition:background 1s ease;z-index:0;}
+    #vn-bg::after{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(to top,rgba(0,0,0,0.95) 0%,rgba(0,0,0,0.35) 60%,rgba(0,0,0,0.15) 100%);
+    }
+
+    .vn-scene{position:fixed;inset:0;display:flex;flex-direction:column;z-index:10;}
+
+    /* Header */
+    .vn-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 20px;
+      background:rgba(0,0,0,0.45);backdrop-filter:blur(10px);
+    }
+    .vn-header__event{font-size:0.85rem;font-weight:800;opacity:.8;}
+    .vn-header__badge{
+      font-size:0.72rem;font-weight:700;
+      padding:4px 12px;border-radius:20px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.12);
+    }
+    .vn-header__back{
+      font-size:0.8rem;color:rgba(255,255,255,0.4);
+      text-decoration:none;font-weight:700;
+    }
+    .vn-header__back:hover{color:#fff;}
+
+    /* Progress */
+    .vn-progress{height:3px;background:rgba(255,255,255,0.08);}
+    .vn-progress__bar{height:100%;transition:width .5s ease;}
+
+    /* Avatar */
+    .vn-avatar-area{
+      flex:1;display:flex;align-items:flex-end;justify-content:center;
+      padding-bottom:8px;min-height:0;position:relative;
+    }
+    .vn-avatar{
+      font-size:7rem;
+      filter:drop-shadow(0 16px 32px rgba(0,0,0,0.6));
+      animation:float 3s ease-in-out infinite;
+    }
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+    .vn-avatar.react{animation:react .4s ease;}
+    @keyframes react{0%{transform:scale(1);}50%{transform:scale(1.2);}100%{transform:scale(1);}}
+
+    /* Guide name tag */
+    .guide-tag{
+      position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);
+      border-radius:20px;padding:4px 14px;
+      font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.7);
+      white-space:nowrap;
+    }
+
+    /* Dialog */
+    .vn-dialog{
+      background:rgba(8,8,22,0.93);backdrop-filter:blur(20px);
+      border-top:1px solid rgba(255,255,255,0.08);
+      padding:20px 20px 12px;
+      overflow-y:auto;max-height:58vh;
+    }
+    .vn-dialog__who{
+      font-size:0.75rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+      opacity:.35;margin-bottom:6px;
+    }
+    .vn-dialog__text{
+      font-size:1rem;line-height:1.75;color:rgba(255,255,255,0.9);
+      margin-bottom:18px;min-height:50px;
+    }
+    /* profession link inside text */
+    .prof-link{
+      color:#A29BFE;font-weight:700;text-decoration:none;
+      border-bottom:1px dashed rgba(162,155,254,0.4);
+      transition:color .15s;
+    }
+    .prof-link:hover{color:#fff;border-bottom-color:#fff;}
+
+    /* Choices */
+    .vn-choices{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+    .vn-choice{
+      background:rgba(255,255,255,0.05);
+      border:1.5px solid rgba(255,255,255,0.1);
+      border-radius:12px;padding:12px 16px;
+      color:rgba(255,255,255,0.85);font-size:0.92rem;font-weight:600;
+      cursor:pointer;text-align:left;font-family:'Nunito',sans-serif;
+      transition:all .2s;
+    }
+    .vn-choice:hover{
+      background:rgba(162,155,254,0.12);
+      border-color:rgba(162,155,254,0.5);
+      transform:translateX(4px);color:#fff;
+    }
+
+    /* ── INTRO SCREEN ── */
+    .vn-fullscreen{
+      position:fixed;inset:0;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      text-align:center;padding:40px;z-index:20;
+      background:rgba(8,8,22,0.96);
+    }
+    .vn-fullscreen__badge{
+      font-size:0.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+      color:rgba(255,255,255,0.35);margin-bottom:12px;
+    }
+    .vn-fullscreen__emoji{font-size:5rem;margin-bottom:16px;}
+    .vn-fullscreen__title{font-size:1.9rem;font-weight:900;margin-bottom:8px;}
+    .vn-fullscreen__guide{
+      display:flex;align-items:center;gap:10px;
+      background:rgba(255,255,255,0.06);border-radius:16px;
+      padding:10px 18px;margin:16px 0 8px;
+    }
+    .vn-fullscreen__guide-emoji{font-size:2rem;}
+    .vn-fullscreen__guide-info{text-align:left;}
+    .vn-fullscreen__guide-name{font-size:0.9rem;font-weight:800;}
+    .vn-fullscreen__guide-role{font-size:0.75rem;color:rgba(255,255,255,0.4);}
+    .vn-fullscreen__text{
+      font-size:0.95rem;color:rgba(255,255,255,0.65);line-height:1.8;
+      max-width:480px;margin:12px 0 28px;
+    }
+    .vn-btn{
+      padding:14px 32px;
+      border:none;border-radius:50px;
+      color:#fff;font-size:1rem;font-weight:800;
+      cursor:pointer;font-family:'Nunito',sans-serif;
+      transition:transform .2s,opacity .2s;
+    }
+    .vn-btn:hover{transform:scale(1.05);}
+
+    /* ── END SCREEN ── */
+    .vn-end__emoji{font-size:4rem;margin-bottom:16px;}
+    .vn-end__title{font-size:1.6rem;font-weight:900;margin-bottom:8px;}
+    .vn-end__text{font-size:0.9rem;color:rgba(255,255,255,0.6);line-height:1.8;max-width:440px;margin-bottom:28px;}
+    .btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  </style>
+</head>
+<body>
+
+<div id="vn-bg"></div>
+
+<!-- Intro -->
+<div class="vn-fullscreen" id="introScreen">
+  <div class="vn-fullscreen__badge">📅 Событие района</div>
+  <div class="vn-fullscreen__emoji" id="introEmoji"></div>
+  <div class="vn-fullscreen__title" id="introTitle"></div>
+  <div class="vn-fullscreen__guide">
+    <div class="vn-fullscreen__guide-emoji" id="guideEmoji"></div>
+    <div class="vn-fullscreen__guide-info">
+      <div class="vn-fullscreen__guide-name" id="guideName"></div>
+      <div class="vn-fullscreen__guide-role" id="guideRole"></div>
+    </div>
+  </div>
+  <div class="vn-fullscreen__text" id="introText"></div>
+  <button class="vn-btn" id="startBtn" onclick="startEvent()">Пойдём! ▶</button>
+</div>
+
+<!-- Game -->
+<div class="vn-scene" id="gameScene" style="display:none">
+  <div class="vn-header">
+    <div class="vn-header__event" id="headerEvent"></div>
+    <div class="vn-header__badge" id="headerBadge"></div>
+    <a href="map.html" class="vn-header__back">✕</a>
+  </div>
+  <div class="vn-progress"><div class="vn-progress__bar" id="progressBar"></div></div>
+  <div class="vn-avatar-area">
+    <div class="vn-avatar" id="avatar"></div>
+    <div class="guide-tag" id="guideTag"></div>
+  </div>
+  <div class="vn-dialog">
+    <div class="vn-dialog__who" id="dialogWho"></div>
+    <div class="vn-dialog__text" id="dialogText"></div>
+    <div class="vn-choices" id="choicesBox"></div>
+  </div>
+</div>
+
+<!-- End -->
+<div class="vn-fullscreen" id="endScreen" style="display:none">
+  <div class="vn-end__emoji" id="endEmoji"></div>
+  <div class="vn-end__title">Экскурсия завершена!</div>
+  <div class="vn-end__text" id="endText"></div>
+  <div class="btn-row">
+    <button class="vn-btn" style="background:rgba(255,255,255,0.1)" onclick="window.location.href='map.html'">🗺️ На карту</button>
+    <a class="vn-btn" id="districtBtn" style="text-decoration:none">🏙️ В район →</a>
+  </div>
+</div>
+
+<script>
+let evData = null;
+let visitedNodes = [];
+let totalNodes = 0;
+
+async function init(){
+  const params = new URLSearchParams(location.search);
+  const evId = params.get('id');
+  const res = await fetch('data/events.json');
+  const json = await res.json();
+  evData = json.events[evId];
+
+  if(!evData){
+    document.body.innerHTML='<div style="color:#fff;text-align:center;padding:100px;font-family:Nunito,sans-serif"><h2>Событие не найдено</h2><br><a href="map.html" style="color:#A29BFE">← На карту</a></div>';
+    return;
+  }
+
+  totalNodes = Object.keys(evData.nodes).length;
+  document.getElementById('vn-bg').style.background = evData.bg;
+  document.getElementById('introEmoji').textContent = evData.emoji;
+  document.getElementById('introTitle').textContent = evData.title;
+  document.getElementById('guideEmoji').textContent = evData.guide.emoji;
+  document.getElementById('guideName').textContent = evData.guide.name;
+  document.getElementById('guideRole').textContent = evData.guide.role;
+  document.getElementById('introText').textContent = evData.intro;
+  document.getElementById('startBtn').style.background = evData.color;
+  document.getElementById('avatar').textContent = evData.guide.emoji;
+  document.getElementById('headerEvent').textContent = evData.emoji + ' ' + evData.title;
+  document.getElementById('headerBadge').textContent = evData.guide.name + ' · ' + evData.guide.role;
+  document.getElementById('guideTag').textContent = evData.guide.name + ', ' + evData.guide.role;
+}
+
+function startEvent(){
+  document.getElementById('introScreen').style.display='none';
+  document.getElementById('gameScene').style.display='flex';
+  showNode('start');
+}
+
+function parseText(text){
+  // Replace {prof:id|label} with clickable links
+  return text.replace(/\{prof:([^|]+)\|([^}]+)\}/g, (_, id, label)=>{
+    return `<a class="prof-link" href="scenario.html?prof=${id}" target="_blank">${label}</a>`;
+  });
+}
+
+function showNode(nodeId){
+  if(!visitedNodes.includes(nodeId)) visitedNodes.push(nodeId);
+  const node = evData.nodes[nodeId];
+  if(!node) return;
+
+  // Progress
+  const progress = Math.min(visitedNodes.length / totalNodes * 100, 95);
+  document.getElementById('progressBar').style.cssText = `width:${progress}%;background:${evData.color};`;
+
+  // Avatar reaction
+  const av = document.getElementById('avatar');
+  av.classList.add('react');
+  setTimeout(()=>av.classList.remove('react'), 400);
+
+  // Typewriter
+  const textEl = document.getElementById('dialogText');
+  textEl.innerHTML = '';
+  const parsed = parseText(node.text);
+  // Typewriter on plain text, then set innerHTML
+  let i=0, plain=node.text.replace(/\{prof:[^}]+\}/g,'…');
+  document.getElementById('dialogWho').textContent = evData.guide.name + ':';
+
+  // Fast typewriter then replace with rich html
+  const timer = setInterval(()=>{
+    textEl.textContent = plain.substring(0,i);
+    i++;
+    if(i>plain.length){
+      clearInterval(timer);
+      textEl.innerHTML = parsed;
+      renderChoices(node);
+    }
+  }, 16);
+
+  // Choices
+  document.getElementById('choicesBox').innerHTML = '';
+
+  // End node
+  if(node.isEnd){
+    clearInterval(timer);
+    textEl.innerHTML = parsed;
+    setTimeout(()=>showEnd(node), 600);
+  }
+}
+
+function renderChoices(node){
+  const box = document.getElementById('choicesBox');
+  box.innerHTML = '';
+  if(!node.choices || node.isEnd) return;
+  node.choices.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = 'vn-choice';
+    btn.textContent = c.text;
+    btn.onclick = ()=> showNode(c.next);
+    box.appendChild(btn);
+  });
+  setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'end'}), 100);
+}
+
+function showEnd(node){
+  document.getElementById('gameScene').style.display='none';
+  const end = document.getElementById('endScreen');
+  end.style.display='flex';
+  end.style.background = evData.bg.replace('0.95','0.96');
+  document.getElementById('endEmoji').textContent = evData.guide.emoji;
+  document.getElementById('endText').textContent = node.text;
+  const btn = document.getElementById('districtBtn');
+  btn.href = `district.html?id=${evData.district}`;
+  btn.style.background = evData.color;
+}
+
+init();
+</script>
+</body>
+</html>
