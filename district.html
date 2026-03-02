@@ -123,6 +123,35 @@
     .roadmap-step__list { padding-left: 16px; display: flex; flex-direction: column; gap: 3px; }
     .roadmap-step__list li { font-size: 0.78rem; color: rgba(255,255,255,0.65); line-height: 1.5; }
 
+    /* ── MYTHS ── */
+    .myths-list { display:flex; flex-direction:column; gap:8px; padding:12px 0 4px; }
+    .myth-card {
+      background:rgba(255,255,255,.04); border-radius:12px;
+      padding:12px 14px; cursor:pointer;
+      border:1.5px solid rgba(255,255,255,.07);
+      transition:border-color .2s;
+    }
+    .myth-card:hover { border-color:rgba(255,255,255,.18); }
+    .myth-card.revealed { cursor:default; }
+    .myth-badge { font-size:.65rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.3); display:block; margin-bottom:5px; }
+    .myth-text { font-size:.85rem; font-weight:700; line-height:1.5; }
+    .myth-answer { margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,.08); animation:fadeIn .3s ease; }
+    .myth-verdict { font-size:.8rem; font-weight:900; padding:3px 10px; border-radius:8px; display:inline-block; margin-bottom:6px; }
+    .myth-verdict.true { background:rgba(85,239,196,.2); color:#55EFC4; }
+    .myth-verdict.false { background:rgba(255,107,107,.2); color:#FF6B6B; }
+    .myth-explanation { font-size:.78rem; color:rgba(255,255,255,.6); line-height:1.55; }
+
+    /* ── MOVIES ── */
+    .movies-list { display:flex; flex-direction:column; gap:8px; padding:12px 0 4px; }
+    .movie-card { background:rgba(255,255,255,.04); border-radius:12px; padding:12px 14px; border:1.5px solid rgba(255,255,255,.07); }
+    .movie-card__head { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:4px; }
+    .movie-card__title { font-size:.88rem; font-weight:800; }
+    .movie-year { color:rgba(255,255,255,.35); font-weight:600; font-size:.78rem; }
+    .movie-type { font-size:.65rem; font-weight:800; background:rgba(255,255,255,.08); padding:2px 8px; border-radius:8px; color:rgba(255,255,255,.5); white-space:nowrap; }
+    .movie-realism { font-size:.8rem; margin-bottom:5px; color:rgba(255,255,255,.5); }
+    .movie-realism span { font-size:.7rem; margin-left:4px; }
+    .movie-desc { font-size:.78rem; color:rgba(255,255,255,.6); line-height:1.55; }
+
     /* ── Q&A ── */
     .qa-list { display: flex; flex-direction: column; gap: 6px; padding: 12px 0 4px; }
     .qa-item { border-radius: 10px; overflow: hidden; background: rgba(255,255,255,0.04); }
@@ -181,18 +210,22 @@
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
-      const [res, scenRes, quizRes, qaRes, rmRes] = await Promise.all([
+      const [res, scenRes, quizRes, qaRes, rmRes, mythsRes, moviesRes] = await Promise.all([
         fetch('data/professions.json'),
         fetch('data/scenarios.json'),
         fetch('data/quizzes.json'),
         fetch('data/qa.json').catch(()=>({json:()=>({})})),
-        fetch('data/roadmap.json').catch(()=>({json:()=>({})}))
+        fetch('data/roadmap.json').catch(()=>({json:()=>({})})),
+        fetch('data/myths.json').catch(()=>({json:()=>({})})),
+        fetch('data/movies.json').catch(()=>({json:()=>({})}))
       ]);
       const data = await res.json();
       const scenData = await scenRes.json();
       const quizData = await quizRes.json();
       const qaData = await qaRes.json();
       const rmData = await rmRes.json();
+      const mythsData = await mythsRes.json();
+      const moviesData = await moviesRes.json();
       const availableScenarios = Object.keys(scenData.scenarios);
       const availableQuizzes = Object.keys(quizData.quizzes);
       const district = data.districts.find(d => d.id === id);
@@ -227,6 +260,8 @@
             <button class="prof-tab active" onclick="switchTab('${prof.id}','actions',this)">🎮 Попробовать</button>
             ${rmData[prof.id] ? `<button class="prof-tab" onclick="switchTab('${prof.id}','roadmap',this)">🗺️ Путь</button>` : ''}
             ${qaData[prof.id] ? `<button class="prof-tab" onclick="switchTab('${prof.id}','qa',this)">💬 Спроси</button>` : ''}
+            ${mythsData[prof.id] ? `<button class="prof-tab" onclick="switchTab('${prof.id}','myths',this)">🎭 Мифы</button>` : ''}
+            ${moviesData[prof.id] ? `<button class="prof-tab" onclick="switchTab('${prof.id}','movies',this)">🎬 Кино</button>` : ''}
           </div>
 
           <!-- Tab: actions -->
@@ -268,6 +303,42 @@
             </div>
           </div>` : ''}
 
+          <!-- Tab: myths -->
+          ${mythsData[prof.id] ? `
+          <div class="prof-tab-panel" id="tab-${prof.id}-myths" style="display:none">
+            <div class="myths-list">
+              ${mythsData[prof.id].myths.map((m,mi) => `
+                <div class="myth-card" id="myth-${prof.id}-${mi}" onclick="revealMyth('${prof.id}',${mi})">
+                  <div class="myth-question">
+                    <span class="myth-badge">🤔 Правда или миф?</span>
+                    <div class="myth-text">${m.text}</div>
+                  </div>
+                  <div class="myth-answer" style="display:none">
+                    <span class="myth-verdict ${m.isTrue ? 'true' : 'false'}">${m.isTrue ? '✅ Правда!' : '❌ Миф!'}</span>
+                    <div class="myth-explanation">${m.explanation}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>` : ''}
+
+          <!-- Tab: movies -->
+          ${moviesData[prof.id] ? `
+          <div class="prof-tab-panel" id="tab-${prof.id}-movies" style="display:none">
+            <div class="movies-list">
+              ${moviesData[prof.id].movies.map(mv => `
+                <div class="movie-card">
+                  <div class="movie-card__head">
+                    <div class="movie-card__title">${mv.title} <span class="movie-year">${mv.year}</span></div>
+                    <div class="movie-type">${mv.type}</div>
+                  </div>
+                  <div class="movie-realism">${'⭐'.repeat(mv.realism)}${'☆'.repeat(5-mv.realism)} <span>реализм</span></div>
+                  <div class="movie-desc">${mv.desc}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>` : ''}
+
           <div class="profession-card__education">📚 Где учиться: <span>${prof.education.join(', ')}</span></div>
         `;
         setTimeout(() => {
@@ -296,6 +367,18 @@
     function toggleQA(el) {
       const item = el.parentElement;
       item.classList.toggle('open');
+    }
+
+    function revealMyth(profId, idx) {
+      const card = document.getElementById(`myth-${profId}-${idx}`);
+      if (!card) return;
+      const answer = card.querySelector('.myth-answer');
+      const question = card.querySelector('.myth-question');
+      if (answer.style.display === 'none') {
+        answer.style.display = 'block';
+        card.classList.add('revealed');
+        question.style.opacity = '0.5';
+      }
     }
   </script>
 </body>
