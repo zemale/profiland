@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиленд — Карта города</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #07071a;
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Stars background */
+    .stars {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 8%, rgba(255,255,255,0.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 60%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 35% 75%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 90%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 60% 50%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 30%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 55%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        #07071a;
+    }
+
+    /* Header */
+    .header {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 32px;
+      background: rgba(7,7,26,0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .header__logo {
+      font-size: 1.4rem; font-weight: 900;
+      background: linear-gradient(135deg, #A29BFE, #6C5CE7);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .header__title {
+      font-size: 1rem; font-weight: 700;
+      color: rgba(255,255,255,0.5);
+    }
+    .header__back {
+      font-size: 0.9rem; font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+    .header__back:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+    /* Map container */
+    .map-wrap {
+      position: relative; z-index: 5;
+      padding: 32px 24px 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .map-intro {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .map-intro h1 {
+      font-size: 2.2rem; font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .map-intro p {
+      color: rgba(255,255,255,0.45);
+      font-size: 1rem;
+    }
+
+    /* City grid — районы разного размера как настоящий город */
+    .city-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(5, 140px);
+      gap: 8px;
+    }
+
+    /* District block */
+    .district {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      text-decoration: none;
+      display: block;
+    }
+    .district:hover {
+      transform: scale(1.03) translateY(-3px);
+      z-index: 20;
+    }
+
+    .district__bg {
+      position: absolute; inset: 0;
+      transition: opacity 0.3s;
+    }
+    .district__overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+    }
+
+    /* Buildings decoration (CSS art) */
+    .district__buildings {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+      padding: 0 8px;
+      opacity: 0.25;
+      transition: opacity 0.3s;
+    }
+    .district:hover .district__buildings { opacity: 0.4; }
+
+    .building {
+      border-radius: 3px 3px 0 0;
+      flex-shrink: 0;
+    }
+
+    /* Glow pulse on hover */
+    .district::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 18px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      box-shadow: inset 0 0 30px rgba(255,255,255,0.1);
+    }
+    .district:hover::after { opacity: 1; }
+
+    /* District border glow */
+    .district {
+      border: 1.5px solid rgba(255,255,255,0.08);
+    }
+    .district:hover {
+      border-color: rgba(255,255,255,0.25);
+    }
+
+    /* Content */
+    .district__content {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 14px 16px;
+    }
+    .district__emoji {
+      font-size: 1.6rem;
+      display: block;
+      margin-bottom: 4px;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+      transition: transform 0.3s;
+    }
+    .district:hover .district__emoji {
+      transform: scale(1.15) rotate(-5deg);
+    }
+    .district__name {
+      font-size: 0.8rem;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #fff;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+    }
+    .district__count {
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 2px;
+    }
+
+    /* Tooltip on hover */
+    .district__tip {
+      position: absolute;
+      top: 12px; right: 12px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.8);
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: all 0.25s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .district:hover .district__tip { opacity: 1; transform: translateY(0); }
+
+    /* Animated glow dots (city lights) */
+    .city-light {
+      position: absolute;
+      border-radius: 50%;
+      animation: blink var(--dur, 2s) ease-in-out infinite var(--delay, 0s);
+      pointer-events: none;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: var(--min-op, 0.3); }
+      50% { opacity: var(--max-op, 1); }
+    }
+
+    /* Road lines between districts */
+    .roads {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Legend */
+    .legend {
+      margin-top: 32px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.6);
+    }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .city-grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: none;
+        grid-auto-rows: 120px;
+      }
+      /* Reset all grid placements on mobile */
+      .district { grid-column: span 1 !important; grid-row: span 1 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="stars"></div>
+
+<header class="header">
+  <a href="index.html" class="header__logo">🏙️ Профиленд</a>
+  <div class="header__title">Карта города</div>
+  <a href="index.html" class="header__back">← На главную</a>
+</header>
+
+<div class="map-wrap">
+  <div class="map-intro">
+    <h1>🗺️ Карта Профиленда</h1>
+    <p>Выбери район — узнай профессии и почувствуй атмосферу</p>
+  </div>
+
+  <div class="city-grid" id="cityGrid"></div>
+
+  <div class="legend" id="legend"></div>
+</div>
+
+<script>
+const districts = [
+  {
+    id: 'medical', name: 'Медицинский\nрайон', emoji: '🏥', color: '#FF6B6B',
+    count: 6, tip: '6 профессий',
+    buildings: ['#FF6B6B','#E05555','#FF8080'],
+    heights: [80, 55, 70, 45, 60],
+    lights: ['#FF6B6B','#FFB3B3'],
+    grid: 'col-2 row-2', // большой район
+    atmo: 'Белые коридоры, запах антисептика, ритм мониторов'
+  },
+  {
+    id: 'tech', name: 'Технопарк', emoji: '💻', color: '#6C5CE7',
+    count: 6, tip: '6 профессий',
+    buildings: ['#6C5CE7','#8E7CF7','#5A4BC7'],
+    heights: [90, 70, 85, 60, 75],
+    lights: ['#6C5CE7','#A29BFE'],
+    grid: 'col-2 row-2',
+    atmo: 'Неоновые вывески, гул серверов, запах кофе'
+  },
+  {
+    id: 'creative', name: 'Творческий\nквартал', emoji: '🎨', color: '#FFE66D',
+    count: 5, tip: '5 профессий',
+    buildings: ['#FFE66D','#E6CF60','#FFF0A0'],
+    heights: [60, 40, 55, 35, 50],
+    lights: ['#FFE66D','#FFF0A0'],
+    grid: 'col-1 row-2',
+    atmo: 'Граффити на стенах, запах краски, джаз из окон'
+  },
+  {
+    id: 'science', name: 'Научный\nгородок', emoji: '🔬', color: '#00B894',
+    count: 5, tip: '5 профессий',
+    buildings: ['#00B894','#00D4A8','#009B7D'],
+    heights: [75, 55, 65, 45, 70],
+    lights: ['#00B894','#55EFC4'],
+    grid: 'col-2 row-1',
+    atmo: 'Тихие лаборатории, запах реагентов, точность во всём'
+  },
+  {
+    id: 'business', name: 'Деловой\nцентр', emoji: '💼', color: '#0984E3',
+    count: 4, tip: '4 профессии',
+    buildings: ['#0984E3','#0A6FC7','#3DA8FF'],
+    heights: [100, 80, 90, 65],
+    lights: ['#0984E3','#74B9FF'],
+    grid: 'col-2 row-2',
+    atmo: 'Стеклянные башни, переговорные, деловой ритм'
+  },
+  {
+    id: 'media', name: 'Медиа\nхаб', emoji: '📺', color: '#E17055',
+    count: 6, tip: '6 профессий',
+    buildings: ['#E17055','#C85E44','#F08070'],
+    heights: [70, 85, 60, 75, 50],
+    lights: ['#E17055','#FFAB94'],
+    grid: 'col-1 row-1',
+    atmo: 'Студии, камеры, дедлайны и прямой эфир'
+  },
+  {
+    id: 'gaming', name: 'Игровой\nдистрикт', emoji: '🎮', color: '#9B59B6',
+    count: 5, tip: '5 профессий',
+    buildings: ['#9B59B6','#8E44AD','#B370D2'],
+    heights: [65, 80, 55, 70, 85],
+    lights: ['#9B59B6','#D7BDE2'],
+    grid: 'col-2 row-1',
+    atmo: 'Пиксели, неон, звук геймплея в темноте'
+  },
+  {
+    id: 'culinary', name: 'Кулинарный\nрайон', emoji: '🍳', color: '#FD79A8',
+    count: 5, tip: '5 профессий',
+    buildings: ['#FD79A8','#E0609A','#FFB3CD'],
+    heights: [50, 40, 55, 35, 45],
+    lights: ['#FD79A8','#FFD6E8'],
+    grid: 'col-1 row-2',
+    atmo: 'Аромат специй, огонь плиты, суета ресторанной кухни'
+  },
+  {
+    id: 'sports', name: 'Спортивный\nквартал', emoji: '⚽', color: '#00CEC9',
+    count: 4, tip: '4 профессии',
+    buildings: ['#00CEC9','#00B5B0','#33DED9'],
+    heights: [55, 40, 65, 30],
+    lights: ['#00CEC9','#81ECEC'],
+    grid: 'col-1 row-1',
+    atmo: 'Стадион, трибуны, звук финального свистка'
+  },
+  {
+    id: 'music', name: 'Музыкальный\nрайон', emoji: '🎵', color: '#A29BFE',
+    count: 6, tip: '6 профессий',
+    buildings: ['#A29BFE','#8C85E0','#C3BDFF'],
+    heights: [60, 45, 70, 40, 55],
+    lights: ['#A29BFE','#DFD9FF'],
+    grid: 'col-1 row-2',
+    atmo: 'Звуки репетиций, концертные залы, ноты в воздухе'
+  },
+  {
+    id: 'education', name: 'Образовательный\nцентр', emoji: '📚', color: '#F9CA24',
+    count: 5, tip: '5 профессий',
+    buildings: ['#F9CA24','#E0B41F','#FBD95B'],
+    heights: [65, 50, 70, 45, 60],
+    lights: ['#F9CA24','#FEF9C3'],
+    grid: 'col-2 row-1',
+    atmo: 'Звонок, коридоры, запах книг и мела'
+  },
+  {
+    id: 'nature', name: 'Природный\nзаповедник', emoji: '🌿', color: '#55EFC4',
+    count: 5, tip: '5 профессий',
+    buildings: ['#55EFC4','#3DD9AE','#80F5D4'],
+    heights: [40, 30, 50, 25, 45],
+    lights: ['#55EFC4','#B0F5E2'],
+    grid: 'col-1 row-1',
+    atmo: 'Лес, запах земли, звуки природы'
+  },
+  {
+    id: 'construction', name: 'Строительный\nрайон', emoji: '🏗️', color: '#FDCB6E',
+    count: 5, tip: '5 профессий',
+    buildings: ['#FDCB6E','#E0B45C','#FFE0A0'],
+    heights: [70, 90, 60, 80, 55],
+    lights: ['#FDCB6E','#FFF0C0'],
+    grid: 'col-1 row-2',
+    atmo: 'Краны, бетон, запах строительства, чертежи'
+  },
+  {
+    id: 'transport', name: 'Транспортный\nузел', emoji: '✈️', color: '#74B9FF',
+    count: 5, tip: '5 профессий',
+    buildings: ['#74B9FF','#5EA8F0','#A8D4FF'],
+    heights: [55, 40, 65, 35, 50],
+    lights: ['#74B9FF','#CCE8FF'],
+    grid: 'col-2 row-1',
+    atmo: 'Расписания, гудки, взлётные полосы'
+  },
+  {
+    id: 'agro', name: 'Агрорайон', emoji: '🌾', color: '#6AB04C',
+    count: 5, tip: '5 профессий',
+    buildings: ['#6AB04C','#58923E','#8ACA6A'],
+    heights: [35, 25, 40, 20, 35],
+    lights: ['#6AB04C','#B0E090'],
+    grid: 'col-1 row-1',
+    atmo: 'Поля, свежий воздух, рассвет над горизонтом'
+  },
+  {
+    id: 'military', name: 'Силовой\nрайон', emoji: '🛡️', color: '#636E72',
+    count: 5, tip: '5 профессий',
+    buildings: ['#636E72','#4D5659','#7F8C8D'],
+    heights: [80, 65, 75, 55, 70],
+    lights: ['#636E72','#B2BEC3'],
+    grid: 'col-1 row-1',
+    atmo: 'Дисциплина, форма, защита города'
+  },
+  {
+    id: 'service', name: 'Сервисный\nрайон', emoji: '✂️', color: '#F0932B',
+    count: 4, tip: '4 профессии',
+    buildings: ['#F0932B','#D4811F','#F5B060'],
+    heights: [45, 35, 50, 30],
+    lights: ['#F0932B','#FAD4A0'],
+    grid: 'col-1 row-1',
+    atmo: 'Стильные салоны, зеркала, забота о внешности'
+  },
+  {
+    id: 'tourism', name: 'Туристический\nрайон', emoji: '🗺️', color: '#EB4D4B',
+    count: 4, tip: '4 профессии',
+    buildings: ['#EB4D4B','#CE3D3B','#F07070'],
+    heights: [55, 40, 65, 45],
+    lights: ['#EB4D4B','#F5A0A0'],
+    grid: 'col-2 row-1',
+    atmo: 'Чемоданы, карты мира, запах путешествий'
+  },
+  {
+    id: 'social', name: 'Социальный\nрайон', emoji: '🤝', color: '#4ECDC4',
+    count: 4, tip: '4 профессии',
+    buildings: ['#4ECDC4','#3DBDB4','#7EDED8'],
+    heights: [50, 40, 55, 35],
+    lights: ['#4ECDC4','#A8EDE9'],
+    grid: 'col-1 row-1',
+    atmo: 'Тепло, поддержка, помощь людям'
+  },
+  {
+    id: 'industrial', name: 'Промышленный\nрайон', emoji: '⚙️', color: '#7F8C8D',
+    count: 4, tip: '4 профессии',
+    buildings: ['#7F8C8D','#636E72','#95A5A6'],
+    heights: [75, 60, 85, 55, 70],
+    lights: ['#7F8C8D','#BDC3C7'],
+    grid: 'col-2 row-1',
+    atmo: 'Заводы, станки, точность и мощь'
+  }
+];
+
+// Grid layout: assign col/row spans to fill 6×5 grid nicely
+const layout = [
+  [2,2],[2,2],[1,2],[2,1],[2,2],[1,1], // row visual grouping
+  [2,1],[1,2],[1,1],[1,2],[2,1],
+  [1,2],[2,1],[2,1],
+  [1,1],[1,1],[1,1],[2,1],
+  [1,1],[2,1]
+];
+
+function makeBuildingsSVG(d, w, h) {
+  const count = Math.floor(w / 12);
+  let svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+  const bw = Math.floor(w / count) - 3;
+  for (let i = 0; i < count; i++) {
+    const bh = 20 + Math.random() * (h * 0.6);
+    const x = i * (bw + 3);
+    const y = h - bh;
+    svg += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="2" fill="${d.color}" opacity="0.6"/>`;
+    // Windows
+    const wrows = Math.floor(bh / 12);
+    for (let r = 0; r < wrows - 1; r++) {
+      const wy = y + 6 + r * 12;
+      svg += `<rect x="${x+3}" y="${wy}" width="${Math.max(2,bw-6)}" height="4" rx="1" fill="white" opacity="${Math.random() > 0.4 ? 0.8 : 0.15}"/>`;
+    }
+  }
+  svg += '</svg>';
+  return svg;
+}
+
+function renderMap() {
+  const grid = document.getElementById('cityGrid');
+  const legend = document.getElementById('legend');
+
+  // Предопределённые span'ы для красивого заполнения 6×5
+  const spans = [
+    {col:2,row:2},{col:2,row:2},{col:1,row:1},{col:1,row:1},{col:2,row:2},{col:2,row:1},
+    {col:1,row:1},{col:1,row:1},{col:1,row:2},{col:1,row:1},{col:2,row:1},{col:1,row:2},
+    {col:1,row:1},{col:2,row:1},{col:1,row:1},{col:1,row:1},{col:1,row:1},{col:2,row:1},
+    {col:1,row:1},{col:2,row:2}
+  ];
+
+  districts.forEach((d, i) => {
+    const span = spans[i] || {col:1,row:1};
+    const el = document.createElement('a');
+    el.className = 'district';
+    el.href = `district.html?id=${d.id}`;
+    el.style.cssText = `
+      grid-column: span ${span.col};
+      grid-row: span ${span.row};
+    `;
+
+    // Background gradient
+    const bgEl = document.createElement('div');
+    bgEl.className = 'district__bg';
+    bgEl.style.background = `radial-gradient(ellipse at 30% 30%, ${d.color}40 0%, ${d.color}18 50%, transparent 80%), linear-gradient(135deg, #0d0d2b 0%, #1a1a3e 100%)`;
+
+    // Overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'district__overlay';
+
+    // Buildings via canvas
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = 'position:absolute;inset:0;opacity:0.35;pointer-events:none;';
+    canvas.className = 'district__buildings';
+
+    // City lights
+    const numLights = span.col * span.row * 3 + 2;
+    let lightsHTML = '';
+    for (let l = 0; l < numLights; l++) {
+      const size = 2 + Math.random() * 3;
+      const color = d.lights[Math.floor(Math.random() * d.lights.length)];
+      const dur = 1.5 + Math.random() * 2;
+      const delay = Math.random() * 2;
+      lightsHTML += `<div class="city-light" style="
+        width:${size}px;height:${size}px;
+        background:${color};
+        left:${5 + Math.random() * 88}%;
+        top:${5 + Math.random() * 88}%;
+        --dur:${dur}s; --delay:${delay}s;
+        --min-op:0.2; --max-op:0.9;
+        box-shadow: 0 0 ${size*2}px ${color};
+      "></div>`;
+    }
+
+    // Content
+    const content = document.createElement('div');
+    content.className = 'district__content';
+    content.innerHTML = `
+      <span class="district__emoji">${d.emoji}</span>
+      <div class="district__name">${d.name.replace('\n', '<br>')}</div>
+      <div class="district__count">${d.count} профессий</div>
+    `;
+
+    // Tip
+    const tip = document.createElement('div');
+    tip.className = 'district__tip';
+    tip.textContent = d.atmo;
+
+    // Hover glow border
+    el.style.boxShadow = `0 0 0 0 ${d.color}00`;
+    el.addEventListener('mouseenter', () => {
+      el.style.boxShadow = `0 0 24px ${d.color}40, 0 8px 32px rgba(0,0,0,0.5)`;
+    });
+    el.addEventListener('mouseleave', () => {
+      el.style.boxShadow = '0 0 0 0 transparent';
+    });
+
+    el.appendChild(bgEl);
+    el.appendChild(overlay);
+    el.innerHTML += lightsHTML;
+    el.appendChild(content);
+    el.appendChild(tip);
+
+    grid.appendChild(el);
+
+    // Legend
+    const li = document.createElement('div');
+    li.className = 'legend-item';
+    li.innerHTML = `<div class="legend-dot" style="background:${d.color}"></div>${d.emoji} ${d.name.replace('\n', ' ')}`;
+    legend.appendChild(li);
+  });
+
+  // Draw canvas buildings after layout
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.district').forEach((el, i) => {
+      const d = districts[i];
+      if (!d) return;
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+
+      const cvs = document.createElement('canvas');
+      cvs.width = w; cvs.height = h;
+      cvs.style.cssText = 'position:absolute;inset:0;opacity:0.3;pointer-events:none;';
+      const ctx = cvs.getContext('2d');
+
+      const count = Math.max(4, Math.floor(w / 18));
+      const bw = Math.floor(w / count) - 4;
+      for (let j = 0; j < count; j++) {
+        const bh = h * 0.25 + Math.random() * h * 0.45;
+        const x = j * (bw + 4) + 2;
+        const y = h - bh;
+        ctx.fillStyle = d.color + '99';
+        ctx.beginPath();
+        ctx.roundRect(x, y, bw, bh, 3);
+        ctx.fill();
+
+        // Windows
+        const wrows = Math.floor(bh / 14);
+        for (let r = 0; r < wrows - 1; r++) {
+          const wy = y + 8 + r * 14;
+          ctx.fillStyle = Math.random() > 0.35 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.1)';
+          ctx.beginPath();
+          ctx.roundRect(x + 3, wy, Math.max(2, bw - 6), 5, 1);
+          ctx.fill();
+        }
+      }
+
+      el.appendChild(cvs);
+    });
+  });
+}
+
+renderMap();
+</script>
+</body>
+</html>
