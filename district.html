@@ -91,6 +91,58 @@
       color: #fff;
       margin: 0 0 40px;
     }
+
+    /* ── TABS ── */
+    .prof-tabs {
+      display: flex; gap: 6px; margin: 14px 0 0;
+      border-bottom: 1.5px solid rgba(255,255,255,0.08);
+      padding-bottom: 0;
+    }
+    .prof-tab {
+      background: none; border: none;
+      border-bottom: 2.5px solid transparent;
+      margin-bottom: -1.5px;
+      padding: 7px 12px;
+      color: rgba(255,255,255,0.4); font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      transition: all .2s;
+    }
+    .prof-tab:hover { color: rgba(255,255,255,0.7); }
+    .prof-tab.active { color: #fff; border-bottom-color: var(--accent-color, #A29BFE); }
+
+    /* ── ROADMAP ── */
+    .roadmap { display: flex; flex-direction: column; gap: 10px; padding: 12px 0 4px; }
+    .roadmap-step {
+      background: rgba(255,255,255,0.04);
+      border-left: 3px solid var(--accent-color, #A29BFE);
+      border-radius: 0 10px 10px 0;
+      padding: 10px 14px;
+    }
+    .roadmap-step__age { font-size: 0.72rem; font-weight: 800; color: var(--accent-color, #A29BFE); margin-bottom: 2px; }
+    .roadmap-step__title { font-size: 0.88rem; font-weight: 800; margin-bottom: 6px; }
+    .roadmap-step__list { padding-left: 16px; display: flex; flex-direction: column; gap: 3px; }
+    .roadmap-step__list li { font-size: 0.78rem; color: rgba(255,255,255,0.65); line-height: 1.5; }
+
+    /* ── Q&A ── */
+    .qa-list { display: flex; flex-direction: column; gap: 6px; padding: 12px 0 4px; }
+    .qa-item { border-radius: 10px; overflow: hidden; background: rgba(255,255,255,0.04); }
+    .qa-q {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; cursor: pointer;
+      font-size: 0.82rem; font-weight: 700;
+      transition: background .2s;
+    }
+    .qa-q:hover { background: rgba(255,255,255,0.06); }
+    .qa-arrow { transition: transform .25s; font-size: 0.7rem; opacity: .5; }
+    .qa-item.open .qa-arrow { transform: rotate(180deg); }
+    .qa-a {
+      max-height: 0; overflow: hidden;
+      font-size: 0.82rem; line-height: 1.65;
+      color: rgba(255,255,255,0.65);
+      transition: max-height .35s ease, padding .25s;
+      padding: 0 14px;
+    }
+    .qa-item.open .qa-a { max-height: 300px; padding: 0 14px 12px; }
   </style>
 </head>
 <body>
@@ -129,14 +181,18 @@
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
-      const [res, scenRes, quizRes] = await Promise.all([
+      const [res, scenRes, quizRes, qaRes, rmRes] = await Promise.all([
         fetch('data/professions.json'),
         fetch('data/scenarios.json'),
-        fetch('data/quizzes.json')
+        fetch('data/quizzes.json'),
+        fetch('data/qa.json').catch(()=>({json:()=>({})})),
+        fetch('data/roadmap.json').catch(()=>({json:()=>({})}))
       ]);
       const data = await res.json();
       const scenData = await scenRes.json();
       const quizData = await quizRes.json();
+      const qaData = await qaRes.json();
+      const rmData = await rmRes.json();
       const availableScenarios = Object.keys(scenData.scenarios);
       const availableQuizzes = Object.keys(quizData.quizzes);
       const district = data.districts.find(d => d.id === id);
@@ -165,10 +221,53 @@
             ${prof.skills.map(s => `<span class="skill-tag">⚡ ${s}</span>`).join('')}
           </div>
           <div class="profession-card__story">💬 ${prof.story}</div>
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-            ${availableScenarios.includes(prof.id) ? `<a href="scenario.html?prof=${prof.id}" class="btn btn--primary" style="flex:1;min-width:120px;text-align:center;text-decoration:none;font-size:0.85rem;padding:9px 12px" onclick="event.stopPropagation()">🎮 Попробовать себя</a>` : ''}
-            ${availableQuizzes.includes(prof.id) ? `<a href="quiz.html?prof=${prof.id}&district=${district.id}" class="btn" style="flex:1;min-width:120px;text-align:center;text-decoration:none;font-size:0.85rem;padding:9px 12px;background:#fff;color:${district.color};border:2px solid ${district.color};border-radius:25px;font-weight:700" onclick="event.stopPropagation()">🧠 Проверь знания</a>` : ''}
+
+          <!-- Tabs -->
+          <div class="prof-tabs" id="tabs-${prof.id}">
+            <button class="prof-tab active" onclick="switchTab('${prof.id}','actions',this)">🎮 Попробовать</button>
+            ${rmData[prof.id] ? `<button class="prof-tab" onclick="switchTab('${prof.id}','roadmap',this)">🗺️ Путь</button>` : ''}
+            ${qaData[prof.id] ? `<button class="prof-tab" onclick="switchTab('${prof.id}','qa',this)">💬 Спроси</button>` : ''}
           </div>
+
+          <!-- Tab: actions -->
+          <div class="prof-tab-panel" id="tab-${prof.id}-actions">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 0 4px">
+              ${availableScenarios.includes(prof.id) ? `<a href="scenario.html?prof=${prof.id}" class="btn btn--primary" style="flex:1;min-width:120px;text-align:center;text-decoration:none;font-size:0.85rem;padding:9px 12px" onclick="event.stopPropagation()">🎮 Попробовать себя</a>` : ''}
+              ${availableQuizzes.includes(prof.id) ? `<a href="quiz.html?prof=${prof.id}&district=${district.id}" class="btn" style="flex:1;min-width:120px;text-align:center;text-decoration:none;font-size:0.85rem;padding:9px 12px;background:#fff;color:${district.color};border:2px solid ${district.color};border-radius:25px;font-weight:700" onclick="event.stopPropagation()">🧠 Проверь знания</a>` : ''}
+            </div>
+          </div>
+
+          <!-- Tab: roadmap -->
+          ${rmData[prof.id] ? `
+          <div class="prof-tab-panel" id="tab-${prof.id}-roadmap" style="display:none">
+            <div class="roadmap">
+              ${rmData[prof.id].roadmap.map(step => `
+                <div class="roadmap-step">
+                  <div class="roadmap-step__age">${step.icon} ${step.age}</div>
+                  <div class="roadmap-step__title">${step.title}</div>
+                  <ul class="roadmap-step__list">
+                    ${step.steps.map(s=>`<li>${s}</li>`).join('')}
+                  </ul>
+                </div>
+              `).join('')}
+            </div>
+          </div>` : ''}
+
+          <!-- Tab: Q&A -->
+          ${qaData[prof.id] ? `
+          <div class="prof-tab-panel" id="tab-${prof.id}-qa" style="display:none">
+            <div class="qa-list">
+              ${qaData[prof.id].qa.map((item,qi) => `
+                <div class="qa-item">
+                  <div class="qa-q" onclick="toggleQA(this)">
+                    <span>${item.q}</span><span class="qa-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">${item.a}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>` : ''}
+
           <div class="profession-card__education">📚 Где учиться: <span>${prof.education.join(', ')}</span></div>
         `;
         setTimeout(() => {
@@ -185,6 +284,19 @@
     }
 
     init();
+
+    function switchTab(profId, tab, btn) {
+      document.querySelectorAll(`#tabs-${profId} .prof-tab`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll(`[id^="tab-${profId}-"]`).forEach(p => p.style.display = 'none');
+      const panel = document.getElementById(`tab-${profId}-${tab}`);
+      if (panel) panel.style.display = 'block';
+    }
+
+    function toggleQA(el) {
+      const item = el.parentElement;
+      item.classList.toggle('open');
+    }
   </script>
 </body>
 </html>
