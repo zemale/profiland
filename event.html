@@ -297,6 +297,19 @@ function renderChoices(node){
   setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'end'}), 100);
 }
 
+function awardBadge(profId) {
+  const badges = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
+  const newBadges = new Set(JSON.parse(localStorage.getItem('profiland_new_badges') || '[]'));
+  if (!badges.has(profId)) {
+    badges.add(profId);
+    newBadges.add(profId);
+    localStorage.setItem('profiland_badges', JSON.stringify([...badges]));
+    localStorage.setItem('profiland_new_badges', JSON.stringify([...newBadges]));
+    return true;
+  }
+  return false;
+}
+
 function showEnd(node){
   document.getElementById('gameScene').style.display='none';
   const end = document.getElementById('endScreen');
@@ -307,6 +320,27 @@ function showEnd(node){
   const btn = document.getElementById('districtBtn');
   btn.href = `district.html?id=${evData.district}`;
   btn.style.background = evData.color;
+
+  // Award badge for guide's profession
+  const profMap = {
+    'medical_openday': 'doctor',
+    'tech_hackathon': 'programmer',
+    'creative_exhibition': 'artist',
+    'sports_final': 'athlete'
+  };
+  const params = new URLSearchParams(location.search);
+  const evId = params.get('id');
+  const profId = profMap[evId];
+  if (profId) {
+    const isNew = awardBadge(profId);
+    if (isNew) {
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(162,155,254,0.95);color:#fff;padding:12px 20px;border-radius:14px;font-family:Nunito,sans-serif;font-weight:800;font-size:.9rem;z-index:999;animation:fadeIn .3s ease;white-space:nowrap;';
+      toast.textContent = '🏅 Значок получен!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+  }
 }
 
 init();

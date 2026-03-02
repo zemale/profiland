@@ -1,0 +1,842 @@
+{
+  "doctor": {
+    "emoji": "🩺",
+    "name": "Доктор",
+    "color": "#FF6B6B",
+    "task": "Пройди событие «День открытых дверей» в медрайоне",
+    "district": "medical"
+  },
+  "surgeon": {
+    "emoji": "🔪",
+    "name": "Хирург",
+    "color": "#FF6B6B",
+    "task": "Пройди сценарий хирурга и набери 60+ очков",
+    "district": "medical"
+  },
+  "nurse": {
+    "emoji": "💉",
+    "name": "Медсестра",
+    "color": "#FF6B6B",
+    "task": "Пройди квиз по уходу за пациентами",
+    "district": "medical"
+  },
+  "dentist": {
+    "emoji": "🦷",
+    "name": "Стоматолог",
+    "color": "#FF6B6B",
+    "task": "Пройди сценарий стоматолога",
+    "district": "medical"
+  },
+  "pharmacist": {
+    "emoji": "💊",
+    "name": "Фармацевт",
+    "color": "#FF6B6B",
+    "task": "Пройди квиз фармацевта",
+    "district": "medical"
+  },
+  "pediatrician": {
+    "emoji": "👶",
+    "name": "Педиатр",
+    "color": "#FF6B6B",
+    "task": "Пройди сценарий педиатра",
+    "district": "medical"
+  },
+  "psychologist": {
+    "emoji": "🧠",
+    "name": "Психолог",
+    "color": "#4ECDC4",
+    "task": "Пройди сценарий психолога",
+    "district": "social"
+  },
+  "social_worker": {
+    "emoji": "🤲",
+    "name": "Соцработник",
+    "color": "#4ECDC4",
+    "task": "Пройди квиз социального работника",
+    "district": "social"
+  },
+  "speech_therapist": {
+    "emoji": "🗣️",
+    "name": "Логопед",
+    "color": "#4ECDC4",
+    "task": "Пройди сценарий логопеда",
+    "district": "social"
+  },
+  "defectologist": {
+    "emoji": "👁️",
+    "name": "Дефектолог",
+    "color": "#4ECDC4",
+    "task": "Пройди квиз дефектолога",
+    "district": "social"
+  },
+  "kindergarten_teacher": {
+    "emoji": "🎈",
+    "name": "Воспитатель",
+    "color": "#4ECDC4",
+    "task": "Пройди сценарий воспитателя",
+    "district": "social"
+  },
+  "kindergarten_teacher2": {
+    "emoji": "🌈",
+    "name": "Воспитатель+",
+    "color": "#4ECDC4",
+    "task": "Пройди квиз воспитателя",
+    "district": "social"
+  },
+  "artist": {
+    "emoji": "🖌️",
+    "name": "Художник",
+    "color": "#FFE66D",
+    "task": "Пройди событие «Выставка молодых»",
+    "district": "creative"
+  },
+  "photographer": {
+    "emoji": "📷",
+    "name": "Фотограф",
+    "color": "#FFE66D",
+    "task": "Пройди сценарий фотографа",
+    "district": "creative"
+  },
+  "sculptor": {
+    "emoji": "🗿",
+    "name": "Скульптор",
+    "color": "#FFE66D",
+    "task": "Пройди квиз скульптора",
+    "district": "creative"
+  },
+  "actor": {
+    "emoji": "🎭",
+    "name": "Актёр",
+    "color": "#FFE66D",
+    "task": "Пройди сценарий актёра",
+    "district": "creative"
+  },
+  "designer": {
+    "emoji": "🖼️",
+    "name": "Дизайнер",
+    "color": "#FFE66D",
+    "task": "Пройди сценарий дизайнера",
+    "district": "creative"
+  },
+  "director": {
+    "emoji": "🏫",
+    "name": "Директор",
+    "color": "#F9CA24",
+    "task": "Пройди квиз директора",
+    "district": "education"
+  },
+  "musician": {
+    "emoji": "🎸",
+    "name": "Музыкант",
+    "color": "#A29BFE",
+    "task": "Пройди сценарий музыканта",
+    "district": "music"
+  },
+  "composer": {
+    "emoji": "🎼",
+    "name": "Композитор",
+    "color": "#A29BFE",
+    "task": "Пройди квиз композитора",
+    "district": "music"
+  },
+  "conductor": {
+    "emoji": "🎹",
+    "name": "Дирижёр",
+    "color": "#A29BFE",
+    "task": "Пройди квиз дирижёра",
+    "district": "music"
+  },
+  "vocalist": {
+    "emoji": "🎤",
+    "name": "Вокалист",
+    "color": "#A29BFE",
+    "task": "Пройди сценарий вокалиста",
+    "district": "music"
+  },
+  "sound_engineer": {
+    "emoji": "🎚️",
+    "name": "Звукорежиссёр",
+    "color": "#A29BFE",
+    "task": "Пройди квиз звукорежиссёра",
+    "district": "music"
+  },
+  "producer": {
+    "emoji": "🎙️",
+    "name": "Продюсер",
+    "color": "#A29BFE",
+    "task": "Пройди квиз продюсера",
+    "district": "music"
+  },
+  "programmer": {
+    "emoji": "💻",
+    "name": "Программист",
+    "color": "#6C5CE7",
+    "task": "Пройди событие «Хакатон по ИИ»",
+    "district": "tech"
+  },
+  "data_analyst": {
+    "emoji": "📊",
+    "name": "Аналитик данных",
+    "color": "#6C5CE7",
+    "task": "Пройди квиз аналитика",
+    "district": "tech"
+  },
+  "engineer": {
+    "emoji": "⚙️",
+    "name": "Инженер",
+    "color": "#6C5CE7",
+    "task": "Пройди сценарий инженера",
+    "district": "tech"
+  },
+  "robotics": {
+    "emoji": "🤖",
+    "name": "Робототехник",
+    "color": "#6C5CE7",
+    "task": "Пройди квиз робототехника",
+    "district": "tech"
+  },
+  "ux_designer": {
+    "emoji": "🖱️",
+    "name": "UX-дизайнер",
+    "color": "#6C5CE7",
+    "task": "Пройди квиз UX-дизайнера",
+    "district": "tech"
+  },
+  "tester": {
+    "emoji": "🔍",
+    "name": "Тестировщик",
+    "color": "#6C5CE7",
+    "task": "Пройди сценарий тестировщика",
+    "district": "tech"
+  },
+  "scientist": {
+    "emoji": "🔬",
+    "name": "Учёный",
+    "color": "#00B894",
+    "task": "Пройди сценарий учёного",
+    "district": "science"
+  },
+  "physicist": {
+    "emoji": "⚛️",
+    "name": "Физик",
+    "color": "#00B894",
+    "task": "Пройди квиз физика",
+    "district": "science"
+  },
+  "chemist": {
+    "emoji": "⚗️",
+    "name": "Химик",
+    "color": "#00B894",
+    "task": "Пройди квиз химика",
+    "district": "science"
+  },
+  "mathematician": {
+    "emoji": "🔢",
+    "name": "Математик",
+    "color": "#00B894",
+    "task": "Пройди квиз математика",
+    "district": "science"
+  },
+  "researcher": {
+    "emoji": "📋",
+    "name": "Исследователь",
+    "color": "#00B894",
+    "task": "Пройди квиз исследователя",
+    "district": "science"
+  },
+  "lab_technician": {
+    "emoji": "🧪",
+    "name": "Лаборант",
+    "color": "#00B894",
+    "task": "Пройди сценарий лаборанта",
+    "district": "science"
+  },
+  "veterinarian": {
+    "emoji": "🐾",
+    "name": "Ветеринар",
+    "color": "#55EFC4",
+    "task": "Пройди сценарий ветеринара",
+    "district": "nature"
+  },
+  "zoologist": {
+    "emoji": "🦁",
+    "name": "Зоолог",
+    "color": "#55EFC4",
+    "task": "Пройди квиз зоолога",
+    "district": "nature"
+  },
+  "botanist": {
+    "emoji": "🌸",
+    "name": "Ботаник",
+    "color": "#55EFC4",
+    "task": "Пройди квиз ботаника",
+    "district": "nature"
+  },
+  "oceanologist": {
+    "emoji": "🌊",
+    "name": "Океанолог",
+    "color": "#55EFC4",
+    "task": "Пройди квиз океанолога",
+    "district": "nature"
+  },
+  "biologist": {
+    "emoji": "🧬",
+    "name": "Биолог",
+    "color": "#55EFC4",
+    "task": "Пройди сценарий биолога",
+    "district": "nature"
+  },
+  "ecologist": {
+    "emoji": "♻️",
+    "name": "Эколог",
+    "color": "#55EFC4",
+    "task": "Пройди сценарий эколога",
+    "district": "nature"
+  },
+  "architect": {
+    "emoji": "🏛️",
+    "name": "Архитектор",
+    "color": "#FDCB6E",
+    "task": "Пройди сценарий архитектора",
+    "district": "construction"
+  },
+  "interior_designer": {
+    "emoji": "🛋️",
+    "name": "Дизайнер интерьера",
+    "color": "#FDCB6E",
+    "task": "Пройди квиз дизайнера интерьера",
+    "district": "construction"
+  },
+  "civil_engineer": {
+    "emoji": "🏗️",
+    "name": "Строитель",
+    "color": "#FDCB6E",
+    "task": "Пройди сценарий строителя",
+    "district": "construction"
+  },
+  "foreman": {
+    "emoji": "👷",
+    "name": "Прораб",
+    "color": "#FDCB6E",
+    "task": "Пройди квиз прораба",
+    "district": "construction"
+  },
+  "estimator": {
+    "emoji": "📐",
+    "name": "Сметчик",
+    "color": "#FDCB6E",
+    "task": "Пройди квиз сметчика",
+    "district": "construction"
+  },
+  "geodesist": {
+    "emoji": "🗺️",
+    "name": "Геодезист",
+    "color": "#FDCB6E",
+    "task": "Пройди квиз геодезиста",
+    "district": "construction"
+  },
+  "manager": {
+    "emoji": "📎",
+    "name": "Менеджер",
+    "color": "#0984E3",
+    "task": "Пройди квиз менеджера",
+    "district": "business"
+  },
+  "accountant": {
+    "emoji": "🧾",
+    "name": "Бухгалтер",
+    "color": "#0984E3",
+    "task": "Пройди квиз бухгалтера",
+    "district": "business"
+  },
+  "entrepreneur": {
+    "emoji": "💡",
+    "name": "Предприниматель",
+    "color": "#0984E3",
+    "task": "Пройди квиз предпринимателя",
+    "district": "business"
+  },
+  "marketer": {
+    "emoji": "📣",
+    "name": "Маркетолог",
+    "color": "#0984E3",
+    "task": "Пройди квиз маркетолога",
+    "district": "business"
+  },
+  "economist": {
+    "emoji": "📈",
+    "name": "Экономист",
+    "color": "#0984E3",
+    "task": "Пройди сценарий экономиста",
+    "district": "business"
+  },
+  "lawyer": {
+    "emoji": "⚖️",
+    "name": "Юрист",
+    "color": "#0984E3",
+    "task": "Пройди сценарий юриста",
+    "district": "business"
+  },
+  "journalist": {
+    "emoji": "📰",
+    "name": "Журналист",
+    "color": "#E17055",
+    "task": "Пройди сценарий журналиста",
+    "district": "media"
+  },
+  "blogger": {
+    "emoji": "📱",
+    "name": "Блогер",
+    "color": "#E17055",
+    "task": "Пройди сценарий блогера",
+    "district": "media"
+  },
+  "pr_specialist": {
+    "emoji": "📣",
+    "name": "PR-специалист",
+    "color": "#E17055",
+    "task": "Пройди квиз PR-специалиста",
+    "district": "media"
+  },
+  "photojournalist": {
+    "emoji": "🗞️",
+    "name": "Фотожурналист",
+    "color": "#E17055",
+    "task": "Пройди квиз фотожурналиста",
+    "district": "media"
+  },
+  "editor": {
+    "emoji": "✏️",
+    "name": "Редактор",
+    "color": "#E17055",
+    "task": "Пройди квиз редактора",
+    "district": "media"
+  },
+  "operator": {
+    "emoji": "🎥",
+    "name": "Оператор",
+    "color": "#E17055",
+    "task": "Пройди квиз оператора",
+    "district": "media"
+  },
+  "cook": {
+    "emoji": "🍳",
+    "name": "Повар",
+    "color": "#FD79A8",
+    "task": "Пройди сценарий повара",
+    "district": "culinary"
+  },
+  "chef": {
+    "emoji": "👨‍🍳",
+    "name": "Шеф-повар",
+    "color": "#FD79A8",
+    "task": "Пройди сценарий шеф-повара",
+    "district": "culinary"
+  },
+  "confectioner": {
+    "emoji": "🍰",
+    "name": "Кондитер",
+    "color": "#FD79A8",
+    "task": "Пройди квиз кондитера",
+    "district": "culinary"
+  },
+  "barista": {
+    "emoji": "☕",
+    "name": "Бариста",
+    "color": "#FD79A8",
+    "task": "Пройди квиз бариста",
+    "district": "culinary"
+  },
+  "sommelier": {
+    "emoji": "🍷",
+    "name": "Сомелье",
+    "color": "#FD79A8",
+    "task": "Пройди квиз сомелье",
+    "district": "culinary"
+  },
+  "food_technologist": {
+    "emoji": "🧫",
+    "name": "Технолог еды",
+    "color": "#FD79A8",
+    "task": "Пройди квиз технолога",
+    "district": "culinary"
+  },
+  "pilot": {
+    "emoji": "✈️",
+    "name": "Пилот",
+    "color": "#74B9FF",
+    "task": "Пройди сценарий пилота",
+    "district": "transport"
+  },
+  "train_driver": {
+    "emoji": "🚂",
+    "name": "Машинист",
+    "color": "#74B9FF",
+    "task": "Пройди квиз машиниста",
+    "district": "transport"
+  },
+  "captain": {
+    "emoji": "🚢",
+    "name": "Капитан",
+    "color": "#74B9FF",
+    "task": "Пройди квиз капитана",
+    "district": "transport"
+  },
+  "dispatcher": {
+    "emoji": "📡",
+    "name": "Диспетчер",
+    "color": "#74B9FF",
+    "task": "Пройди квиз диспетчера",
+    "district": "transport"
+  },
+  "logistician": {
+    "emoji": "📦",
+    "name": "Логист",
+    "color": "#74B9FF",
+    "task": "Пройди квиз логиста",
+    "district": "transport"
+  },
+  "mechanic": {
+    "emoji": "🔧",
+    "name": "Механик",
+    "color": "#74B9FF",
+    "task": "Пройди квиз механика",
+    "district": "transport"
+  },
+  "military_officer": {
+    "emoji": "🎖️",
+    "name": "Военный",
+    "color": "#636E72",
+    "task": "Пройди сценарий военного",
+    "district": "military"
+  },
+  "police_officer": {
+    "emoji": "👮",
+    "name": "Полицейский",
+    "color": "#636E72",
+    "task": "Пройди сценарий полицейского",
+    "district": "military"
+  },
+  "rescuer": {
+    "emoji": "🚁",
+    "name": "Спасатель",
+    "color": "#636E72",
+    "task": "Пройди сценарий спасателя",
+    "district": "military"
+  },
+  "firefighter": {
+    "emoji": "🚒",
+    "name": "Пожарный",
+    "color": "#636E72",
+    "task": "Пройди сценарий пожарного",
+    "district": "military"
+  },
+  "investigator": {
+    "emoji": "🔎",
+    "name": "Следователь",
+    "color": "#636E72",
+    "task": "Пройди квиз следователя",
+    "district": "military"
+  },
+  "customs_officer": {
+    "emoji": "🛃",
+    "name": "Таможенник",
+    "color": "#636E72",
+    "task": "Пройди квиз таможенника",
+    "district": "military"
+  },
+  "athlete": {
+    "emoji": "🏅",
+    "name": "Спортсмен",
+    "color": "#00CEC9",
+    "task": "Пройди событие «Финал чемпионата»",
+    "district": "sports"
+  },
+  "coach": {
+    "emoji": "📋",
+    "name": "Тренер",
+    "color": "#00CEC9",
+    "task": "Пройди сценарий тренера",
+    "district": "sports"
+  },
+  "sports_doctor": {
+    "emoji": "🩹",
+    "name": "Спортивный врач",
+    "color": "#00CEC9",
+    "task": "Пройди квиз спортивного врача",
+    "district": "sports"
+  },
+  "referee": {
+    "emoji": "🟡",
+    "name": "Рефери",
+    "color": "#00CEC9",
+    "task": "Пройди квиз рефери",
+    "district": "sports"
+  },
+  "sports_manager": {
+    "emoji": "🏆",
+    "name": "Спортменеджер",
+    "color": "#00CEC9",
+    "task": "Пройди квиз спортменеджера",
+    "district": "sports"
+  },
+  "sports_journalist": {
+    "emoji": "📻",
+    "name": "Спортжурналист",
+    "color": "#00CEC9",
+    "task": "Пройди квиз спортжурналиста",
+    "district": "sports"
+  },
+  "agronomist": {
+    "emoji": "🌾",
+    "name": "Агроном",
+    "color": "#6AB04C",
+    "task": "Пройди сценарий агронома",
+    "district": "agro"
+  },
+  "farmer": {
+    "emoji": "🚜",
+    "name": "Фермер",
+    "color": "#6AB04C",
+    "task": "Пройди квиз фермера",
+    "district": "agro"
+  },
+  "zootechnician": {
+    "emoji": "🐄",
+    "name": "Зоотехник",
+    "color": "#6AB04C",
+    "task": "Пройди квиз зоотехника",
+    "district": "agro"
+  },
+  "gardener": {
+    "emoji": "🌻",
+    "name": "Садовник",
+    "color": "#6AB04C",
+    "task": "Пройди квиз садовника",
+    "district": "agro"
+  },
+  "forester": {
+    "emoji": "🌲",
+    "name": "Лесник",
+    "color": "#6AB04C",
+    "task": "Пройди квиз лесника",
+    "district": "agro"
+  },
+  "meliorator": {
+    "emoji": "💧",
+    "name": "Мелиоратор",
+    "color": "#6AB04C",
+    "task": "Пройди квиз мелиоратора",
+    "district": "agro"
+  },
+  "teacher": {
+    "emoji": "📚",
+    "name": "Учитель",
+    "color": "#F9CA24",
+    "task": "Пройди сценарий учителя",
+    "district": "education"
+  },
+  "school_teacher": {
+    "emoji": "🎓",
+    "name": "Педагог",
+    "color": "#F9CA24",
+    "task": "Пройди квиз педагога",
+    "district": "education"
+  },
+  "methodologist": {
+    "emoji": "📖",
+    "name": "Методист",
+    "color": "#F9CA24",
+    "task": "Пройди квиз методиста",
+    "district": "education"
+  },
+  "curator": {
+    "emoji": "🗝️",
+    "name": "Куратор",
+    "color": "#F9CA24",
+    "task": "Пройди квиз куратора",
+    "district": "education"
+  },
+  "tutor": {
+    "emoji": "✏️",
+    "name": "Тьютор",
+    "color": "#F9CA24",
+    "task": "Пройди квиз тьютора",
+    "district": "education"
+  },
+  "hairdresser": {
+    "emoji": "✂️",
+    "name": "Парикмахер",
+    "color": "#F0932B",
+    "task": "Пройди сценарий парикмахера",
+    "district": "service"
+  },
+  "cosmetologist": {
+    "emoji": "💆",
+    "name": "Косметолог",
+    "color": "#F0932B",
+    "task": "Пройди квиз косметолога",
+    "district": "service"
+  },
+  "nail_technician": {
+    "emoji": "💅",
+    "name": "Мастер ногтей",
+    "color": "#F0932B",
+    "task": "Пройди квиз мастера ногтей",
+    "district": "service"
+  },
+  "stylist": {
+    "emoji": "👗",
+    "name": "Стилист",
+    "color": "#F0932B",
+    "task": "Пройди квиз стилиста",
+    "district": "service"
+  },
+  "makeup_artist": {
+    "emoji": "💄",
+    "name": "Визажист",
+    "color": "#F0932B",
+    "task": "Пройди квиз визажиста",
+    "district": "service"
+  },
+  "massage_therapist": {
+    "emoji": "🙌",
+    "name": "Массажист",
+    "color": "#F0932B",
+    "task": "Пройди квиз массажиста",
+    "district": "service"
+  },
+  "guide": {
+    "emoji": "🗺️",
+    "name": "Гид",
+    "color": "#EB4D4B",
+    "task": "Пройди сценарий гида",
+    "district": "tourism"
+  },
+  "travel_manager": {
+    "emoji": "🧳",
+    "name": "Турменеджер",
+    "color": "#EB4D4B",
+    "task": "Пройди квиз турменеджера",
+    "district": "tourism"
+  },
+  "translator": {
+    "emoji": "🌐",
+    "name": "Переводчик",
+    "color": "#EB4D4B",
+    "task": "Пройди квиз переводчика",
+    "district": "tourism"
+  },
+  "hotelier": {
+    "emoji": "🏨",
+    "name": "Отельер",
+    "color": "#EB4D4B",
+    "task": "Пройди квиз отельера",
+    "district": "tourism"
+  },
+  "tour_guide": {
+    "emoji": "🎒",
+    "name": "Экскурсовод",
+    "color": "#EB4D4B",
+    "task": "Пройди квиз экскурсовода",
+    "district": "tourism"
+  },
+  "locksmith": {
+    "emoji": "🔑",
+    "name": "Слесарь",
+    "color": "#7F8C8D",
+    "task": "Пройди квиз слесаря",
+    "district": "industrial"
+  },
+  "welder": {
+    "emoji": "🔥",
+    "name": "Сварщик",
+    "color": "#7F8C8D",
+    "task": "Пройди квиз сварщика",
+    "district": "industrial"
+  },
+  "electrician": {
+    "emoji": "⚡",
+    "name": "Электрик",
+    "color": "#7F8C8D",
+    "task": "Пройди квиз электрика",
+    "district": "industrial"
+  },
+  "turner": {
+    "emoji": "🌀",
+    "name": "Токарь",
+    "color": "#7F8C8D",
+    "task": "Пройди квиз токаря",
+    "district": "industrial"
+  },
+  "technologist_ind": {
+    "emoji": "🏭",
+    "name": "Технолог",
+    "color": "#7F8C8D",
+    "task": "Пройди квиз технолога",
+    "district": "industrial"
+  },
+  "mechanic_ind": {
+    "emoji": "🪛",
+    "name": "Механик",
+    "color": "#7F8C8D",
+    "task": "Пройди квиз механика",
+    "district": "industrial"
+  },
+  "game_designer": {
+    "emoji": "🕹️",
+    "name": "Геймдизайнер",
+    "color": "#9B59B6",
+    "task": "Пройди сценарий геймдизайнера",
+    "district": "gaming"
+  },
+  "animator": {
+    "emoji": "🎞️",
+    "name": "Аниматор",
+    "color": "#9B59B6",
+    "task": "Пройди квиз аниматора",
+    "district": "gaming"
+  },
+  "game_developer": {
+    "emoji": "👾",
+    "name": "Game Dev",
+    "color": "#9B59B6",
+    "task": "Пройди квиз разработчика игр",
+    "district": "gaming"
+  },
+  "streamer": {
+    "emoji": "📺",
+    "name": "Стример",
+    "color": "#9B59B6",
+    "task": "Пройди квиз стримера",
+    "district": "gaming"
+  },
+  "narrative_designer": {
+    "emoji": "📜",
+    "name": "Нарратив-дизайнер",
+    "color": "#9B59B6",
+    "task": "Пройди квиз нарратив-дизайнера",
+    "district": "gaming"
+  },
+  "cybersecurity": {
+    "emoji": "🛡️",
+    "name": "Кибербезопасность",
+    "color": "#6C5CE7",
+    "task": "Пройди квиз по кибербезопасности",
+    "district": "tech"
+  },
+  "programmer2": {
+    "emoji": "🖥️",
+    "name": "Разработчик",
+    "color": "#6C5CE7",
+    "task": "Пройди квиз разработчика",
+    "district": "tech"
+  },
+  "tutor_special": {
+    "emoji": "🌟",
+    "name": "Тьютор+",
+    "color": "#F9CA24",
+    "task": "Пройди квиз специального тьютора",
+    "district": "education"
+  }
+}
