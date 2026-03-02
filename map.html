@@ -256,6 +256,106 @@
     }
     .card__btn:hover{opacity:.85;transform:scale(1.02);}
 
+    /* ── STORY CHARACTERS ── */
+    .story-char{
+      position:absolute;
+      font-size:1.4rem;
+      cursor:pointer;
+      z-index:40;
+      transition:transform .2s;
+      filter:drop-shadow(0 2px 6px rgba(0,0,0,0.7));
+      animation:char-idle 2s ease-in-out infinite;
+    }
+    .story-char:hover{transform:scale(1.4)!important;animation:none;}
+    @keyframes char-idle{
+      0%,100%{transform:translateY(0) scale(1);}
+      50%{transform:translateY(-4px) scale(1.05);}
+    }
+    /* speech bubble above char */
+    .story-char::before{
+      content:'💬';
+      position:absolute;
+      top:-20px;left:50%;
+      transform:translateX(-50%);
+      font-size:0.8rem;
+      opacity:0;
+      transition:opacity .2s;
+    }
+    .story-char:hover::before{opacity:1;}
+
+    /* ── EVENT MARKERS ── */
+    .event-marker{
+      position:absolute;
+      z-index:60;
+      cursor:pointer;
+      display:flex;flex-direction:column;align-items:center;
+      gap:2px;
+    }
+    .event-badge{
+      background:linear-gradient(135deg,#ff6b35,#f7c59f);
+      color:#fff;font-weight:900;font-size:0.7rem;
+      padding:4px 8px;border-radius:12px;
+      box-shadow:0 0 12px rgba(255,107,53,0.7);
+      animation:event-pulse 1.5s ease-in-out infinite;
+      white-space:nowrap;
+    }
+    @keyframes event-pulse{
+      0%,100%{box-shadow:0 0 8px rgba(255,107,53,0.5);transform:scale(1);}
+      50%{box-shadow:0 0 20px rgba(255,107,53,0.9);transform:scale(1.08);}
+    }
+    .event-pin{
+      width:3px;height:16px;
+      background:rgba(255,107,53,0.7);
+      border-radius:2px;
+    }
+
+    /* ── STORY / EVENT POPUP ── */
+    .popup{
+      position:fixed;
+      z-index:300;
+      background:#0f1a10;
+      border:2px solid rgba(255,255,255,0.12);
+      border-radius:20px;
+      padding:20px 22px;
+      max-width:300px;
+      width:90vw;
+      box-shadow:0 16px 60px rgba(0,0,0,0.8);
+      transform:scale(0.85) translateY(10px);
+      opacity:0;
+      transition:transform .3s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+      pointer-events:none;
+    }
+    .popup.show{
+      transform:scale(1) translateY(0);
+      opacity:1;
+      pointer-events:all;
+    }
+    .popup__close{
+      position:absolute;top:10px;right:12px;
+      background:none;border:none;color:rgba(255,255,255,0.4);
+      font-size:1.1rem;cursor:pointer;
+    }
+    .popup__close:hover{color:#fff;}
+    .popup__emoji{font-size:2.5rem;margin-bottom:8px;display:block;}
+    .popup__name{font-size:1rem;font-weight:900;margin-bottom:4px;}
+    .popup__role{font-size:0.75rem;color:rgba(255,255,255,0.45);margin-bottom:10px;font-weight:700;}
+    .popup__text{font-size:0.85rem;line-height:1.6;color:rgba(255,255,255,0.8);margin-bottom:14px;}
+    .popup__link{
+      display:inline-block;
+      padding:8px 16px;
+      border-radius:10px;
+      font-size:0.82rem;font-weight:800;
+      color:#fff;text-decoration:none;
+      background:linear-gradient(135deg,#6c5ce7,#a29bfe);
+      transition:opacity .2s;
+    }
+    .popup__link:hover{opacity:.85;}
+    /* event popup accent */
+    .popup.event .popup__emoji{font-size:2rem;}
+    .popup.event .popup__link{
+      background:linear-gradient(135deg,#ff6b35,#f7c59f);
+    }
+
     /* mini-map */
     #minimap{
       position:fixed;bottom:20px;right:20px;
@@ -732,6 +832,167 @@ function closeCard(){
 }
 document.getElementById('card-overlay').addEventListener('click', e=>{
   if(e.target === e.currentTarget) closeCard();
+});
+
+// ══════════════════════════════════════════
+// STORY CHARACTERS
+// ══════════════════════════════════════════
+const STORY_CHARS = [
+  {
+    emoji:'👩‍⚕️', name:'Аня', role:'Педиатр', profId:'pediatrician',
+    x:200, y:320,
+    story:'Сегодня утром я приняла 12 пациентов. Один малыш так боялся укола, что я дала ему посмотреть в стетоскоп — и он забыл про страх. Это и есть моя работа: лечить не только тело, но и настроение.'
+  },
+  {
+    emoji:'👨‍💻', name:'Макс', role:'Программист', profId:'programmer',
+    x:680, y:200,
+    story:'Вчера я нашёл баг, который прятался три недели. Оказалось — одна лишняя запятая. Три недели ради одного символа! Но когда всё заработало, я чуть не закричал на весь офис.'
+  },
+  {
+    emoji:'🎨', name:'Лера', role:'Художник', profId:'artist',
+    x:1050, y:220,
+    story:'Я рисую логотипы для маленьких кафе и больших компаний. Сегодня клиент сказал что мой логотип "слишком яркий". Я сделала его ещё ярче — и он влюбился.'
+  },
+  {
+    emoji:'👮', name:'Серёжа', role:'Полицейский', profId:'police_officer',
+    x:1350, y:960,
+    story:'Сегодня помог бабушке найти потерявшуюся кошку. Люди думают полиция только ловит преступников. Но мой день — это 50 маленьких добрых дел и одна серьёзная работа.'
+  },
+  {
+    emoji:'👩‍🍳', name:'Катя', role:'Шеф-повар', profId:'chef',
+    x:580, y:860,
+    story:'Сегодня я придумала новый десерт: шоколад с розовым перцем и малиной. Все на кухне смотрели скептически. Гости съели всё за полчаса. Вот зачем я готовлю.'
+  },
+  {
+    emoji:'🌿', name:'Дима', role:'Эколог', profId:'ecologist',
+    x:220, y:860,
+    story:'Мы взяли пробы воды из реки рядом с заводом. Результаты оказались лучше чем год назад — очистные сооружения работают. Иногда природа восстанавливается быстрее чем мы думаем.'
+  },
+  {
+    emoji:'🎮', name:'Никита', role:'Геймдизайнер', profId:'game_designer',
+    x:1290, y:530,
+    story:'Мы тестировали новый уровень шесть часов подряд. Проблема была в том, что он был слишком лёгким — скучно. Усложнили ровно на 15% и игроки не могли оторваться.'
+  },
+  {
+    emoji:'👷', name:'Таня', role:'Архитектор', profId:'architect',
+    x:1310, y:860,
+    story:'Сегодня согласовали проект детской библиотеки. Я добавила тайную комнату за книжным шкафом — как в сказке. Заказчики сначала удивились, потом попросили такую же для взрослого зала.'
+  },
+  {
+    emoji:'✈️', name:'Влад', role:'Пилот', profId:'pilot',
+    x:1660, y:860,
+    story:'Сегодня мы летели над облаками в 10 000 метров. Внизу — гроза, у нас — тишина и солнце. Пассажиры видели только серое небо. А я видел, как облака светятся изнутри.'
+  },
+  {
+    emoji:'📚', name:'Ольга', role:'Учительница', profId:'teacher',
+    x:1750, y:220,
+    story:'Сегодня ученик, который молчал весь год, вдруг поднял руку и ответил на сложный вопрос правильно. Я не знала плакать или смеяться. Выбрала улыбнуться — он всё понял.'
+  }
+];
+
+// Weekly rotating events (based on week number)
+const ALL_EVENTS = [
+  { districtId:'medical', title:'День открытых дверей', emoji:'🏥', desc:'Врачи проводят бесплатные консультации и рассказывают о профессии школьникам. Приходи — узнай как проходит настоящий осмотр!', link:'district.html?id=medical' },
+  { districtId:'tech', title:'Хакатон по ИИ', emoji:'🤖', desc:'Команды за 24 часа придумывают приложения на основе нейросетей. Победитель едет на стажировку. Даже наблюдать — уже вдохновляет.', link:'district.html?id=tech' },
+  { districtId:'creative', title:'Выставка молодых', emoji:'🎨', desc:'Художники и дизайнеры до 20 лет показывают свои работы. Никаких оценок, только восхищение. И каждый может купить понравившуюся картину.', link:'district.html?id=creative' },
+  { districtId:'sports', title:'Финал чемпионата', emoji:'🏆', desc:'Решающий матч городского чемпионата по футболу. Трибуны полные, напряжение запредельное. Местная команда впервые за 5 лет в финале.', link:'district.html?id=sports' },
+  { districtId:'culinary', title:'Гастрофестиваль', emoji:'🍜', desc:'20 шефов готовят уличную еду со всего мира. Можно попробовать тайский суп, аргентинское асадо и узбекский плов — всё в одном месте.', link:'district.html?id=culinary' },
+  { districtId:'gaming', title:'Инди-игры недели', emoji:'🕹️', desc:'Местные разработчики показывают игры сделанные за месяц. Многие начинали с нуля в 14 лет. Поиграй и оставь отзыв — это реально помогает им.', link:'district.html?id=gaming' },
+  { districtId:'science', title:'Ночь науки', emoji:'🔭', desc:'Учёные открывают лаборатории после полуночи. Жидкий азот, настоящие опыты, телескоп на крыше. Звёзды видно даже из города.', link:'district.html?id=science' },
+  { districtId:'music', title:'Живые концерты', emoji:'🎸', desc:'Студенты консерватории и рок-группы играют на одной сцене. Программа меняется каждый час. Вход свободный.', link:'district.html?id=music' },
+  { districtId:'nature', title:'Субботник в парке', emoji:'🌱', desc:'Экологи зовут всех помочь высадить 200 деревьев. Каждый участник получает паспорт своего дерева — и может следить как оно растёт онлайн.', link:'district.html?id=nature' },
+  { districtId:'tourism', title:'Фестиваль путешествий', emoji:'🌍', desc:'Гиды и путешественники рассказывают о самых необычных местах планеты. Слайд-шоу, карты, артефакты. Один рассказ — и ты уже хочешь в дорогу.', link:'district.html?id=tourism' },
+];
+
+// Pick 4 events for this week
+const weekNum = Math.floor(Date.now() / (1000*60*60*24*7));
+const weekEvents = [0,1,2,3].map(i => ALL_EVENTS[(weekNum + i) % ALL_EVENTS.length]);
+
+// Render story characters
+STORY_CHARS.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'story-char';
+  el.textContent = c.emoji;
+  el.title = c.name + ' · ' + c.role;
+  el.style.cssText = `left:${c.x}px;top:${c.y}px;animation-delay:${Math.random()*2}s`;
+  el.addEventListener('click', e => { e.stopPropagation(); showStoryPopup(c, el); });
+  world.appendChild(el);
+});
+
+// Render event markers
+weekEvents.forEach(ev => {
+  const d = DISTRICTS.find(d => d.id === ev.districtId);
+  if (!d) return;
+  const el = document.createElement('div');
+  el.className = 'event-marker';
+  el.style.cssText = `left:${d.x + d.w/2 - 30}px;top:${d.y - 36}px;`;
+  el.innerHTML = `<div class="event-badge">${ev.emoji} ${ev.title}</div><div class="event-pin"></div>`;
+  el.addEventListener('click', e => { e.stopPropagation(); showEventPopup(ev, el); });
+  world.appendChild(el);
+});
+
+// ── Popup logic ──
+let activePopup = null;
+
+function makePopup(){
+  const p = document.createElement('div');
+  p.className = 'popup';
+  p.innerHTML = `<button class="popup__close" onclick="this.parentElement.remove()">✕</button>
+    <span class="popup__emoji"></span>
+    <div class="popup__name"></div>
+    <div class="popup__role"></div>
+    <div class="popup__text"></div>
+    <a class="popup__link"></a>`;
+  document.body.appendChild(p);
+  return p;
+}
+
+function positionPopup(p, refEl){
+  const rect = refEl.getBoundingClientRect();
+  const pw = 300, ph = 220;
+  let left = rect.right + 12;
+  let top = rect.top - 10;
+  if (left + pw > window.innerWidth - 10) left = rect.left - pw - 12;
+  if (top + ph > window.innerHeight - 10) top = window.innerHeight - ph - 10;
+  if (top < 60) top = 60;
+  p.style.left = left + 'px';
+  p.style.top = top + 'px';
+}
+
+function showStoryPopup(c, refEl){
+  if (activePopup) activePopup.remove();
+  const p = makePopup();
+  p.querySelector('.popup__emoji').textContent = c.emoji;
+  p.querySelector('.popup__name').textContent = c.name;
+  p.querySelector('.popup__role').textContent = c.role;
+  p.querySelector('.popup__text').textContent = '«' + c.story + '»';
+  const lnk = p.querySelector('.popup__link');
+  lnk.textContent = '🎭 Попробовать профессию';
+  lnk.href = `scenario.html?prof=${c.profId}`;
+  positionPopup(p, refEl);
+  requestAnimationFrame(() => p.classList.add('show'));
+  activePopup = p;
+}
+
+function showEventPopup(ev, refEl){
+  if (activePopup) activePopup.remove();
+  const p = makePopup();
+  p.classList.add('event');
+  p.querySelector('.popup__emoji').textContent = ev.emoji;
+  p.querySelector('.popup__name').textContent = ev.title;
+  p.querySelector('.popup__role').textContent = '📅 Событие этой недели';
+  p.querySelector('.popup__text').textContent = ev.desc;
+  const lnk = p.querySelector('.popup__link');
+  lnk.textContent = '→ Перейти в район';
+  lnk.href = ev.link;
+  positionPopup(p, refEl);
+  requestAnimationFrame(() => p.classList.add('show'));
+  activePopup = p;
+}
+
+// Close popup on world click
+wrap.addEventListener('click', () => {
+  if (activePopup) { activePopup.remove(); activePopup = null; }
 });
 
 // ══════════════════════════════════════════
