@@ -520,6 +520,34 @@ function earnBadge(profId) {
   return false;
 }
 
+function checkDistrictTrophy(profId) {
+  try {
+    fetch('data/professions.json').then(r=>r.json()).then(data => {
+      const map = {};
+      data.districts.forEach(d => d.professions.forEach(p => { map[p.id] = {distId: d.id, profs: d.professions.map(x=>x.id)}; }));
+      const info = map[profId];
+      if (!info) return;
+      const badges = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
+      const done = info.profs.filter(id => badges.has(id)).length;
+      if (done >= info.profs.length) {
+        const trophies = new Set(JSON.parse(localStorage.getItem('profiland_trophies') || '[]'));
+        if (!trophies.has(info.distId)) {
+          trophies.add(info.distId);
+          localStorage.setItem('profiland_trophies', JSON.stringify([...trophies]));
+          setTimeout(() => {
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#2d2d4e;border:2px solid gold;border-radius:16px;padding:16px 24px;color:#fff;font-size:1rem;font-weight:700;z-index:9999;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+            t.innerHTML = '🏆 Районный трофей получен! <a href="profile.html" style="color:gold;text-decoration:underline">Смотреть профиль</a>';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 6000);
+          }, 1500);
+        }
+      }
+    });
+  } catch(e) {}
+}
+
+
 function showResult() {
   document.getElementById('gameScene').style.display = 'none';
   const outroScreen = document.getElementById('outroScreen');
@@ -551,6 +579,7 @@ function showResult() {
   // Выдаём значок за прохождение сценария
   const profId = new URLSearchParams(location.search).get('prof');
   const isNew = profId && earnBadge(profId);
+  if (profId) checkDistrictTrophy(profId);
   if (isNew) {
     setTimeout(() => {
       const toast = document.createElement('div');

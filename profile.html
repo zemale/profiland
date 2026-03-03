@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Профиленд — Мой профиль</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);font-family:'Segoe UI',sans-serif;color:#fff;padding-bottom:60px}
+
+/* HEADER */
+.header{display:flex;align-items:center;gap:12px;padding:20px 20px 0;max-width:700px;margin:0 auto}
+.back-btn{color:rgba(255,255,255,.6);text-decoration:none;font-size:.9rem;display:flex;align-items:center;gap:6px;transition:color .2s}
+.back-btn:hover{color:#fff}
+.page-title{font-size:1.3rem;font-weight:900}
+
+/* PASSPORT CARD */
+.passport{max-width:700px;margin:20px auto 0;padding:0 16px}
+.passport-card{background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:24px;position:relative;overflow:hidden}
+.passport-card::before{content:'ПРОФИЛЕНД';position:absolute;right:-10px;top:50%;transform:translateY(-50%) rotate(90deg);font-size:5rem;font-weight:900;color:rgba(255,255,255,.03);letter-spacing:8px;pointer-events:none}
+.passport-top{display:flex;gap:20px;align-items:flex-start;margin-bottom:20px}
+.passport-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#6C5CE7,#A29BFE);display:flex;align-items:center;justify-content:center;font-size:2.4rem;flex-shrink:0;border:3px solid rgba(255,255,255,.2)}
+.passport-info{flex:1}
+.passport-name{font-size:1.4rem;font-weight:900;margin-bottom:4px}
+.passport-level{display:inline-block;background:linear-gradient(135deg,#FDCB6E,#e17055);border-radius:20px;padding:3px 14px;font-size:.78rem;font-weight:800;margin-bottom:8px}
+.passport-xp{font-size:.85rem;color:rgba(255,255,255,.6)}
+.xp-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:6px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,#FDCB6E,#e17055);border-radius:3px;transition:width .8s ease}
+
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-item{background:rgba(255,255,255,.06);border-radius:14px;padding:12px;text-align:center;border:1px solid rgba(255,255,255,.08)}
+.stat-num{font-size:1.6rem;font-weight:900;line-height:1}
+.stat-label{font-size:.65rem;color:rgba(255,255,255,.5);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+
+/* LEVEL BADGES */
+.level-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.level-step{flex:1;min-width:80px;background:rgba(255,255,255,.05);border-radius:12px;padding:8px;text-align:center;border:1px solid rgba(255,255,255,.08);font-size:.7rem;color:rgba(255,255,255,.4)}
+.level-step.active{background:linear-gradient(135deg,rgba(108,92,231,.3),rgba(162,155,254,.2));border-color:#A29BFE;color:#fff}
+.level-step.done{background:rgba(85,239,196,.1);border-color:#55EFC4;color:#55EFC4}
+.level-step__emoji{font-size:1.2rem;display:block;margin-bottom:3px}
+
+/* SECTIONS */
+.section{max-width:700px;margin:20px auto 0;padding:0 16px}
+.section-title{font-size:1rem;font-weight:900;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title span{font-size:.75rem;background:rgba(255,255,255,.1);border-radius:20px;padding:2px 10px;font-weight:600}
+
+/* DISTRICT PROGRESS */
+.district-list{display:flex;flex-direction:column;gap:10px}
+.district-row{background:rgba(255,255,255,.05);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;border:1px solid rgba(255,255,255,.07);position:relative;overflow:hidden}
+.district-row.trophy{border-color:gold}
+.district-row__fill{position:absolute;left:0;top:0;height:100%;opacity:.08;transition:width .6s ease;pointer-events:none}
+.district-row__emoji{font-size:1.4rem;width:32px;flex-shrink:0}
+.district-row__info{flex:1}
+.district-row__name{font-size:.9rem;font-weight:700}
+.district-row__count{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px}
+.district-row__trophy{font-size:1.2rem;margin-left:auto}
+.district-bar-wrap{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:5px;overflow:hidden}
+.district-bar{height:100%;border-radius:2px;transition:width .6s ease}
+
+/* RECENT BADGES */
+.badges-recent{display:flex;gap:10px;flex-wrap:wrap}
+.badge-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:.8rem;text-decoration:none;color:#fff;transition:all .2s}
+.badge-chip:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+.badge-chip__lvl{font-size:.65rem}
+
+/* ACTIVITY */
+.activity-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.activity-item{background:rgba(255,255,255,.05);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,.07)}
+.activity-item__label{font-size:.7rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.activity-item__val{font-size:1.3rem;font-weight:900}
+.activity-item__sub{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px}
+
+/* SHARE BTN */
+.share-btn{display:block;max-width:700px;margin:20px auto 0;padding:0 16px}
+.share-btn button{width:100%;background:linear-gradient(135deg,#6C5CE7,#A29BFE);border:none;color:#fff;padding:14px;border-radius:16px;font-size:1rem;font-weight:800;cursor:pointer;transition:transform .2s}
+.share-btn button:hover{transform:translateY(-2px)}
+
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:repeat(3,1fr)}
+  .activity-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html" class="back-btn">← Главная</a>
+  <div class="page-title">🗂 Мой профиль</div>
+</div>
+
+<!-- PASSPORT -->
+<div class="passport">
+  <div class="passport-card">
+    <div class="passport-top">
+      <div class="passport-avatar" id="avatarEmoji">🔭</div>
+      <div class="passport-info">
+        <div class="passport-name">Исследователь</div>
+        <div class="passport-level" id="levelLabel">Новичок</div>
+        <div class="passport-xp"><span id="xpVal">0</span> XP — до следующего уровня <span id="xpNext">100</span> XP</div>
+        <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-item"><div class="stat-num" id="statProfs">0</div><div class="stat-label">профессий изучено</div></div>
+      <div class="stat-item"><div class="stat-num" id="statBadges">0</div><div class="stat-label">значков</div></div>
+      <div class="stat-item"><div class="stat-num" id="statDistricts">0</div><div class="stat-label">районов открыто</div></div>
+    </div>
+
+    <div class="level-bar" id="levelBar"></div>
+  </div>
+</div>
+
+<!-- ACTIVITY -->
+<div class="section">
+  <div class="section-title">📊 Активность</div>
+  <div class="activity-grid">
+    <div class="activity-item"><div class="activity-item__label">Заданий пройдено</div><div class="activity-item__val" id="actTasks">0</div><div class="activity-item__sub">из 119</div></div>
+    <div class="activity-item"><div class="activity-item__label">Квизов пройдено</div><div class="activity-item__val" id="actQuizzes">0</div><div class="activity-item__sub">из 108</div></div>
+    <div class="activity-item"><div class="activity-item__label">Сценариев пройдено</div><div class="activity-item__val" id="actScenarios">0</div><div class="activity-item__sub">из 120</div></div>
+    <div class="activity-item"><div class="activity-item__label">Районных трофеев</div><div class="activity-item__val" id="actTrophies">0</div><div class="activity-item__sub">из 20</div></div>
+  </div>
+</div>
+
+<!-- DISTRICT PROGRESS -->
+<div class="section">
+  <div class="section-title">🏙️ Районы <span id="districtDoneCount">0/20</span></div>
+  <div class="district-list" id="districtList"></div>
+</div>
+
+<!-- RECENT BADGES -->
+<div class="section">
+  <div class="section-title">🏅 Последние значки <span><a href="badges.html" style="color:#A29BFE;text-decoration:none">все →</a></span></div>
+  <div class="badges-recent" id="recentBadges"></div>
+</div>
+
+<!-- SHARE -->
+<div class="share-btn">
+  <button onclick="shareProfile()">📸 Поделиться профилем</button>
+</div>
+
+<script>
+const LEVELS = [
+  { label:'Новичок', emoji:'🌱', xp:0, next:100 },
+  { label:'Исследователь', emoji:'🔭', xp:100, next:300 },
+  { label:'Знаток', emoji:'📚', xp:300, next:700 },
+  { label:'Эксперт', emoji:'⭐', xp:700, next:1500 },
+  { label:'Профессионал', emoji:'🏆', xp:1500, next:3000 },
+  { label:'Легенда', emoji:'👑', xp:3000, next:Infinity }
+];
+
+const DISTRICTS = [
+  {id:'medical',emoji:'🏥',name:'Медицинский',color:'#FF6B6B',profs:6},
+  {id:'social',emoji:'🤝',name:'Социальный',color:'#4ECDC4',profs:4},
+  {id:'creative',emoji:'🎨',name:'Творческий',color:'#FFE66D',profs:6},
+  {id:'music',emoji:'🎵',name:'Музыкальный',color:'#A29BFE',profs:6},
+  {id:'tech',emoji:'💻',name:'Технологический',color:'#6C5CE7',profs:5},
+  {id:'science',emoji:'🔬',name:'Научный',color:'#00B894',profs:6},
+  {id:'nature',emoji:'🌿',name:'Природы',color:'#55EFC4',profs:7},
+  {id:'construction',emoji:'🏗️',name:'Строительный',color:'#FDCB6E',profs:5},
+  {id:'business',emoji:'💼',name:'Деловой',color:'#0984E3',profs:5},
+  {id:'media',emoji:'📺',name:'Медиа',color:'#E17055',profs:6},
+  {id:'culinary',emoji:'🍳',name:'Кулинарный',color:'#FD79A8',profs:6},
+  {id:'transport',emoji:'✈️',name:'Транспортный',color:'#74B9FF',profs:4},
+  {id:'military',emoji:'🎖️',name:'Силовых структур',color:'#636E72',profs:5},
+  {id:'sports',emoji:'🏆',name:'Спортивный',color:'#00CEC9',profs:6},
+  {id:'agro',emoji:'🌾',name:'Агропромышленный',color:'#6AB04C',profs:4},
+  {id:'education',emoji:'📖',name:'Образовательный',color:'#F9CA24',profs:5},
+  {id:'service',emoji:'✂️',name:'Сервисный',color:'#F0932B',profs:6},
+  {id:'tourism',emoji:'🗺️',name:'Туристический',color:'#EB4D4B',profs:4},
+  {id:'industrial',emoji:'⚙️',name:'Промышленный',color:'#7F8C8D',profs:8},
+  {id:'gaming',emoji:'🎮',name:'Игровой',color:'#9B59B6',profs:6}
+];
+
+function calcXP() {
+  const badges = JSON.parse(localStorage.getItem('profiland_badges') || '[]');
+  const taskBadges = JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
+  const quizBadges = JSON.parse(localStorage.getItem('profiland_quiz_badges') || '[]');
+  const scenBadges = JSON.parse(localStorage.getItem('profiland_scenario_badges') || '[]');
+
+  let xp = 0;
+  // 10 XP за каждый уникальный значок (любым способом)
+  xp += badges.length * 10;
+  // Бонус за уровень задания
+  Object.values(taskBadges).forEach(lvl => {
+    if (lvl === 'gold') xp += 20;
+    else if (lvl === 'silver') xp += 10;
+    else xp += 5;
+  });
+  return xp;
+}
+
+function getLevel(xp) {
+  let lvl = LEVELS[0];
+  for (const l of LEVELS) { if (xp >= l.xp) lvl = l; }
+  return lvl;
+}
+
+function render() {
+  // Data sources
+  const badges = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
+  const taskBadges = JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
+  const districtTrophies = new Set(JSON.parse(localStorage.getItem('profiland_trophies') || '[]'));
+
+  // XP + level
+  const xp = calcXP();
+  const lvl = getLevel(xp);
+  const lvlIdx = LEVELS.indexOf(lvl);
+  const nextLvl = LEVELS[lvlIdx + 1];
+  const xpInLevel = xp - lvl.xp;
+  const xpNeeded = nextLvl ? nextLvl.xp - lvl.xp : 1;
+  const pct = nextLvl ? Math.min(100, Math.round(xpInLevel / xpNeeded * 100)) : 100;
+
+  document.getElementById('avatarEmoji').textContent = lvl.emoji;
+  document.getElementById('levelLabel').textContent = lvl.label;
+  document.getElementById('xpVal').textContent = xp;
+  document.getElementById('xpNext').textContent = nextLvl ? nextLvl.xp - xp : 0;
+  document.getElementById('xpFill').style.width = pct + '%';
+
+  // Stats
+  const openDistricts = new Set([...badges].map(id => {
+    const d = DISTRICTS.find(d => (d.profIds || []).includes(id));
+    return d ? d.id : null;
+  }).filter(Boolean));
+
+  document.getElementById('statProfs').textContent = badges.size;
+  document.getElementById('statBadges').textContent = badges.size;
+  document.getElementById('statDistricts').textContent = districtTrophies.size;
+
+  // Level bar
+  const bar = document.getElementById('levelBar');
+  bar.innerHTML = '';
+  LEVELS.forEach((l, i) => {
+    const el = document.createElement('div');
+    el.className = 'level-step' + (i < lvlIdx ? ' done' : i === lvlIdx ? ' active' : '');
+    el.innerHTML = `<span class="level-step__emoji">${l.emoji}</span>${l.label}`;
+    bar.appendChild(el);
+  });
+
+  // Activity
+  document.getElementById('actTasks').textContent = Object.keys(taskBadges).length;
+  document.getElementById('actQuizzes').textContent = JSON.parse(localStorage.getItem('profiland_quiz_done') || '[]').length;
+  document.getElementById('actScenarios').textContent = JSON.parse(localStorage.getItem('profiland_scenario_done') || '[]').length;
+  document.getElementById('actTrophies').textContent = districtTrophies.size;
+
+  // District list
+  const list = document.getElementById('districtList');
+  list.innerHTML = '';
+  let doneCount = 0;
+  DISTRICTS.forEach(d => {
+    // Count how many professions in this district have a badge
+    const profCount = d.profs;
+    // We approximate by checking task badges for district
+    const hasTrophy = districtTrophies.has(d.id);
+    if (hasTrophy) doneCount++;
+
+    // Count badges earned for this district (approximate from task badges)
+    const earnedInDistrict = [...badges].filter(b => {
+      const tl = JSON.parse(localStorage.getItem('profiland_district_map') || '{}');
+      return tl[b] === d.id;
+    }).length;
+
+    const row = document.createElement('div');
+    row.className = 'district-row' + (hasTrophy ? ' trophy' : '');
+    const barPct = Math.min(100, Math.round(earnedInDistrict / profCount * 100));
+    row.innerHTML = `
+      <div class="district-row__fill" style="width:${barPct}%;background:${d.color}"></div>
+      <div class="district-row__emoji">${d.emoji}</div>
+      <div class="district-row__info">
+        <div class="district-row__name">${d.name} район</div>
+        <div class="district-row__count">${earnedInDistrict} из ${profCount} профессий изучено</div>
+        <div class="district-bar-wrap"><div class="district-bar" style="width:${barPct}%;background:${d.color}"></div></div>
+      </div>
+      ${hasTrophy ? '<div class="district-row__trophy" title="Районный трофей">🏆</div>' : ''}
+    `;
+    row.addEventListener('click', () => location.href = 'district.html?id=' + d.id);
+    list.appendChild(row);
+  });
+  document.getElementById('districtDoneCount').textContent = doneCount + '/20';
+
+  // Recent badges (last 6)
+  const recentEl = document.getElementById('recentBadges');
+  recentEl.innerHTML = '';
+  const badgesArr = [...badges].slice(-6).reverse();
+  if (badgesArr.length === 0) {
+    recentEl.innerHTML = '<div style="color:rgba(255,255,255,.4);font-size:.85rem">Пока нет значков — пройди задание или квиз!</div>';
+  } else {
+    badgesArr.forEach(id => {
+      const lvlIcon = taskBadges[id] === 'gold' ? '🥇' : taskBadges[id] === 'silver' ? '🥈' : taskBadges[id] === 'bronze' ? '🥉' : '';
+      const chip = document.createElement('a');
+      chip.className = 'badge-chip';
+      chip.href = 'badges.html';
+      chip.innerHTML = `<span>${id}</span>${lvlIcon ? `<span class="badge-chip__lvl">${lvlIcon}</span>` : ''}`;
+      recentEl.appendChild(chip);
+    });
+  }
+}
+
+async function loadDistrictMap() {
+  // Build district→professions map from professions.json
+  try {
+    const res = await fetch('data/professions.json');
+    const data = await res.json();
+    const map = {};
+    data.districts.forEach(d => {
+      d.professions.forEach(p => { map[p.id] = d.id; });
+    });
+    localStorage.setItem('profiland_district_map', JSON.stringify(map));
+
+    // Now recalculate district progress with real data
+    const badges = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
+    DISTRICTS.forEach(d => {
+      const earned = [...badges].filter(b => map[b] === d.id).length;
+      const el = document.querySelector(`[data-district="${d.id}"]`);
+      if (el) el.textContent = earned + ' из ' + d.profs + ' профессий изучено';
+    });
+  } catch(e) {}
+}
+
+function shareProfile() {
+  const xp = calcXP();
+  const badges = JSON.parse(localStorage.getItem('profiland_badges') || '[]').length;
+  const text = `🎮 Мой профиль в Профиленде!\n⭐ ${xp} XP\n🏅 ${badges} значков\n\nhttps://zemale.github.io/profiland/`;
+  if (navigator.share) {
+    navigator.share({ title: 'Мой Профиленд', text });
+  } else {
+    navigator.clipboard.writeText(text).then(() => alert('Скопировано в буфер!'));
+  }
+}
+
+render();
+loadDistrictMap().then(render);
+</script>
+</body>
+</html>
