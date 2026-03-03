@@ -239,14 +239,23 @@ function showOutro() {
 
 function earnBadge(profId, level) {
   try {
+    // Сохраняем уровень значка (bronze/silver/gold)
     const stored = JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
     const levels = { bronze: 1, silver: 2, gold: 3 };
     const existing = stored[profId];
-    if (!existing || levels[level] > levels[existing]) {
+    const isUpgrade = !existing || levels[level] > levels[existing];
+    if (isUpgrade) {
       stored[profId] = level;
       localStorage.setItem('profiland_task_badges', JSON.stringify(stored));
-      return true;
     }
+    // Также добавляем в общий список значков (который читает badges.html)
+    const earned = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
+    const isNew = !earned.has(profId);
+    if (isNew) {
+      earned.add(profId);
+      localStorage.setItem('profiland_badges', JSON.stringify([...earned]));
+    }
+    return isNew || isUpgrade;
   } catch(e) {}
   return false;
 }

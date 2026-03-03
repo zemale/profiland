@@ -189,6 +189,7 @@ const CHALLENGES = [
 let allBadges = {};
 let earned = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
 let newBadges = new Set(JSON.parse(localStorage.getItem('profiland_new_badges') || '[]'));
+let taskLevels = JSON.parse(localStorage.getItem('profiland_task_badges') || '{}'); // bronze/silver/gold
 let activeFilter = 'all';
 let challengeIdx = parseInt(localStorage.getItem('profiland_challenge_idx') || '0');
 
@@ -308,9 +309,12 @@ function renderBadges() {
       const item = document.createElement('div');
       item.className = `badge-item ${isEarned ? 'earned' : 'locked'}`;
       item.style.borderColor = isEarned ? color + '50' : '';
+      const lvl = taskLevels[b.id];
+      const lvlEmoji = lvl === 'gold' ? '🥇' : lvl === 'silver' ? '🥈' : lvl === 'bronze' ? '🥉' : '';
       item.innerHTML = `
         <div class="badge-item__emoji">${b.emoji}</div>
         <div class="badge-item__name">${b.name}</div>
+        ${lvlEmoji ? `<div style="font-size:.75rem;margin-top:2px">${lvlEmoji}</div>` : ''}
         ${!isEarned ? '<span class="badge-item__lock">🔒</span>' : ''}
         ${isNew ? '<div class="badge-item__new"></div>' : ''}
       `;
