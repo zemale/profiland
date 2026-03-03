@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Профиленд — Задание</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);font-family:'Segoe UI',sans-serif;color:#fff;display:flex;flex-direction:column}
+  #loadScreen{flex:1;display:flex;align-items:center;justify-content:center;font-size:1.2rem;opacity:.7}
+  #errorScreen{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:32px}
+
+  /* INTRO */
+  #introScreen{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;gap:20px}
+  .intro-avatar{font-size:5rem;animation:float 3s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  .intro-title{font-size:1.6rem;font-weight:900}
+  .intro-bubble{background:rgba(255,255,255,.1);border-radius:20px;padding:20px 24px;font-size:1rem;line-height:1.6;max-width:560px;border:1px solid rgba(255,255,255,.15)}
+  .intro-btn{background:linear-gradient(135deg,#6C5CE7,#a29bfe);border:none;color:#fff;padding:14px 40px;border-radius:30px;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform .2s,box-shadow .2s}
+  .intro-btn:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(108,92,231,.5)}
+
+  /* GAME */
+  #gameScreen{flex:1;display:none;flex-direction:column;max-width:700px;margin:0 auto;width:100%;padding:16px}
+  .prog-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-bottom:20px}
+  .prog-fill{height:100%;border-radius:3px;transition:width .5s ease;background:linear-gradient(90deg,#6C5CE7,#A29BFE)}
+  .step-label{font-size:.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:16px}
+
+  .specialist-row{display:flex;gap:16px;align-items:flex-start;margin-bottom:24px}
+  .spec-avatar{font-size:3rem;flex-shrink:0;background:rgba(255,255,255,.08);border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.15)}
+  .spec-bubble{background:rgba(255,255,255,.08);border-radius:0 16px 16px 16px;padding:14px 18px;font-size:.95rem;line-height:1.6;flex:1;border:1px solid rgba(255,255,255,.1);position:relative}
+  .spec-bubble::before{content:'';position:absolute;left:-8px;top:16px;border:8px solid transparent;border-right-color:rgba(255,255,255,.08)}
+
+  .situation-box{background:rgba(255,255,255,.05);border-radius:16px;padding:16px 20px;font-size:1rem;line-height:1.6;margin-bottom:20px;border-left:3px solid #6C5CE7}
+
+  .choices{display:flex;flex-direction:column;gap:10px}
+  .choice-btn{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 18px;color:#fff;font-size:.92rem;line-height:1.5;cursor:pointer;text-align:left;transition:all .2s;font-family:inherit}
+  .choice-btn:hover:not(:disabled){background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.35);transform:translateX(4px)}
+  .choice-btn:disabled{cursor:default}
+  .choice-btn.good{background:rgba(85,239,196,.15);border-color:#55EFC4;color:#55EFC4}
+  .choice-btn.ok{background:rgba(253,203,110,.15);border-color:#FDCB6E;color:#FDCB6E}
+  .choice-btn.bad{background:rgba(255,107,107,.15);border-color:#FF6B6B;color:#FF6B6B}
+
+  .reaction-box{margin-top:16px;padding:14px 18px;border-radius:12px;background:rgba(255,255,255,.06);font-size:.9rem;line-height:1.6;display:none;border-left:3px solid #A29BFE}
+  .next-btn{margin-top:16px;width:100%;background:linear-gradient(135deg,#6C5CE7,#A29BFE);border:none;color:#fff;padding:13px;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;transition:transform .2s;display:none}
+  .next-btn:hover{transform:translateY(-2px)}
+
+  /* OUTRO */
+  #outroScreen{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;gap:18px}
+  .outro-badge{font-size:5rem;animation:pop .5s cubic-bezier(.175,.885,.32,1.275)}
+  @keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+  .outro-title{font-size:1.8rem;font-weight:900}
+  .outro-score{font-size:1rem;opacity:.7}
+  .outro-bubble{background:rgba(255,255,255,.08);border-radius:20px;padding:20px 24px;max-width:540px;font-size:.95rem;line-height:1.6;border:1px solid rgba(255,255,255,.12)}
+  .outro-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  .outro-btns a,.outro-btns button{padding:12px 24px;border-radius:25px;font-size:.9rem;font-weight:700;cursor:pointer;text-decoration:none;border:none;transition:transform .2s}
+  .outro-btns a:hover,.outro-btns button:hover{transform:translateY(-2px)}
+  .btn-retry{background:rgba(255,255,255,.1);color:#fff;border:2px solid rgba(255,255,255,.3)!important}
+  .btn-back{background:linear-gradient(135deg,#6C5CE7,#A29BFE);color:#fff}
+  .btn-badges{background:linear-gradient(135deg,#FDCB6E,#e17055);color:#fff}
+
+  @media(max-width:480px){
+    .intro-avatar{font-size:3.5rem}
+    .intro-title{font-size:1.3rem}
+    .spec-avatar{width:48px;height:48px;font-size:2rem}
+  }
+</style>
+</head>
+<body>
+
+<div id="loadScreen">⏳ Загружаем задание...</div>
+<div id="errorScreen" style="display:none"></div>
+
+<div id="introScreen">
+  <div class="intro-avatar" id="introAvatar"></div>
+  <div class="intro-title" id="introTitle"></div>
+  <div class="intro-bubble" id="introText"></div>
+  <button class="intro-btn" onclick="startGame()">Начать задание 🚀</button>
+</div>
+
+<div id="gameScreen">
+  <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  <div class="step-label" id="stepLabel"></div>
+  <div class="specialist-row">
+    <div class="spec-avatar" id="specAvatar"></div>
+    <div class="spec-bubble" id="specBubble"></div>
+  </div>
+  <div class="situation-box" id="situationBox"></div>
+  <div class="choices" id="choices"></div>
+  <div class="reaction-box" id="reactionBox"></div>
+  <button class="next-btn" id="nextBtn" onclick="nextStep()">Дальше →</button>
+</div>
+
+<div id="outroScreen">
+  <div class="outro-badge" id="outroBadge"></div>
+  <div class="outro-title" id="outroTitle"></div>
+  <div class="outro-score" id="outroScore"></div>
+  <div class="outro-bubble" id="outroBubble"></div>
+  <div class="outro-btns">
+    <button class="btn-retry" onclick="retryTask()">🔄 Попробовать снова</button>
+    <a class="btn-badges" href="badges.html">🏅 Моя коллекция</a>
+    <a class="btn-back" id="backBtn" href="#">← В район</a>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const profId = params.get('prof');
+const distId = params.get('district');
+
+let taskData = null;
+let currentStep = 0;
+let totalScore = 0;
+
+async function init() {
+  if (!profId) return showError('Профессия не указана');
+  try {
+    const res = await fetch('data/tasks.json');
+    const all = await res.json();
+    taskData = all.tasks[profId];
+    if (!taskData) return showError('Задание для этой профессии пока не готово 🛠️');
+    showIntro();
+  } catch(e) {
+    showError('Не удалось загрузить задание');
+  }
+}
+
+function showError(msg) {
+  document.getElementById('loadScreen').style.display = 'none';
+  const s = document.getElementById('errorScreen');
+  s.style.display = 'flex';
+  s.innerHTML = `<div><div style="font-size:3rem">😔</div><p style="margin:12px 0">${msg}</p><a href="javascript:history.back()" style="color:#A29BFE">← Назад</a></div>`;
+}
+
+function showIntro() {
+  document.getElementById('loadScreen').style.display = 'none';
+  const s = document.getElementById('introScreen');
+  s.style.display = 'flex';
+  document.getElementById('introAvatar').textContent = taskData.avatar;
+  document.getElementById('introTitle').textContent = `Задание: ${taskData.profession}`;
+  document.getElementById('introText').textContent = taskData.intro;
+  if (distId) document.getElementById('backBtn').href = `district.html?id=${distId}`;
+}
+
+function startGame() {
+  document.getElementById('introScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'flex';
+  currentStep = 0;
+  totalScore = 0;
+  renderStep();
+}
+
+function renderStep() {
+  const step = taskData.steps[currentStep];
+  const total = taskData.steps.length;
+  document.getElementById('progFill').style.width = `${(currentStep / total) * 100}%`;
+  document.getElementById('stepLabel').textContent = `Этап ${currentStep + 1} из ${total}`;
+  document.getElementById('specAvatar').textContent = taskData.avatar;
+  document.getElementById('specBubble').textContent = step.specialist_says;
+  document.getElementById('situationBox').textContent = step.situation;
+  document.getElementById('reactionBox').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'none';
+
+  // Shuffle choices
+  const indices = [0,1,2].sort(() => Math.random() - .5);
+  const choices = document.getElementById('choices');
+  choices.innerHTML = '';
+  indices.forEach(i => {
+    const c = step.choices[i];
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c.text;
+    btn.onclick = () => selectChoice(c, btn, choices);
+    choices.appendChild(btn);
+  });
+}
+
+function selectChoice(choice, btn, choicesEl) {
+  // Disable all
+  choicesEl.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+
+  const cls = choice.score >= 9 ? 'good' : choice.score >= 6 ? 'ok' : 'bad';
+  btn.classList.add(cls);
+
+  totalScore += choice.score;
+
+  const reaction = document.getElementById('reactionBox');
+  const step = taskData.steps[currentStep];
+  reaction.textContent = `${taskData.avatar} ${step.reactions[choice.score >= 9 ? 'good' : choice.score >= 6 ? 'ok' : 'bad']}`;
+  reaction.style.display = 'block';
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+function nextStep() {
+  currentStep++;
+  if (currentStep >= taskData.steps.length) {
+    showOutro();
+  } else {
+    renderStep();
+  }
+}
+
+function showOutro() {
+  document.getElementById('gameScreen').style.display = 'none';
+  const s = document.getElementById('outroScreen');
+  s.style.display = 'flex';
+
+  const max = taskData.steps.length * 10;
+  const pct = Math.round(totalScore / max * 100);
+
+  let badgeLevel, badgeEmoji, title, outro;
+  if (pct >= 80) {
+    badgeLevel = 'gold'; badgeEmoji = '🥇'; title = 'Отличная работа!';
+    outro = taskData.outro_good;
+  } else if (pct >= 50) {
+    badgeLevel = 'silver'; badgeEmoji = '🥈'; title = 'Хороший результат!';
+    outro = taskData.outro_ok;
+  } else {
+    badgeLevel = 'bronze'; badgeEmoji = '🥉'; title = 'Неплохое начало!';
+    outro = taskData.outro_bad;
+  }
+
+  document.getElementById('outroBadge').textContent = badgeEmoji;
+  document.getElementById('outroTitle').textContent = title;
+  document.getElementById('outroScore').textContent = `${totalScore} из ${max} очков (${pct}%)`;
+  document.getElementById('outroBubble').textContent = `${taskData.avatar} ${outro}`;
+
+  // Save badge
+  const isNew = earnBadge(profId, badgeLevel);
+  if (isNew) {
+    setTimeout(() => {
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2d2d4e;border:2px solid #FDCB6E;border-radius:16px;padding:14px 22px;color:#fff;font-size:.95rem;font-weight:700;z-index:9999;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+      toast.innerHTML = `${badgeEmoji} Значок получен — <a href="badges.html" style="color:#FDCB6E;text-decoration:underline">смотреть коллекцию</a>`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }, 600);
+  }
+}
+
+function earnBadge(profId, level) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
+    const levels = { bronze: 1, silver: 2, gold: 3 };
+    const existing = stored[profId];
+    if (!existing || levels[level] > levels[existing]) {
+      stored[profId] = level;
+      localStorage.setItem('profiland_task_badges', JSON.stringify(stored));
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+function retryTask() {
+  document.getElementById('outroScreen').style.display = 'none';
+  startGame();
+}
+
+init();
+</script>
+</body>
+</html>

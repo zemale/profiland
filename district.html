@@ -210,14 +210,15 @@
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
-      const [res, scenRes, quizRes, qaRes, rmRes, mythsRes, moviesRes] = await Promise.all([
+      const [res, scenRes, quizRes, qaRes, rmRes, mythsRes, moviesRes, taskRes] = await Promise.all([
         fetch('data/professions.json'),
         fetch('data/scenarios.json'),
         fetch('data/quizzes.json'),
         fetch('data/qa.json').catch(()=>({json:()=>({})})),
         fetch('data/roadmap.json').catch(()=>({json:()=>({})})),
         fetch('data/myths.json').catch(()=>({json:()=>({})})),
-        fetch('data/movies.json').catch(()=>({json:()=>({})}))
+        fetch('data/movies.json').catch(()=>({json:()=>({})})),
+        fetch('data/tasks.json').catch(()=>({json:()=>({tasks:{}})}))
       ]);
       const data = await res.json();
       const scenData = await scenRes.json();
@@ -226,8 +227,10 @@
       const rmData = await rmRes.json();
       const mythsData = await mythsRes.json();
       const moviesData = await moviesRes.json();
+      const taskData = await taskRes.json();
       const availableScenarios = Object.keys(scenData.scenarios);
       const availableQuizzes = Object.keys(quizData.quizzes);
+      const availableTasks = Object.keys(taskData.tasks || {});
       const district = data.districts.find(d => d.id === id);
 
       if (!district) {
@@ -269,6 +272,7 @@
             <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 0 4px">
               ${availableScenarios.includes(prof.id) ? `<a href="scenario.html?prof=${prof.id}" class="btn btn--primary" style="flex:1;min-width:120px;text-align:center;text-decoration:none;font-size:0.85rem;padding:9px 12px" onclick="event.stopPropagation()">🎮 Попробовать себя</a>` : ''}
               ${availableQuizzes.includes(prof.id) ? `<a href="quiz.html?prof=${prof.id}&district=${district.id}" class="btn" style="flex:1;min-width:120px;text-align:center;text-decoration:none;font-size:0.85rem;padding:9px 12px;background:#fff;color:${district.color};border:2px solid ${district.color};border-radius:25px;font-weight:700" onclick="event.stopPropagation()">🧠 Проверь знания</a>` : ''}
+              ${availableTasks.includes(prof.id) ? `<a href="task.html?prof=${prof.id}&district=${district.id}" class="btn" style="flex:1;min-width:120px;text-align:center;text-decoration:none;font-size:0.85rem;padding:9px 12px;background:linear-gradient(135deg,#FDCB6E,#e17055);color:#fff;border-radius:25px;font-weight:700;border:none" onclick="event.stopPropagation()">🎯 Задание</a>` : ''}
             </div>
           </div>
 
