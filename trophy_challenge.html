@@ -361,11 +361,15 @@ async function init() {
 }
 
 function showLocked(count, color) {
+  const allKeys = Object.keys(allBadgesData);
+  const badges = getBadges();
+  const debug = `[debug] district=${districtId}, badges в LS: [${badges.join(', ')}], badges.json загружено: ${allKeys.length} ключей, из них social: ${allKeys.filter(k=>allBadgesData[k]?.district===districtId).join(', ')}`;
   document.getElementById('state-intro').innerHTML = `
     <div class="locked-card">
       <div style="font-size:64px">🔒</div>
       <h2>Район ещё не изучен достаточно</h2>
       <p>Чтобы подать заявку на трофей нужно получить минимум ${REQUIRED_BADGES} значка в этом районе.</p>
+      <p style="font-size:11px;color:rgba(255,255,255,.3);word-break:break-all;margin-top:12px">${debug}</p>
       <div class="lock-progress">
         <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.5);font-size:13px">
           <span>Твои значки в этом районе</span>
