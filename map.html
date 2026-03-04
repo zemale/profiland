@@ -923,9 +923,9 @@ const ALL_EVENTS = [
   { id:'factory_tour', districtId:'industrial', title:'Завод изнутри', emoji:'⚙️', desc:'Инженер Виктор показывает современный завод — роботы, станки с ЧПУ и контроль качества.' },
 ];
 
-// Pick 4 events for this week
+// Show all events on all districts
 const weekNum = Math.floor(Date.now() / (1000*60*60*24*7));
-const weekEvents = [0,1,2,3].map(i => ALL_EVENTS[(weekNum + i) % ALL_EVENTS.length]);
+const weekEvents = ALL_EVENTS;
 
 // Render story characters
 STORY_CHARS.forEach(c => {
