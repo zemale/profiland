@@ -541,10 +541,30 @@ function checkDistrictTrophy(profId) {
             document.body.appendChild(t);
             setTimeout(() => t.remove(), 6000);
           }, 1500);
+          checkSecretUnlock(info.distId);
         }
       }
     });
   } catch(e) {}
+}
+
+function checkSecretUnlock(districtId) {
+  fetch('data/secrets.json').then(r=>r.json()).then(data => {
+    const unlocked = new Set(JSON.parse(localStorage.getItem('profiland_secrets') || '[]'));
+    Object.entries(data.secrets).forEach(([id, s]) => {
+      if(s.unlockDistrict === districtId && !unlocked.has(id)) {
+        unlocked.add(id);
+        localStorage.setItem('profiland_secrets', JSON.stringify([...unlocked]));
+        setTimeout(() => {
+          const t = document.createElement('div');
+          t.style.cssText = 'position:fixed;top:90px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1a0535,#0d0020);border:2px solid #A29BFE;border-radius:16px;padding:16px 24px;color:#fff;font-size:.95rem;font-weight:700;z-index:9999;text-align:center;box-shadow:0 8px 32px rgba(100,60,200,.5);max-width:320px';
+          t.innerHTML = `🔓 Секретная профессия разблокирована!<br><span style="font-size:1.2rem">${s.emoji} ${s.name}</span><br><a href="secrets.html" style="color:#A29BFE;font-size:.8rem">Смотреть →</a>`;
+          document.body.appendChild(t);
+          setTimeout(() => t.remove(), 7000);
+        }, 3000);
+      }
+    });
+  }).catch(()=>{});
 }
 
 

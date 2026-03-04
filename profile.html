@@ -238,6 +238,11 @@ body[data-theme="candy"]{background:linear-gradient(135deg,#2d0030,#6b0050,#001a
       <div class="quick-link__label">Тест профессии</div>
       <div class="quick-link__sub">Что тебе подходит?</div>
     </a>
+    <a href="secrets.html" class="quick-link" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(162,155,254,.1),rgba(253,203,110,.07));border-color:rgba(162,155,254,.3)">
+      <div class="quick-link__emoji">🔓</div>
+      <div class="quick-link__label">Секретные профессии</div>
+      <div class="quick-link__sub" id="secretsCount">Завоюй трофей района, чтобы открыть</div>
+    </a>
   </div>
 </div>
 
@@ -612,6 +617,11 @@ function render() {
   document.getElementById('statMasters').textContent = masters.length;
   document.getElementById('statTrophies').textContent = districtTrophies.size;
   document.getElementById('badgeCount').textContent = badges.size + ' заработано';
+  // Secrets count
+  const unlockedSecrets = JSON.parse(localStorage.getItem('profiland_secrets') || '[]');
+  if(unlockedSecrets.length > 0) {
+    document.getElementById('secretsCount').textContent = `🔓 Открыто ${unlockedSecrets.length} из 7 секретных`;
+  }
 
   // Level bar
   const bar = document.getElementById('levelBar');
