@@ -620,7 +620,7 @@ function render() {
   // Secrets count
   const unlockedSecrets = JSON.parse(localStorage.getItem('profiland_secrets') || '[]');
   if(unlockedSecrets.length > 0) {
-    document.getElementById('secretsCount').textContent = `🔓 Открыто ${unlockedSecrets.length} из 7 секретных`;
+    document.getElementById('secretsCount').textContent = `🔓 Открыто ${unlockedSecrets.length} из 20 секретных`;
   }
 
   // Level bar
