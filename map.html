@@ -662,6 +662,10 @@ ROADS.forEach(r => {
 });
 
 // Districts
+const pinnedDistricts = new Set(JSON.parse(localStorage.getItem('profiland_interests') || '[]'));
+const earnedBadges = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
+const districtMap = JSON.parse(localStorage.getItem('profiland_district_map') || '{}');
+
 DISTRICTS.forEach((d,i) => {
   const el = document.createElement('div');
   el.className = 'district';
@@ -670,6 +674,10 @@ DISTRICTS.forEach((d,i) => {
     background:${d.color}cc;
     z-index:${10+i};
   `;
+  const isPinned = pinnedDistricts.has(d.id);
+  const distBadges = [...earnedBadges].filter(b => districtMap[b]===d.id).length;
+  const pinHTML = isPinned ? `<div style="position:absolute;top:4px;right:6px;font-size:1rem;z-index:5;text-shadow:0 1px 3px rgba(0,0,0,.5)">❤️</div>` : '';
+  const badgeHTML = distBadges > 0 ? `<div style="position:absolute;top:4px;left:6px;font-size:.6rem;background:rgba(0,0,0,.5);color:#fff;border-radius:8px;padding:2px 5px;z-index:5">🏅${distBadges}</div>` : '';
   el.innerHTML = `
     <div class="district__inner">
       <div class="district__ground"></div>
@@ -677,6 +685,7 @@ DISTRICTS.forEach((d,i) => {
         ${d.buildings.map(b=>`<div class="bld">${b}</div>`).join('')}
       </div>
       <div class="district__label">${d.name.replace('\n','<br>')}</div>
+      ${pinHTML}${badgeHTML}
     </div>
   `;
   el.addEventListener('click', ()=>openCard(d));

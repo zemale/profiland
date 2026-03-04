@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Профиленд — Газета</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:#f5f0e8;font-family:'Georgia',serif;color:#1a1a1a;padding-bottom:40px}
+
+/* NEWSPAPER HEADER */
+.paper-header{background:#fff;border-bottom:3px double #1a1a1a;padding:16px 20px 12px;text-align:center;max-width:700px;margin:0 auto}
+.paper-nav{display:flex;align-items:center;justify-content:space-between;max-width:700px;margin:0 auto;padding:0 16px;margin-bottom:8px}
+.paper-nav a{color:#333;text-decoration:none;font-family:'Segoe UI',sans-serif;font-size:.85rem;background:rgba(0,0,0,.07);padding:5px 12px;border-radius:8px}
+.paper-name{font-size:2.2rem;font-weight:900;letter-spacing:2px;font-family:'Georgia',serif;line-height:1}
+.paper-sub{font-size:.75rem;color:#555;margin-top:4px;letter-spacing:3px;text-transform:uppercase;border-top:1px solid #ccc;border-bottom:1px solid #ccc;padding:3px 0;margin:6px 0 0}
+.paper-date{font-size:.72rem;color:#777;margin-top:4px;font-family:'Segoe UI',sans-serif}
+
+/* MAIN GRID */
+.paper-body{max-width:700px;margin:0 auto;padding:16px}
+
+/* HEADLINE */
+.headline{background:#fff;border:1px solid #ddd;border-radius:0;padding:20px;margin-bottom:16px;border-top:4px solid #1a1a1a}
+.headline__kicker{font-size:.7rem;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:8px;font-family:'Segoe UI',sans-serif}
+.headline__title{font-size:1.6rem;font-weight:900;line-height:1.2;margin-bottom:10px}
+.headline__body{font-size:.9rem;color:#333;line-height:1.7}
+.headline__stat{font-size:2.5rem;font-weight:900;color:#1a1a1a;margin:12px 0 4px}
+.headline__stat-label{font-size:.75rem;color:#777;text-transform:uppercase;font-family:'Segoe UI',sans-serif}
+
+/* COLUMNS */
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:500px){.columns{grid-template-columns:1fr}}
+
+.article{background:#fff;border:1px solid #ddd;padding:16px}
+.article__section{font-size:.65rem;text-transform:uppercase;letter-spacing:2px;color:#e17055;margin-bottom:6px;font-family:'Segoe UI',sans-serif;font-weight:700;border-left:3px solid #e17055;padding-left:8px}
+.article__title{font-size:1.05rem;font-weight:700;line-height:1.3;margin-bottom:8px}
+.article__body{font-size:.82rem;color:#444;line-height:1.65}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:500px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-box{background:#fff;border:1px solid #ddd;padding:14px;text-align:center}
+.stat-box__num{font-size:1.8rem;font-weight:900}
+.stat-box__label{font-size:.65rem;color:#777;text-transform:uppercase;letter-spacing:1px;font-family:'Segoe UI',sans-serif;margin-top:4px}
+
+/* SIDEBAR BOX */
+.side-box{background:#1a1a1a;color:#f5f0e8;padding:16px;margin-bottom:16px}
+.side-box__title{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid rgba(255,255,255,.3);padding-bottom:6px;margin-bottom:10px;font-family:'Segoe UI',sans-serif}
+.side-box__item{font-size:.85rem;line-height:1.8}
+.side-box__item a{color:#FDCB6E;text-decoration:none}
+
+/* PROMO */
+.promo-box{background:linear-gradient(135deg,#302b63,#24243e);color:#fff;padding:20px;text-align:center;margin-bottom:16px;border-radius:0}
+.promo-box__title{font-size:1.1rem;font-weight:900;margin-bottom:6px}
+.promo-box__sub{font-size:.82rem;color:rgba(255,255,255,.7);margin-bottom:14px}
+.promo-btn{display:inline-block;background:linear-gradient(135deg,#FDCB6E,#e17055);color:#1a1a1a;padding:10px 24px;font-weight:800;font-size:.85rem;text-decoration:none;border-radius:0;font-family:'Segoe UI',sans-serif}
+
+/* MASTER LIST */
+.master-list{display:flex;flex-direction:column;gap:6px}
+.master-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed #ddd;font-size:.82rem}
+.master-row:last-child{border:none}
+.master-row__star{font-size:1.1rem}
+
+/* ADVICE */
+.advice-box{background:#fff;border:1px solid #ddd;border-left:4px solid #6C5CE7;padding:16px;margin-bottom:16px;font-style:italic}
+.advice-box__author{font-size:.72rem;color:#888;margin-top:8px;font-style:normal;font-family:'Segoe UI',sans-serif}
+
+/* FOOTER */
+.paper-footer{max-width:700px;margin:0 auto;padding:0 16px;text-align:center;font-size:.7rem;color:#888;border-top:2px solid #1a1a1a;padding-top:12px;font-family:'Segoe UI',sans-serif}
+</style>
+</head>
+<body>
+
+<div class="paper-nav">
+  <a href="profile.html">← Профиль</a>
+  <a href="index.html">🏠 Главная</a>
+</div>
+
+<div class="paper-header">
+  <div class="paper-name">🗞 ПРОФИЛЕНД ВЕСТНИК</div>
+  <div class="paper-sub">Еженедельная газета исследователя профессий</div>
+  <div class="paper-date" id="paperDate">Выпуск загружается...</div>
+</div>
+
+<div class="paper-body">
+
+  <!-- HEADLINE -->
+  <div class="headline" id="headlineSection">
+    <div class="headline__kicker">📊 Главная новость недели</div>
+    <div class="headline__title" id="headlineTitle">Загружается...</div>
+    <div class="headline__body" id="headlineBody"></div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-box__num" id="s1">0</div><div class="stat-box__label">Значков всего</div></div>
+    <div class="stat-box"><div class="stat-box__num" id="s2">0</div><div class="stat-box__label">Мастер-значков ⭐</div></div>
+    <div class="stat-box"><div class="stat-box__num" id="s3">0</div><div class="stat-box__label">Трофеев 🏆</div></div>
+    <div class="stat-box"><div class="stat-box__num" id="s4">0</div><div class="stat-box__label">XP опыта</div></div>
+  </div>
+
+  <!-- COLUMNS -->
+  <div class="columns">
+    <div class="article">
+      <div class="article__section">📖 Твои успехи</div>
+      <div class="article__title">Что ты изучил на этой неделе</div>
+      <div class="article__body" id="weeklyAchievements">Начни изучать профессии — и здесь появится твой прогресс!</div>
+    </div>
+    <div class="article">
+      <div class="article__section">🎯 Рекомендации</div>
+      <div class="article__title">Что попробовать на следующей неделе</div>
+      <div class="article__body" id="weeklyRecs">Пройди свой первый сценарий или квиз!</div>
+    </div>
+  </div>
+
+  <!-- MASTERS -->
+  <div class="side-box" id="mastersSection" style="display:none">
+    <div class="side-box__title">⭐ Мои звания мастера</div>
+    <div class="master-list" id="mastersList"></div>
+  </div>
+
+  <!-- SEASONAL -->
+  <div class="article" style="margin-bottom:16px" id="seasonalSection">
+    <div class="article__section" id="seasonKicker">🌍 Сезон</div>
+    <div class="article__title" id="seasonTitle">Сезонные события</div>
+    <div class="article__body" id="seasonBody">Каждый сезон в Профиленде появляются особые задания!</div>
+  </div>
+
+  <!-- PROMO -->
+  <div class="promo-box">
+    <div class="promo-box__title">Открой новые профессии!</div>
+    <div class="promo-box__sub">В Профиленде 120 профессий ждут исследователей. Прояви себя во всех районах!</div>
+    <a href="index.html" class="promo-btn">🗺️ На карту →</a>
+  </div>
+
+  <!-- ADVICE -->
+  <div class="advice-box" id="adviceBox">
+    <div id="adviceText">«Каждая профессия — это целый мир. Не торопись — исследуй глубоко.»</div>
+    <div class="advice-box__author" id="adviceAuthor">— Редакция Профиленд Вестника</div>
+  </div>
+
+</div>
+
+<div class="paper-footer">
+  Профиленд Вестник · Еженедельный личный отчёт · zemale.github.io/profiland
+</div>
+
+<script>
+const ADVICE = [
+  {text:'«Профессия — это не то что ты делаешь. Это то кем ты становишься.»', author:'— Профиленд Вестник'},
+  {text:'«Первый шаг — самый важный. Второй — уже гораздо легче.»', author:'— Мудрость исследователя'},
+  {text:'«Лучший способ узнать профессию — попробовать быть ею хоть один день.»', author:'— Редакция'},
+  {text:'«Ошибки в задании — не провал. Это данные о том как расти.»', author:'— Профиленд Вестник'},
+  {text:'«Каждый значок — маленькая победа над собой.»', author:'— Журналист Профиленда'},
+  {text:'«Тот кто исследует много профессий — находит свою быстрее.»', author:'— Редакция'},
+  {text:'«Мастера не рождаются. Мастера проходят все три испытания.»', author:'— Профиленд Вестник'},
+];
+
+const SEASON_CONTENT = {
+  winter: {k:'❄️ Зимний сезон', t:'Зимний фестиваль профессий', b:'Зима — время изучать профессии которые особенно важны в холодное время года: врач, спасатель, энергетик, технолог. Получай специальные зимние значки!'},
+  spring: {k:'🌸 Весенний сезон', t:'Весна открытий: профессии природы', b:'Весна — лучшее время чтобы исследовать профессии связанные с природой: эколог, агроном, лесник, ветеринар. Природа оживает — и профессии вместе с ней!'},
+  summer: {k:'☀️ Летний сезон', t:'Летние экспедиции по районам', b:'Лето — время путешествий! Особое внимание туристическому, спортивному и природному районам. Гид, тренер, эколог — узнай их секреты этим летом.'},
+  autumn: {k:'🍂 Осенний сезон', t:'Осень знаний: учись и исследуй', b:'Осень — время учёбы. Профессии образовательного и научного районов ждут тебя. Учитель, учёный, исследователь — открой их осенью!'},
+};
+
+const RECS_BY_STATE = [
+  {cond: d => d.badges === 0, text: 'Начни с любого района! Открой карту, выбери профессию которая тебя интересует, и пройди задание. Первый значок — самый важный шаг.'},
+  {cond: d => d.tasks > 0 && d.quizzes === 0, text: 'Ты прошёл задания — теперь попробуй квиз! Проверь знания о профессии и получи дополнительный опыт. Ищи кнопку «🧠 Проверь знания» в карточке профессии.'},
+  {cond: d => d.quizzes > 0 && d.scenarios === 0, text: 'Ты уже прошёл квизы — самое время попробовать сценарий! «🎮 Попробовать себя» перенесёт тебя в день жизни этой профессии.'},
+  {cond: d => d.tasks > 0 && d.quizzes > 0 && d.scenarios > 0 && d.masters === 0, text: 'Ты близко к первому значку Мастера! Найди профессию где прошёл 2 из 3 испытаний — и дожми третье. Мастер-значок заработан!'},
+  {cond: d => d.masters >= 1 && d.trophies === 0, text: 'Отлично — ты уже Мастер профессии! Следующий уровень — Районный трофей. Пройди все профессии одного района и получи его.'},
+  {cond: d => d.trophies >= 1, text: 'Ты завоевал трофей района — продолжай в том же духе! Каждый новый район открывает уникальный трофей. Какой район следующий?'},
+];
+
+function getMasters() {
+  const tasks = JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
+  const quizzes = new Set(JSON.parse(localStorage.getItem('profiland_quiz_done') || '[]'));
+  const scenarios = new Set(JSON.parse(localStorage.getItem('profiland_scenario_done') || '[]'));
+  const stored = new Set(JSON.parse(localStorage.getItem('profiland_master_badges') || '[]'));
+  Object.keys(tasks).forEach(id => { if(quizzes.has(id) && scenarios.has(id)) stored.add(id); });
+  return [...stored];
+}
+
+function calcXP() {
+  const badges = JSON.parse(localStorage.getItem('profiland_badges') || '[]');
+  const taskBadges = JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
+  let xp = badges.length * 10;
+  Object.values(taskBadges).forEach(lvl => { if(lvl==='gold')xp+=20; else if(lvl==='silver')xp+=10; else xp+=5; });
+  return xp;
+}
+
+function render() {
+  const badges = JSON.parse(localStorage.getItem('profiland_badges') || '[]');
+  const taskBadges = JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
+  const quizDone = JSON.parse(localStorage.getItem('profiland_quiz_done') || '[]');
+  const scenDone = JSON.parse(localStorage.getItem('profiland_scenario_done') || '[]');
+  const trophies = JSON.parse(localStorage.getItem('profiland_trophies') || '[]');
+  const masters = getMasters();
+  const xp = calcXP();
+
+  const data = {badges: badges.length, tasks: Object.keys(taskBadges).length, quizzes: quizDone.length, scenarios: scenDone.length, trophies: trophies.length, masters: masters.length, xp};
+
+  // Date
+  const now = new Date();
+  const weekNum = Math.floor(now.getTime() / (1000*60*60*24*7));
+  const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  document.getElementById('paperDate').textContent = `Выпуск №${weekNum % 999 + 1} · ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} · Личный отчёт`;
+
+  // Stats
+  document.getElementById('s1').textContent = badges.length;
+  document.getElementById('s2').textContent = masters.length;
+  document.getElementById('s3').textContent = trophies.length;
+  document.getElementById('s4').textContent = xp;
+
+  // Headline
+  let headTitle, headBody;
+  if(badges.length === 0) {
+    headTitle = 'Добро пожаловать в Профиленд!';
+    headBody = 'Ты только начинаешь своё путешествие по миру профессий. Перед тобой 120 профессий в 20 районах. Выбери любую и начни исследование уже сегодня!';
+  } else if(masters.length > 0) {
+    headTitle = `⭐ Ты Мастер ${masters.length} профессий!`;
+    headBody = `Получить значок Мастера — значит освоить профессию во всех трёх измерениях: попробовать себя в роли, проверить знания и выполнить задание. Это настоящее достижение!`;
+  } else if(xp >= 100) {
+    headTitle = `Исследователь с ${xp} XP покоряет новые вершины!`;
+    headBody = `Ты изучил ${badges.length} профессий и продолжаешь движение. До значка Мастера — пройди квиз + сценарий + задание по одной профессии.`;
+  } else {
+    headTitle = `Первые ${badges.length} профессий исследованы!`;
+    headBody = `Ты делаешь первые шаги в мире карьеры. ${120 - badges.length} профессий ещё ждут тебя. Продолжай!`;
+  }
+  document.getElementById('headlineTitle').textContent = headTitle;
+  document.getElementById('headlineBody').textContent = headBody;
+
+  // Weekly achievements
+  const achiev = document.getElementById('weeklyAchievements');
+  const parts = [];
+  if(data.tasks > 0) parts.push(`Заданий выполнено: ${data.tasks} из 119`);
+  if(data.quizzes > 0) parts.push(`Квизов пройдено: ${data.quizzes} из 119`);
+  if(data.scenarios > 0) parts.push(`Сценариев: ${data.scenarios} из 120`);
+  if(data.trophies > 0) parts.push(`Районных трофеев: ${data.trophies} из 20`);
+  achiev.innerHTML = parts.length > 0 ? parts.map(p=>`<div style="margin-bottom:6px">• ${p}</div>`).join('') : 'Начни изучать профессии — и здесь появится твой прогресс!';
+
+  // Recs
+  const recEl = document.getElementById('weeklyRecs');
+  const rec = RECS_BY_STATE.find(r => r.cond(data));
+  recEl.textContent = rec ? rec.text : 'Продолжай исследовать новые районы! Каждый район — новый мир профессий.';
+
+  // Masters section
+  if(masters.length > 0) {
+    document.getElementById('mastersSection').style.display = 'block';
+    document.getElementById('mastersList').innerHTML = masters.map(id =>
+      `<div class="master-row"><span class="master-row__star">⭐</span><span>${id.replace(/_/g,' ')}</span></div>`
+    ).join('');
+  }
+
+  // Seasonal
+  const month = now.getMonth() + 1;
+  const seasonId = month<=2||month===12?'winter':month<=5?'spring':month<=8?'summer':'autumn';
+  const sc = SEASON_CONTENT[seasonId];
+  document.getElementById('seasonKicker').textContent = sc.k;
+  document.getElementById('seasonTitle').textContent = sc.t;
+  document.getElementById('seasonBody').textContent = sc.b;
+
+  // Advice
+  const adv = ADVICE[weekNum % ADVICE.length];
+  document.getElementById('adviceText').textContent = adv.text;
+  document.getElementById('adviceAuthor').textContent = adv.author;
+}
+
+render();
+</script>
+</body>
+</html>

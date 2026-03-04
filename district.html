@@ -231,6 +231,19 @@
       const availableScenarios = Object.keys(scenData.scenarios);
       const availableQuizzes = Object.keys(quizData.quizzes);
       const availableTasks = Object.keys(taskData.tasks || {});
+      // Master badge check
+      const taskBadgesLS = JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
+      const quizDoneLS = new Set(JSON.parse(localStorage.getItem('profiland_quiz_done') || '[]'));
+      const scenDoneLS = new Set(JSON.parse(localStorage.getItem('profiland_scenario_done') || '[]'));
+      const masterBadgesLS = new Set(JSON.parse(localStorage.getItem('profiland_master_badges') || '[]'));
+      function isMaster(profId) {
+        const isMaster = taskBadgesLS[profId] && quizDoneLS.has(profId) && scenDoneLS.has(profId);
+        if(isMaster && !masterBadgesLS.has(profId)) {
+          masterBadgesLS.add(profId);
+          localStorage.setItem('profiland_master_badges', JSON.stringify([...masterBadgesLS]));
+        }
+        return isMaster;
+      }
       const district = data.districts.find(d => d.id === id);
 
       if (!district) {
@@ -251,7 +264,7 @@
         card.style.borderTopColor = district.color;
         card.style.borderTopWidth = '3px';
         card.innerHTML = `
-          <div class="profession-card__name">${prof.name}</div>
+          <div class="profession-card__name">${prof.name}${isMaster(prof.id) ? ' <span title="Мастер профессии" style="font-size:1rem">⭐</span>' : ''}</div>
           <div class="profession-card__desc">${prof.description}</div>
           <div class="profession-card__skills">
             ${prof.skills.map(s => `<span class="skill-tag">⚡ ${s}</span>`).join('')}
