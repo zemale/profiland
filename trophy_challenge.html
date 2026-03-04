@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Испытание на трофей — Профиленд</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f0c29;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Stars background */
+  .stars {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    overflow: hidden;
+  }
+  .stars::before, .stars::after {
+    content: '';
+    position: absolute;
+    width: 2px; height: 2px;
+    background: white;
+    border-radius: 50%;
+    box-shadow:
+      120px 40px #fff, 250px 80px #fff, 380px 20px #fff, 500px 60px #fff,
+      630px 100px #fff, 760px 30px #fff, 890px 90px #fff, 1020px 50px #fff,
+      1150px 10px #fff, 1280px 70px #fff, 150px 200px #fff, 300px 180px #fff,
+      450px 220px #fff, 600px 160px #fff, 750px 240px #fff, 900px 190px #fff,
+      80px 350px #fff, 220px 320px #fff, 370px 380px #fff, 520px 340px #fff,
+      670px 400px #fff, 820px 360px #fff, 970px 420px #fff, 1100px 300px #fff;
+    animation: twinkle 3s infinite alternate;
+  }
+  .stars::after {
+    width: 1px; height: 1px;
+    box-shadow:
+      60px 130px rgba(255,255,255,.6), 190px 160px rgba(255,255,255,.6),
+      330px 140px rgba(255,255,255,.6), 470px 170px rgba(255,255,255,.6),
+      610px 120px rgba(255,255,255,.6), 750px 150px rgba(255,255,255,.6),
+      890px 130px rgba(255,255,255,.6), 1030px 170px rgba(255,255,255,.6),
+      110px 280px rgba(255,255,255,.6), 260px 260px rgba(255,255,255,.6),
+      410px 290px rgba(255,255,255,.6), 560px 270px rgba(255,255,255,.6),
+      710px 300px rgba(255,255,255,.6), 860px 280px rgba(255,255,255,.6);
+    animation-delay: 1.5s;
+  }
+  @keyframes twinkle { from { opacity: .4; } to { opacity: 1; } }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 680px; margin: 0 auto;
+    padding: 20px 16px 40px;
+  }
+
+  /* Back button */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,.1); color: #fff;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 20px; padding: 8px 16px;
+    font-size: 14px; cursor: pointer; text-decoration: none;
+    transition: background .2s; margin-bottom: 24px;
+  }
+  .back-btn:hover { background: rgba(255,255,255,.2); }
+
+  /* Trophy intro card */
+  .intro-card {
+    background: linear-gradient(135deg, rgba(255,215,0,.15), rgba(255,165,0,.1));
+    border: 2px solid rgba(255,215,0,.4);
+    border-radius: 24px; padding: 32px 24px;
+    text-align: center; margin-bottom: 24px;
+  }
+  .trophy-big { font-size: 72px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .district-name { font-size: 22px; font-weight: 700; color: #FFD700; margin-bottom: 8px; }
+  .district-emoji { font-size: 24px; }
+  .intro-text { color: rgba(255,255,255,.8); font-size: 15px; line-height: 1.6; margin-top: 12px; }
+  .intro-character { font-size: 13px; color: rgba(255,215,0,.8); margin-top: 8px; font-style: italic; }
+  .req-bar {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(0,0,0,.3); border-radius: 12px; padding: 12px 16px; margin-top: 16px;
+  }
+  .req-bar .req-num { font-size: 28px; font-weight: 800; color: #FFD700; }
+  .req-bar .req-label { color: rgba(255,255,255,.7); font-size: 13px; line-height: 1.4; text-align: left; }
+
+  .start-btn {
+    width: 100%; padding: 16px; font-size: 18px; font-weight: 700;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #1a0a00; border: none; border-radius: 16px;
+    cursor: pointer; margin-top: 20px;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(255,165,0,.4);
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(255,165,0,.6); }
+  .start-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+  /* Cooldown */
+  .cooldown-card {
+    background: rgba(255,50,50,.1); border: 2px solid rgba(255,50,50,.3);
+    border-radius: 20px; padding: 24px; text-align: center;
+  }
+  .cooldown-emoji { font-size: 48px; margin-bottom: 12px; }
+  .cooldown-title { font-size: 18px; font-weight: 700; color: #ff6b6b; margin-bottom: 8px; }
+  .cooldown-text { color: rgba(255,255,255,.7); font-size: 14px; }
+  .cooldown-timer { font-size: 36px; font-weight: 800; color: #ff6b6b; margin: 12px 0; font-family: monospace; }
+
+  /* Quiz area */
+  #quiz-area { display: none; }
+  .progress-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .progress-label { color: rgba(255,255,255,.6); font-size: 14px; }
+  .progress-score { color: #FFD700; font-weight: 700; font-size: 16px; }
+  .progress-bar-wrap {
+    background: rgba(255,255,255,.1); border-radius: 8px; height: 8px; margin-bottom: 24px; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%; background: linear-gradient(90deg, #FFD700, #FFA500);
+    border-radius: 8px; transition: width .4s ease;
+  }
+
+  .question-card {
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px; padding: 24px; margin-bottom: 16px;
+  }
+  .question-num { font-size: 12px; color: rgba(255,215,0,.7); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .question-text { font-size: 17px; color: #fff; font-weight: 600; line-height: 1.5; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.15);
+    border-radius: 14px; padding: 14px 18px;
+    color: rgba(255,255,255,.9); font-size: 15px; text-align: left;
+    cursor: pointer; transition: all .2s; line-height: 1.4;
+  }
+  .option-btn:hover:not(:disabled) { background: rgba(255,255,255,.12); border-color: rgba(255,215,0,.4); transform: translateX(4px); }
+  .option-btn.correct { background: rgba(0,200,100,.15); border-color: #00c864; color: #4dff9a; }
+  .option-btn.wrong { background: rgba(255,50,50,.15); border-color: #ff4444; color: #ff8080; }
+  .option-btn:disabled { cursor: default; }
+
+  .hint-box {
+    background: rgba(255,215,0,.08); border: 1px solid rgba(255,215,0,.2);
+    border-radius: 12px; padding: 12px 16px; margin-top: 12px;
+    color: rgba(255,215,0,.9); font-size: 14px; line-height: 1.5;
+    display: none;
+  }
+  .hint-box.show { display: block; animation: fadeIn .3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+  .next-btn {
+    width: 100%; padding: 14px; font-size: 16px; font-weight: 700;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    color: #fff; border: none; border-radius: 14px; cursor: pointer;
+    margin-top: 12px; display: none;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 16px rgba(108,92,231,.4);
+  }
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108,92,231,.6); }
+  .next-btn.show { display: block; }
+
+  /* Result screens */
+  #result-area { display: none; }
+  .result-card {
+    border-radius: 24px; padding: 36px 24px; text-align: center;
+  }
+  .result-card.win {
+    background: linear-gradient(135deg, rgba(255,215,0,.2), rgba(255,165,0,.1));
+    border: 2px solid rgba(255,215,0,.5);
+  }
+  .result-card.lose {
+    background: rgba(255,50,50,.08);
+    border: 2px solid rgba(255,50,50,.25);
+  }
+  .result-emoji { font-size: 80px; margin-bottom: 16px; }
+  .result-title { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
+  .result-card.win .result-title { color: #FFD700; }
+  .result-card.lose .result-title { color: #ff6b6b; }
+  .result-sub { color: rgba(255,255,255,.7); font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
+  .score-display { font-size: 48px; font-weight: 900; margin: 12px 0; }
+  .result-card.win .score-display { color: #FFD700; }
+  .result-card.lose .score-display { color: #ff6b6b; }
+  .score-label { font-size: 14px; color: rgba(255,255,255,.5); margin-bottom: 24px; }
+
+  .result-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .action-btn {
+    padding: 14px; font-size: 16px; font-weight: 700; border: none;
+    border-radius: 14px; cursor: pointer; text-decoration: none;
+    display: block; text-align: center; transition: transform .15s;
+  }
+  .action-btn:hover { transform: translateY(-2px); }
+  .action-btn.gold { background: linear-gradient(135deg, #FFD700, #FFA500); color: #1a0a00; }
+  .action-btn.purple { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: #fff; }
+  .action-btn.outline {
+    background: transparent; color: rgba(255,255,255,.7);
+    border: 1px solid rgba(255,255,255,.2);
+  }
+
+  /* Already has trophy */
+  .already-card {
+    background: linear-gradient(135deg, rgba(255,215,0,.15), rgba(255,165,0,.1));
+    border: 2px solid rgba(255,215,0,.4);
+    border-radius: 24px; padding: 36px 24px; text-align: center;
+  }
+  .already-card h2 { color: #FFD700; font-size: 22px; margin: 16px 0 8px; }
+  .already-card p { color: rgba(255,255,255,.7); font-size: 15px; }
+
+  /* Challenges preview */
+  .challenges-preview {
+    margin-top: 20px; text-align: left;
+  }
+  .challenges-title {
+    color: rgba(255,215,0,.9); font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .challenge-item {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.06); border-radius: 12px;
+    padding: 10px 14px; margin-bottom: 8px;
+  }
+  .challenge-item .c-emoji { font-size: 20px; }
+  .challenge-item .c-text { color: rgba(255,255,255,.8); font-size: 14px; line-height: 1.4; }
+
+  /* Locked state */
+  .locked-card {
+    background: rgba(255,255,255,.05); border: 2px solid rgba(255,255,255,.1);
+    border-radius: 24px; padding: 36px 24px; text-align: center;
+  }
+  .locked-card h2 { color: rgba(255,255,255,.5); font-size: 18px; margin: 16px 0 8px; }
+  .locked-card p { color: rgba(255,255,255,.4); font-size: 14px; }
+  .lock-progress { margin-top: 20px; }
+  .lock-progress-bar {
+    background: rgba(255,255,255,.1); border-radius: 8px; height: 10px; overflow: hidden; margin-top: 8px;
+  }
+  .lock-progress-fill {
+    height: 100%; background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+    border-radius: 8px; transition: width .8s ease;
+  }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<div class="container">
+  <a id="back-link" href="#" class="back-btn">← Назад</a>
+
+  <!-- States: intro / locked / cooldown / already / quiz / result-win / result-lose -->
+  <div id="state-intro"></div>
+  <div id="state-quiz" style="display:none">
+    <div id="progress-header" class="progress-header">
+      <span class="progress-label" id="q-progress">Вопрос 1 из 10</span>
+      <span class="progress-score" id="q-score">0 / 10</span>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="q-bar" style="width:0%"></div></div>
+    <div class="question-card">
+      <div class="question-num" id="q-num">Вопрос 1</div>
+      <div class="question-text" id="q-text"></div>
+    </div>
+    <div class="options" id="q-options"></div>
+    <div class="hint-box" id="q-hint"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Следующий вопрос →</button>
+  </div>
+  <div id="state-result" style="display:none"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const districtId = params.get('district') || '';
+const PASS_SCORE = 7;
+const COOLDOWN_MS = 5 * 60 * 1000; // 5 min
+const TROPHY_KEY = 'profiland_trophies';
+const COOLDOWN_KEY = 'profiland_trophy_cooldown';
+const BADGES_KEY = 'profiland_badges';
+const REQUIRED_BADGES = 3;
+
+let quizData = null;
+let questions = [];
+let currentQ = 0;
+let score = 0;
+let answered = false;
+
+// Color map
+const COLORS = {
+  medical:'#FF6B6B', social:'#4ECDC4', creative:'#FFE66D', music:'#A29BFE',
+  tech:'#6C5CE7', science:'#00B894', nature:'#55EFC4', construction:'#FDCB6E',
+  business:'#0984E3', media:'#E17055', culinary:'#FD79A8', transport:'#74B9FF',
+  military:'#636E72', sports:'#00CEC9', agro:'#6AB04C', education:'#F9CA24',
+  service:'#F0932B', tourism:'#EB4D4B', industrial:'#7F8C8D', gaming:'#9B59B6'
+};
+
+// Back link
+const backLink = document.getElementById('back-link');
+const fromBadges = params.get('from') === 'badges';
+backLink.href = fromBadges ? `badges.html` : `district.html?id=${districtId}`;
+
+function getTrophies() {
+  try { return JSON.parse(localStorage.getItem(TROPHY_KEY) || '[]'); } catch { return []; }
+}
+function getBadges() {
+  try { return JSON.parse(localStorage.getItem(BADGES_KEY) || '[]'); } catch { return []; }
+}
+function getCooldown() {
+  try { return JSON.parse(localStorage.getItem(COOLDOWN_KEY) || '{}'); } catch { return {}; }
+}
+
+function countDistrictBadges(distId, badges) {
+  return badges.filter(b => b && typeof b === 'string' && b.startsWith(distId + '_')).length;
+}
+
+async function init() {
+  const res = await fetch('data/trophy_quizzes.json');
+  const data = await res.json();
+  quizData = data.districts[districtId];
+
+  if (!quizData) {
+    document.getElementById('state-intro').innerHTML = `
+      <div class="locked-card">
+        <div style="font-size:48px">🚧</div>
+        <h2>Район не найден</h2>
+        <p>Попробуй выбрать район заново</p>
+      </div>`;
+    return;
+  }
+
+  const color = COLORS[districtId] || '#FFD700';
+  const trophies = getTrophies();
+  const badges = getBadges();
+  const distBadgeCount = countDistrictBadges(districtId, badges);
+  const hasTrophy = trophies.includes(districtId);
+  const cooldowns = getCooldown();
+  const cooldownUntil = cooldowns[districtId] || 0;
+  const now = Date.now();
+
+  if (hasTrophy) {
+    showAlready(color);
+    return;
+  }
+
+  if (distBadgeCount < REQUIRED_BADGES) {
+    showLocked(distBadgeCount, color);
+    return;
+  }
+
+  if (cooldownUntil > now) {
+    showCooldown(cooldownUntil - now);
+    return;
+  }
+
+  showIntro(distBadgeCount, color);
+}
+
+function showLocked(count, color) {
+  document.getElementById('state-intro').innerHTML = `
+    <div class="locked-card">
+      <div style="font-size:64px">🔒</div>
+      <h2>Район ещё не изучен достаточно</h2>
+      <p>Чтобы подать заявку на трофей нужно получить минимум ${REQUIRED_BADGES} значка в этом районе.</p>
+      <div class="lock-progress">
+        <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.5);font-size:13px">
+          <span>Твои значки в этом районе</span>
+          <span>${count} / ${REQUIRED_BADGES}</span>
+        </div>
+        <div class="lock-progress-bar">
+          <div class="lock-progress-fill" style="width:${Math.min(100, count / REQUIRED_BADGES * 100)}%;background:${color}"></div>
+        </div>
+      </div>
+      <a href="district.html?id=${districtId}" class="action-btn purple" style="margin-top:20px;display:block;padding:14px;border-radius:14px;color:#fff;font-weight:700;text-decoration:none;text-align:center">
+        Изучить профессии района →
+      </a>
+    </div>`;
+}
+
+function showCooldown(msLeft) {
+  const el = document.getElementById('state-intro');
+  el.innerHTML = `
+    <div class="cooldown-card">
+      <div class="cooldown-emoji">⏳</div>
+      <div class="cooldown-title">Ты уже пробовала</div>
+      <div class="cooldown-text">До следующей попытки осталось:</div>
+      <div class="cooldown-timer" id="cd-timer">--:--</div>
+      <div class="cooldown-text">Используй это время чтобы повторить материал 📖</div>
+      <a href="district.html?id=${districtId}" class="action-btn outline" style="margin-top:20px;display:block;padding:12px;border-radius:12px;color:rgba(255,255,255,.7);text-decoration:none;text-align:center;border:1px solid rgba(255,255,255,.2)">
+        Вернуться в район
+      </a>
+    </div>`;
+
+  let remaining = msLeft;
+  const timerEl = document.getElementById('cd-timer');
+  function tick() {
+    if (remaining <= 0) { location.reload(); return; }
+    const m = String(Math.floor(remaining / 60000)).padStart(2, '0');
+    const s = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
+    timerEl.textContent = `${m}:${s}`;
+    remaining -= 1000;
+    setTimeout(tick, 1000);
+  }
+  tick();
+}
+
+function showAlready(color) {
+  const challenges = getDistrictChallenges(districtId);
+  const challengeHtml = challenges.slice(0, 3).map(c => `
+    <div class="challenge-item">
+      <div class="c-emoji">${c.emoji}</div>
+      <div class="c-text">${c.text}</div>
+    </div>`).join('');
+
+  document.getElementById('state-intro').innerHTML = `
+    <div class="already-card">
+      <div style="font-size:72px">🏆</div>
+      <h2>Трофей уже получен!</h2>
+      <p>Ты доказала что знаешь ${quizData.name} как свои пять пальцев ✨</p>
+      ${challengeHtml ? `
+      <div class="challenges-preview">
+        <div class="challenges-title">🎯 Твои активные челленджи</div>
+        ${challengeHtml}
+      </div>` : ''}
+      <a href="district.html?id=${districtId}" class="action-btn gold" style="margin-top:20px;display:block;padding:14px;border-radius:14px;color:#1a0a00;font-weight:700;text-decoration:none;text-align:center">
+        Вернуться в район
+      </a>
+    </div>`;
+}
+
+function showIntro(badgeCount, color) {
+  document.getElementById('state-intro').innerHTML = `
+    <div class="intro-card" style="border-color:${color}40">
+      <div class="trophy-big">🏆</div>
+      <div class="district-emoji">${quizData.emoji}</div>
+      <div class="district-name" style="color:${color}">${quizData.name}</div>
+      <div class="intro-text">${quizData.intro}</div>
+      <div class="intro-character">— говорит ${quizData.character}</div>
+      <div class="req-bar">
+        <div class="req-num" style="color:${color}">${badgeCount}</div>
+        <div class="req-label">значков в этом районе<br><span style="color:rgba(255,255,255,.4);font-size:11px">минимум ${REQUIRED_BADGES} для допуска ✓</span></div>
+        <div style="margin-left:auto;font-size:32px">📖</div>
+      </div>
+      <button class="start-btn" onclick="startQuiz()" style="background:linear-gradient(135deg,${color},${color}cc)">
+        🚀 Начать испытание
+      </button>
+    </div>`;
+}
+
+function startQuiz() {
+  // Shuffle questions and pick 10
+  const shuffled = [...quizData.questions].sort(() => Math.random() - .5);
+  questions = shuffled.slice(0, 10);
+  currentQ = 0;
+  score = 0;
+
+  document.getElementById('state-intro').style.display = 'none';
+  document.getElementById('state-quiz').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const color = COLORS[districtId] || '#FFD700';
+  answered = false;
+
+  document.getElementById('q-progress').textContent = `Вопрос ${currentQ + 1} из ${questions.length}`;
+  document.getElementById('q-score').textContent = `${score} / ${questions.length}`;
+  document.getElementById('q-bar').style.width = `${(currentQ / questions.length) * 100}%`;
+  document.getElementById('q-num').textContent = `Вопрос ${currentQ + 1}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-hint').className = 'hint-box';
+  document.getElementById('q-hint').textContent = '';
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.className = 'next-btn';
+  nextBtn.textContent = currentQ < questions.length - 1 ? 'Следующий вопрос →' : 'Посмотреть результат 🎯';
+
+  // Shuffle options
+  const indices = q.options.map((_, i) => i).sort(() => Math.random() - .5);
+  const optEl = document.getElementById('q-options');
+  optEl.innerHTML = '';
+  indices.forEach(origIdx => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = q.options[origIdx];
+    btn.onclick = () => selectAnswer(btn, origIdx === q.correct, q.hint, color);
+    optEl.appendChild(btn);
+  });
+}
+
+function selectAnswer(clickedBtn, isCorrect, hint, color) {
+  if (answered) return;
+  answered = true;
+
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(btn => {
+    btn.disabled = true;
+    if (btn === clickedBtn) {
+      btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    }
+  });
+
+  if (isCorrect) {
+    score++;
+    document.getElementById('q-score').textContent = `${score} / ${questions.length}`;
+  }
+
+  const hintEl = document.getElementById('q-hint');
+  hintEl.innerHTML = `${isCorrect ? '✅' : '❌'} ${hint}`;
+  hintEl.classList.add('show');
+
+  document.getElementById('next-btn').classList.add('show');
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResult();
+    return;
+  }
+  renderQuestion();
+}
+
+function showResult() {
+  document.getElementById('state-quiz').style.display = 'none';
+  document.getElementById('state-result').style.display = 'block';
+  const passed = score >= PASS_SCORE;
+  const color = COLORS[districtId] || '#FFD700';
+
+  if (passed) {
+    // Save trophy
+    const trophies = getTrophies();
+    if (!trophies.includes(districtId)) {
+      trophies.push(districtId);
+      localStorage.setItem(TROPHY_KEY, JSON.stringify(trophies));
+    }
+    // Unlock secret
+    try {
+      const secrets = JSON.parse(localStorage.getItem('profiland_secrets') || '[]');
+      if (!secrets.includes(districtId)) { secrets.push(districtId); localStorage.setItem('profiland_secrets', JSON.stringify(secrets)); }
+    } catch {}
+    // Save challenges
+    saveDistrictChallenges(districtId);
+
+    const challenges = getDistrictChallenges(districtId);
+    const challengeHtml = challenges.slice(0, 3).map(c => `
+      <div class="challenge-item">
+        <div class="c-emoji">${c.emoji}</div>
+        <div class="c-text">${c.text}</div>
+      </div>`).join('');
+
+    document.getElementById('state-result').innerHTML = `
+      <div class="result-card win">
+        <div class="result-emoji">🏆</div>
+        <div class="result-title" style="color:${color}">Трофей получен!</div>
+        <div class="score-display" style="color:${color}">${score}<span style="font-size:24px;color:rgba(255,255,255,.4)">/${questions.length}</span></div>
+        <div class="score-label">правильных ответов</div>
+        <div class="result-sub">
+          Ты доказала что знаешь <strong style="color:${color}">${quizData.name}</strong> как настоящий эксперт!
+          Район теперь оживает 🌟 Секретная профессия разблокирована!
+        </div>
+        ${challengeHtml ? `
+        <div class="challenges-preview">
+          <div class="challenges-title">🎯 Разблокированы челленджи</div>
+          ${challengeHtml}
+        </div>` : ''}
+        <div class="result-actions">
+          <a href="secrets.html" class="action-btn gold">🔓 Посмотреть секретную профессию</a>
+          <a href="district.html?id=${districtId}" class="action-btn purple">Вернуться в район</a>
+          <a href="profile.html" class="action-btn outline">Мой профиль</a>
+        </div>
+      </div>`;
+  } else {
+    // Set cooldown
+    const cooldowns = getCooldown();
+    cooldowns[districtId] = Date.now() + COOLDOWN_MS;
+    localStorage.setItem(COOLDOWN_KEY, JSON.stringify(cooldowns));
+
+    document.getElementById('state-result').innerHTML = `
+      <div class="result-card lose">
+        <div class="result-emoji">😤</div>
+        <div class="result-title">Не хватило совсем чуть-чуть</div>
+        <div class="score-display">${score}<span style="font-size:24px;color:rgba(255,255,255,.4)">/${questions.length}</span></div>
+        <div class="score-label">правильных ответов (нужно ${PASS_SCORE})</div>
+        <div class="result-sub">
+          Зайди ещё раз через 5 минут — повтори материал и точно сдашь!
+          Ты уже знаешь ${score} вопросов из ${questions.length} 💪
+        </div>
+        <div class="result-actions">
+          <a href="district.html?id=${districtId}" class="action-btn purple">Повторить материал района</a>
+          <a href="badges.html" class="action-btn outline">Мои значки</a>
+        </div>
+      </div>`;
+  }
+}
+
+// District challenges per district
+const DISTRICT_CHALLENGES = {
+  medical: [
+    { emoji: '🩺', text: 'Пройди сценарий за врача, медсестру И психолога' },
+    { emoji: '💊', text: 'Получи золотой значок в Медицинском районе' },
+    { emoji: '🧠', text: 'Изучи все 6 профессий медицинского района' }
+  ],
+  social: [
+    { emoji: '🤝', text: 'Помоги всем профессиям Социального района — пройди все задания' },
+    { emoji: '⭐', text: 'Стань Мастером хотя бы одной профессии в этом районе' },
+    { emoji: '💬', text: 'Прочитай сценарий психолога — что значит слушать?' }
+  ],
+  creative: [
+    { emoji: '🎨', text: 'Пройди задание аниматора, художника И дизайнера' },
+    { emoji: '🖼️', text: 'Получи золотой значок в Творческом районе' },
+    { emoji: '✨', text: 'Стань Мастером хотя бы одной творческой профессии' }
+  ],
+  music: [
+    { emoji: '🎵', text: 'Пройди сценарии певца, хореографа и композитора' },
+    { emoji: '🎶', text: 'Получи золотой значок в Музыкальном районе' },
+    { emoji: '🎤', text: 'Стань Мастером музыканта или певца' }
+  ],
+  tech: [
+    { emoji: '💻', text: 'Пройди задание программиста, хакера И аналитика данных' },
+    { emoji: '🔐', text: 'Получи золотой значок в Технологическом районе' },
+    { emoji: '🤖', text: 'Стань Мастером хотя бы одной IT-профессии' }
+  ],
+  science: [
+    { emoji: '🔬', text: 'Пройди сценарии учёного, климатолога и биолога' },
+    { emoji: '⚗️', text: 'Получи золотой значок в Научном районе' },
+    { emoji: '🧪', text: 'Стань Мастером хотя бы одной научной профессии' }
+  ],
+  nature: [
+    { emoji: '🌿', text: 'Пройди задания эколога, лесничего и зоолога' },
+    { emoji: '🌍', text: 'Получи золотой значок в Районе Природы' },
+    { emoji: '🐾', text: 'Стань Мастером хотя бы одной природной профессии' }
+  ],
+  construction: [
+    { emoji: '🏗️', text: 'Пройди сценарии инженера, реставратора и технолога' },
+    { emoji: '🔧', text: 'Получи золотой значок в Строительном районе' },
+    { emoji: '⚙️', text: 'Стань Мастером хотя бы одной производственной профессии' }
+  ],
+  business: [
+    { emoji: '💼', text: 'Пройди задания предпринимателя, маркетолога И экономиста' },
+    { emoji: '📈', text: 'Получи золотой значок в Деловом районе' },
+    { emoji: '💡', text: 'Стань Мастером хотя бы одной бизнес-профессии' }
+  ],
+  media: [
+    { emoji: '📷', text: 'Пройди сценарии журналиста, фотографа и режиссёра' },
+    { emoji: '📺', text: 'Получи золотой значок в Медиа районе' },
+    { emoji: '🎬', text: 'Стань Мастером хотя бы одной медиа-профессии' }
+  ],
+  culinary: [
+    { emoji: '🍳', text: 'Пройди задания шеф-повара, кондитера И сомелье' },
+    { emoji: '🏅', text: 'Получи золотой значок в Кулинарном районе' },
+    { emoji: '👨‍🍳', text: 'Стань Мастером хотя бы одной кулинарной профессии' }
+  ],
+  transport: [
+    { emoji: '✈️', text: 'Пройди сценарии пилота, диспетчера и лётчика-испытателя' },
+    { emoji: '🚀', text: 'Получи золотой значок в Транспортном районе' },
+    { emoji: '🛬', text: 'Стань Мастером хотя бы одной транспортной профессии' }
+  ],
+  military: [
+    { emoji: '🎖️', text: 'Пройди задания офицера, криптографа и хакера' },
+    { emoji: '🛡️', text: 'Получи золотой значок в Районе Силовых Структур' },
+    { emoji: '🔒', text: 'Стань Мастером хотя бы одной профессии этого района' }
+  ],
+  sports: [
+    { emoji: '🏆', text: 'Пройди сценарии тренера, врача И спортивного журналиста' },
+    { emoji: '🥇', text: 'Получи золотой значок в Спортивном районе' },
+    { emoji: '💪', text: 'Стань Мастером хотя бы одной спортивной профессии' }
+  ],
+  agro: [
+    { emoji: '🌾', text: 'Пройди задания агронома, ветеринара и сити-фермера' },
+    { emoji: '🐄', text: 'Получи золотой значок в Агропромышленном районе' },
+    { emoji: '🌱', text: 'Стань Мастером хотя бы одной аграрной профессии' }
+  ],
+  education: [
+    { emoji: '📖', text: 'Пройди сценарии учителя, нейропедагога И тьютора' },
+    { emoji: '🎓', text: 'Получи золотой значок в Образовательном районе' },
+    { emoji: '🏫', text: 'Стань Мастером хотя бы одной педагогической профессии' }
+  ],
+  service: [
+    { emoji: '✂️', text: 'Пройди задания стилиста, парфюмера И визажиста' },
+    { emoji: '💅', text: 'Получи золотой значок в Сервисном районе' },
+    { emoji: '🌟', text: 'Стань Мастером хотя бы одной сервисной профессии' }
+  ],
+  tourism: [
+    { emoji: '🗺️', text: 'Пройди сценарии гида, этнографа и туроператора' },
+    { emoji: '🌍', text: 'Получи золотой значок в Туристическом районе' },
+    { emoji: '✈️', text: 'Стань Мастером хотя бы одной туристической профессии' }
+  ],
+  industrial: [
+    { emoji: '⚙️', text: 'Пройди задания ядерного инженера, технолога И оператора' },
+    { emoji: '🏭', text: 'Получи золотой значок в Промышленном районе' },
+    { emoji: '🔩', text: 'Стань Мастером хотя бы одной промышленной профессии' }
+  ],
+  gaming: [
+    { emoji: '🎮', text: 'Пройди сценарии геймдизайнера, аниматора И нарративного дизайнера' },
+    { emoji: '🕹️', text: 'Получи золотой значок в Игровом районе' },
+    { emoji: '👾', text: 'Стань Мастером хотя бы одной игровой профессии' }
+  ]
+};
+
+function getDistrictChallenges(distId) {
+  return DISTRICT_CHALLENGES[distId] || [];
+}
+
+function saveDistrictChallenges(distId) {
+  try {
+    const existing = JSON.parse(localStorage.getItem('profiland_challenges') || '{}');
+    if (!existing[distId]) existing[distId] = getDistrictChallenges(distId);
+    localStorage.setItem('profiland_challenges', JSON.stringify(existing));
+  } catch {}
+}
+
+init();
+</script>
+</body>
+</html>

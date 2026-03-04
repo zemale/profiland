@@ -294,11 +294,26 @@ function renderBadges() {
     return;
   }
 
+  const trophies = JSON.parse(localStorage.getItem('profiland_trophies') || '[]');
+
   Object.entries(byDistrict).forEach(([dist, badges]) => {
     const section = document.createElement('div');
     section.style.marginBottom = '28px';
     const color = DISTRICT_COLORS[dist] || '#A29BFE';
-    section.innerHTML = `<div class="section-title" style="color:${color}88">${DISTRICT_EMOJIS[dist]} ${DISTRICT_NAMES[dist]}</div>`;
+    const distBadgeCount = [...earned].filter(id => allBadges[id]?.district === dist).length;
+    const hasTrophy = trophies.includes(dist);
+    const canApply = distBadgeCount >= 3 && !hasTrophy;
+
+    let trophyBtn = '';
+    if (hasTrophy) {
+      trophyBtn = `<a href="trophy_challenge.html?district=${dist}&from=badges" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#1a0a00;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;text-decoration:none;margin-left:8px">🏆 Трофей получен</a>`;
+    } else if (canApply) {
+      trophyBtn = `<a href="trophy_challenge.html?district=${dist}&from=badges" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,215,0,.15);color:#FFD700;border:1px solid rgba(255,215,0,.4);font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;text-decoration:none;margin-left:8px;animation:pulse 2s infinite">🏆 Подать заявку</a>`;
+    } else if (distBadgeCount > 0) {
+      trophyBtn = `<span style="display:inline-flex;align-items:center;gap:4px;color:rgba(255,255,255,.3);font-size:11px;margin-left:8px">🔒 ещё ${3 - distBadgeCount} значка до заявки</span>`;
+    }
+
+    section.innerHTML = `<div class="section-title" style="color:${color}88;display:flex;align-items:center;flex-wrap:wrap;gap:4px">${DISTRICT_EMOJIS[dist]} ${DISTRICT_NAMES[dist]}${trophyBtn}</div>`;
 
     const grid = document.createElement('div');
     grid.className = 'badges-grid';

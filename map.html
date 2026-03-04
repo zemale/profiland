@@ -140,6 +140,16 @@
     .bld:nth-child(2){animation-delay:.5s;font-size:1.3rem;}
     .bld:nth-child(3){animation-delay:1s;}
     .bld:nth-child(4){animation-delay:1.5s;font-size:1.1rem;}
+    .district--alive .district__inner { animation: alive-pulse 3s ease-in-out infinite; }
+    @keyframes alive-pulse {
+      0%,100% { filter: brightness(1); }
+      50% { filter: brightness(1.15) saturate(1.2); }
+    }
+    .district--alive .bld { animation: bld-alive 2s ease-in-out infinite !important; }
+    @keyframes bld-alive {
+      0%,100%{transform:translateY(0) scale(1);}
+      50%{transform:translateY(-4px) scale(1.05);}
+    }
     @keyframes bld-idle{
       0%,100%{transform:translateY(0);}
       50%{transform:translateY(-3px);}
@@ -665,6 +675,18 @@ ROADS.forEach(r => {
 const pinnedDistricts = new Set(JSON.parse(localStorage.getItem('profiland_interests') || '[]'));
 const earnedBadges = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
 const districtMap = JSON.parse(localStorage.getItem('profiland_district_map') || '{}');
+const trophies = JSON.parse(localStorage.getItem('profiland_trophies') || '[]');
+
+// Extra alive buildings per district (shown after trophy)
+const ALIVE_EXTRAS = {
+  medical: ['🌡️','💉'], social: ['🌈','💛'], creative: ['🎭','🌟'],
+  music: ['🎺','🥁'], tech: ['🤖','📱'], science: ['🔭','💡'],
+  nature: ['🦁','🌺'], construction: ['🏆','⚡'], business: ['💰','🎯'],
+  media: ['🎥','📡'], culinary: ['🍰','🍾'], transport: ['🚁','🌟'],
+  military: ['🦅','⚔️'], sports: ['🥇','🎽'], agro: ['🐓','🌻'],
+  education: ['🎓','📝'], service: ['💎','🌸'], tourism: ['🗽','🌍'],
+  industrial: ['💫','🏅'], gaming: ['🕹️','💎']
+};
 
 DISTRICTS.forEach((d,i) => {
   const el = document.createElement('div');
@@ -675,17 +697,25 @@ DISTRICTS.forEach((d,i) => {
     z-index:${10+i};
   `;
   const isPinned = pinnedDistricts.has(d.id);
+  const hasTrophy = trophies.includes(d.id);
   const distBadges = [...earnedBadges].filter(b => districtMap[b]===d.id).length;
   const pinHTML = isPinned ? `<div style="position:absolute;top:4px;right:6px;font-size:1rem;z-index:5;text-shadow:0 1px 3px rgba(0,0,0,.5)">❤️</div>` : '';
   const badgeHTML = distBadges > 0 ? `<div style="position:absolute;top:4px;left:6px;font-size:.6rem;background:rgba(0,0,0,.5);color:#fff;border-radius:8px;padding:2px 5px;z-index:5">🏅${distBadges}</div>` : '';
+  const trophyHTML = hasTrophy ? `<div style="position:absolute;bottom:22px;right:4px;font-size:1rem;z-index:5;animation:bounce .8s ease-in-out infinite;text-shadow:0 2px 6px rgba(255,200,0,.7)">🏆</div>` : '';
+
+  // Alive districts get extra buildings and sparkle effect
+  const extraBuildings = hasTrophy ? (ALIVE_EXTRAS[d.id] || []).map(b=>`<div class="bld" style="animation:bounce .6s ease-in-out infinite">${b}</div>`).join('') : '';
+  if (hasTrophy) { el.classList.add('district--alive'); }
+
   el.innerHTML = `
-    <div class="district__inner">
+    <div class="district__inner" ${hasTrophy ? `style="box-shadow:0 0 20px ${d.color}66,0 0 40px ${d.color}33;border:2px solid ${d.color}88"` : ''}>
       <div class="district__ground"></div>
       <div class="district__buildings">
         ${d.buildings.map(b=>`<div class="bld">${b}</div>`).join('')}
+        ${extraBuildings}
       </div>
       <div class="district__label">${d.name.replace('\n','<br>')}</div>
-      ${pinHTML}${badgeHTML}
+      ${pinHTML}${badgeHTML}${trophyHTML}
     </div>
   `;
   el.addEventListener('click', ()=>openCard(d));

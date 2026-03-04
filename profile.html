@@ -64,6 +64,14 @@ body[data-theme="candy"]{background:linear-gradient(135deg,#2d0030,#6b0050,#001a
 .section-link{margin-left:auto;color:#A29BFE;text-decoration:none;font-size:.8rem;font-weight:600}
 
 /* MASTER BADGES */
+.challenge-card{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,215,0,.15);border-radius:14px;padding:12px 16px;text-decoration:none;transition:background .2s,transform .15s}
+.challenge-card:hover{background:rgba(255,215,0,.08);transform:translateX(4px)}
+.challenge-card.done{border-color:rgba(0,200,100,.3);background:rgba(0,200,100,.06);opacity:.7}
+.challenge-emoji{font-size:1.6rem;flex-shrink:0}
+.challenge-info{flex:1}
+.challenge-text{color:rgba(255,255,255,.85);font-size:.875rem;line-height:1.4}
+.challenge-district{color:rgba(255,215,0,.6);font-size:.75rem;margin-top:3px}
+.challenge-check{font-size:1.2rem;flex-shrink:0}
 .master-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
 .master-card{background:linear-gradient(135deg,rgba(253,203,110,.15),rgba(225,112,85,.1));border:1px solid rgba(253,203,110,.3);border-radius:16px;padding:14px 10px;text-align:center;transition:transform .2s}
 .master-card:hover{transform:translateY(-3px)}
@@ -244,6 +252,15 @@ body[data-theme="candy"]{background:linear-gradient(135deg,#2d0030,#6b0050,#001a
       <div class="quick-link__sub" id="secretsCount">Завоюй трофей района, чтобы открыть</div>
     </a>
   </div>
+</div>
+
+<!-- CHALLENGES -->
+<div class="section" id="challenges-section" style="display:none">
+  <div class="section-title">🎯 Активные челленджи <span id="challengeCount" style="font-size:.75rem;font-weight:500;opacity:.6"></span></div>
+  <div id="challengesGrid" style="display:flex;flex-direction:column;gap:10px"></div>
+  <a href="badges.html" style="display:block;text-align:center;margin-top:12px;color:rgba(255,255,255,.4);font-size:13px;text-decoration:none">
+    Получи ещё значков чтобы открыть заявку на трофей →
+  </a>
 </div>
 
 <!-- MASTER BADGES -->
@@ -704,6 +721,9 @@ function render() {
     }).join('');
   }
 
+  // Challenges
+  renderChallenges(districtTrophies, badges);
+
   // Seasonal banner
   const season = getCurrentSeason();
   if(season) {
@@ -717,6 +737,72 @@ function render() {
         <div>→</div>
       </div>`;
   }
+}
+
+// District challenges (same data as trophy_challenge.html)
+const DISTRICT_CHALLENGES_PROF = {
+  medical:[{e:'🩺',t:'Пройди сценарий за врача, медсестру и психолога',d:'medical'},{e:'💊',t:'Получи золотой значок в Медицинском районе',d:'medical'},{e:'🧠',t:'Изучи все профессии медицинского района',d:'medical'}],
+  social:[{e:'🤝',t:'Пройди все задания Социального района',d:'social'},{e:'⭐',t:'Стань Мастером хотя бы одной профессии',d:'social'}],
+  creative:[{e:'🎨',t:'Пройди задание аниматора, художника и дизайнера',d:'creative'},{e:'✨',t:'Стань Мастером хотя бы одной творческой профессии',d:'creative'}],
+  music:[{e:'🎵',t:'Пройди сценарии певца, хореографа и композитора',d:'music'},{e:'🎤',t:'Стань Мастером музыканта или певца',d:'music'}],
+  tech:[{e:'💻',t:'Пройди задание программиста, хакера и аналитика данных',d:'tech'},{e:'🤖',t:'Стань Мастером хотя бы одной IT-профессии',d:'tech'}],
+  science:[{e:'🔬',t:'Пройди сценарии учёного, климатолога и биолога',d:'science'},{e:'🧪',t:'Стань Мастером хотя бы одной научной профессии',d:'science'}],
+  nature:[{e:'🌿',t:'Пройди задания эколога, лесничего и зоолога',d:'nature'},{e:'🐾',t:'Стань Мастером хотя бы одной природной профессии',d:'nature'}],
+  construction:[{e:'🏗️',t:'Пройди сценарии инженера, реставратора и технолога',d:'construction'},{e:'⚙️',t:'Стань Мастером хотя бы одной профессии',d:'construction'}],
+  business:[{e:'💼',t:'Пройди задания предпринимателя, маркетолога и экономиста',d:'business'},{e:'💡',t:'Стань Мастером хотя бы одной бизнес-профессии',d:'business'}],
+  media:[{e:'📷',t:'Пройди сценарии журналиста, фотографа и режиссёра',d:'media'},{e:'🎬',t:'Стань Мастером хотя бы одной медиа-профессии',d:'media'}],
+  culinary:[{e:'🍳',t:'Пройди задания шеф-повара, кондитера и сомелье',d:'culinary'},{e:'👨‍🍳',t:'Стань Мастером хотя бы одной кулинарной профессии',d:'culinary'}],
+  transport:[{e:'✈️',t:'Пройди сценарии пилота, диспетчера и испытателя',d:'transport'},{e:'🛬',t:'Стань Мастером хотя бы одной транспортной профессии',d:'transport'}],
+  military:[{e:'🎖️',t:'Пройди задания офицера, криптографа и хакера',d:'military'},{e:'🔒',t:'Стань Мастером хотя бы одной профессии',d:'military'}],
+  sports:[{e:'🏆',t:'Пройди сценарии тренера, врача и спортивного журналиста',d:'sports'},{e:'💪',t:'Стань Мастером хотя бы одной спортивной профессии',d:'sports'}],
+  agro:[{e:'🌾',t:'Пройди задания агронома, ветеринара и сити-фермера',d:'agro'},{e:'🌱',t:'Стань Мастером хотя бы одной аграрной профессии',d:'agro'}],
+  education:[{e:'📖',t:'Пройди сценарии учителя, нейропедагога и тьютора',d:'education'},{e:'🏫',t:'Стань Мастером хотя бы одной педагогической профессии',d:'education'}],
+  service:[{e:'✂️',t:'Пройди задания стилиста, парфюмера и визажиста',d:'service'},{e:'🌟',t:'Стань Мастером хотя бы одной сервисной профессии',d:'service'}],
+  tourism:[{e:'🗺️',t:'Пройди сценарии гида, этнографа и туроператора',d:'tourism'},{e:'🌍',t:'Стань Мастером хотя бы одной туристической профессии',d:'tourism'}],
+  industrial:[{e:'⚙️',t:'Пройди задания ядерного инженера, технолога и оператора',d:'industrial'},{e:'🏭',t:'Стань Мастером хотя бы одной промышленной профессии',d:'industrial'}],
+  gaming:[{e:'🎮',t:'Пройди сценарии геймдизайнера, аниматора и нарративного дизайнера',d:'gaming'},{e:'👾',t:'Стань Мастером хотя бы одной игровой профессии',d:'gaming'}]
+};
+
+const DISTRICT_NAMES_MAP = {medical:'Медицинский',social:'Социальный',creative:'Творческий',music:'Музыкальный',tech:'Технологический',science:'Научный',nature:'Природы',construction:'Строительный',business:'Деловой',media:'Медиа',culinary:'Кулинарный',transport:'Транспортный',military:'Силовых Структур',sports:'Спортивный',agro:'Агропромышленный',education:'Образовательный',service:'Сервисный',tourism:'Туристический',industrial:'Промышленный',gaming:'Игровой'};
+
+function renderChallenges(districtTrophies, badges) {
+  const savedChallenges = JSON.parse(localStorage.getItem('profiland_challenges') || '{}');
+  const allChallenges = [];
+
+  // From saved (trophy won districts)
+  Object.keys(savedChallenges).forEach(distId => {
+    (savedChallenges[distId] || []).forEach(c => {
+      allChallenges.push({ emoji: c.emoji, text: c.text, dist: distId });
+    });
+  });
+
+  // Also add for districts where ≥3 badges but no trophy yet (motivation)
+  const distMap = JSON.parse(localStorage.getItem('profiland_district_map') || '{}');
+  const distBadgeCounts = {};
+  [...badges].forEach(b => {
+    const d = distMap[b]; if (d) distBadgeCounts[d] = (distBadgeCounts[d] || 0) + 1;
+  });
+  Object.entries(distBadgeCounts).forEach(([distId, count]) => {
+    if (count >= 3 && !districtTrophies.has(distId)) {
+      allChallenges.push({ emoji: '🏆', text: `Ты изучила ${count} профессий ${DISTRICT_NAMES_MAP[distId] || distId} района — подай заявку на трофей!`, dist: distId, isTrophyCall: true });
+    }
+  });
+
+  const grid = document.getElementById('challengesGrid');
+  const section = document.getElementById('challenges-section');
+  if (allChallenges.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  document.getElementById('challengeCount').textContent = `${allChallenges.length} активно`;
+
+  grid.innerHTML = allChallenges.slice(0, 6).map(c => `
+    <a class="challenge-card" href="${c.isTrophyCall ? `trophy_challenge.html?district=${c.dist}&from=profile` : `district.html?id=${c.dist}`}">
+      <div class="challenge-emoji">${c.emoji}</div>
+      <div class="challenge-info">
+        <div class="challenge-text">${c.text}</div>
+        <div class="challenge-district">Район: ${DISTRICT_NAMES_MAP[c.dist] || c.dist}</div>
+      </div>
+      <div class="challenge-check">→</div>
+    </a>`).join('');
 }
 
 async function loadDistrictMap() {
