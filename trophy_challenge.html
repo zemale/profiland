@@ -306,10 +306,28 @@ function getCooldown() {
 }
 
 function countDistrictBadges(distId, badges) {
+  // Use district map (profId → districtId) stored by profile.html/map.html
+  const distMap = JSON.parse(localStorage.getItem('profiland_district_map') || '{}');
+  if (Object.keys(distMap).length > 0) {
+    return badges.filter(b => distMap[b] === distId).length;
+  }
+  // Fallback: use badges.json data if map not loaded yet
   return badges.filter(b => b && typeof b === 'string' && b.startsWith(distId + '_')).length;
 }
 
 async function init() {
+  // Ensure district map is populated (profId → districtId)
+  const distMap = JSON.parse(localStorage.getItem('profiland_district_map') || '{}');
+  if (Object.keys(distMap).length === 0) {
+    try {
+      const pRes = await fetch('data/professions.json');
+      const pData = await pRes.json();
+      const map = {};
+      pData.districts.forEach(d => d.professions.forEach(p => { map[p.id] = d.id; }));
+      localStorage.setItem('profiland_district_map', JSON.stringify(map));
+    } catch(e) {}
+  }
+
   const res = await fetch('data/trophy_quizzes.json');
   const data = await res.json();
   quizData = data.districts[districtId];
