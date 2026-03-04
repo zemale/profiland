@@ -141,50 +141,53 @@
     .bld:nth-child(3){animation-delay:1s;}
     .bld:nth-child(4){animation-delay:1.5s;font-size:1.1rem;}
     .district--alive .district__inner {
-      animation: alive-pulse 2.5s ease-in-out infinite;
+      animation: alive-pulse 2s ease-in-out infinite;
+      border: 3px solid gold !important;
     }
     @keyframes alive-pulse {
-      0%,100% { filter: brightness(1) saturate(1); }
-      50% { filter: brightness(1.2) saturate(1.3); }
+      0%,100% { box-shadow: 0 0 20px 4px rgba(255,215,0,.5), 0 0 60px rgba(255,215,0,.2); filter: brightness(1) saturate(1); }
+      50%      { box-shadow: 0 0 40px 8px rgba(255,215,0,.9), 0 0 80px rgba(255,215,0,.4); filter: brightness(1.25) saturate(1.4); }
     }
-    .district--alive .bld { animation: bld-alive 1.8s ease-in-out infinite !important; }
+    .district--alive .bld { animation: bld-alive 1.5s ease-in-out infinite !important; }
     @keyframes bld-alive {
       0%,100%{transform:translateY(0) scale(1);}
-      50%{transform:translateY(-6px) scale(1.08);}
+      50%{transform:translateY(-8px) scale(1.12);}
     }
-    /* District walkers — people inside a district */
+    /* District walkers — pacing inside district */
     .district-walker {
-      position:absolute; font-size:1.1rem; z-index:30; pointer-events:none;
-      animation: bounce 0.6s ease-in-out infinite;
+      position:absolute; font-size:1.3rem; z-index:35; pointer-events:none;
+      animation: dw-bounce 0.5s ease-in-out infinite;
     }
-    @keyframes dist-walk-r {
-      from { left: var(--dx1); } to { left: var(--dx2); }
+    @keyframes dw-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+    @keyframes dw-pace {
+      0%   { transform: translateX(0) translateY(0); }
+      49%  { transform: translateX(var(--dw-range)) translateY(0); }
+      50%  { transform: translateX(var(--dw-range)) translateY(0) scaleX(-1); }
+      99%  { transform: translateX(0) translateY(0) scaleX(-1); }
+      100% { transform: translateX(0) translateY(0); }
     }
-    @keyframes dist-walk-l {
-      from { left: var(--dx2); } to { left: var(--dx1); }
-    }
-    /* Sparkle particles */
+    /* Sparkle particles floating up */
     .sparkle {
-      position:absolute; font-size:.9rem; pointer-events:none; z-index:25;
-      animation: sparkle-float var(--sd) var(--sdelay) ease-in infinite;
+      position:absolute; font-size:1.2rem; pointer-events:none; z-index:32;
+      animation: sp-float var(--sp-dur) var(--sp-delay) ease-in-out infinite;
     }
-    @keyframes sparkle-float {
-      0%   { opacity:0; transform: translateY(0) scale(.5) rotate(0deg); }
-      20%  { opacity:1; }
-      80%  { opacity:.8; }
-      100% { opacity:0; transform: translateY(-60px) scale(1.2) rotate(360deg); }
+    @keyframes sp-float {
+      0%   { opacity:0; transform:translateY(0) scale(.6) rotate(0deg); }
+      15%  { opacity:1; }
+      85%  { opacity:.7; }
+      100% { opacity:0; transform:translateY(-70px) scale(1.3) rotate(270deg); }
     }
-    /* Trophy banner at top of alive district */
+    /* Trophy banner */
     .alive-banner {
-      position:absolute; top:-18px; left:50%; transform:translateX(-50%);
+      position:absolute; top:6px; left:50%; transform:translateX(-50%);
       background:linear-gradient(135deg,#FFD700,#FFA500);
-      color:#1a0a00; font-size:.65rem; font-weight:800; padding:3px 10px;
-      border-radius:20px; white-space:nowrap; z-index:40;
-      box-shadow:0 2px 10px rgba(255,165,0,.6);
-      animation:banner-bob 2s ease-in-out infinite;
+      color:#1a0a00; font-size:.7rem; font-weight:900; padding:4px 12px;
+      border-radius:20px; white-space:nowrap; z-index:50;
+      box-shadow:0 3px 12px rgba(255,165,0,.8);
+      animation:banner-bob 1.8s ease-in-out infinite;
     }
     @keyframes banner-bob {
-      0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-3px)}
+      0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-4px)}
     }
     @keyframes bld-idle{
       0%,100%{transform:translateY(0);}
@@ -759,7 +762,7 @@ DISTRICTS.forEach((d,i) => {
 
   el.innerHTML = `
     <div class="district__inner" ${hasTrophy ? `style="box-shadow:0 0 24px ${d.color}88,0 0 60px ${d.color}44;border:2px solid ${d.color}cc"` : ''}>
-      ${hasTrophy ? `<div class="alive-banner">🏆 ${d.name.replace('\n',' ')}</div>` : ''}
+      ${hasTrophy ? `<div class="alive-banner">🏆 Трофей</div>` : ''}
       <div class="district__ground"></div>
       <div class="district__buildings">
         ${d.buildings.map(b=>`<div class="bld">${b}</div>`).join('')}
@@ -777,47 +780,43 @@ DISTRICTS.forEach((d,i) => {
 });
 
 function addAliveEffects(d, extras) {
-  const people = extras.people || [];
+  const people = extras.people || ['🧑','👩','👨','🧒'];
   const sparkles = extras.sparkles || ['✨','⭐','💫'];
 
-  // Add 4 district-walkers pacing inside the district
-  const walkerYPositions = [0.3, 0.5, 0.65, 0.8];
+  const margin = 24;
+  const walkWidth = d.w - margin * 2 - 24;
+  const walkerRows = [0.28, 0.45, 0.60, 0.75];
+
   people.slice(0, 4).forEach((emoji, i) => {
     const el = document.createElement('div');
     el.className = 'district-walker';
     el.textContent = emoji;
-
-    const margin = 20;
-    const x1 = d.x + margin;
-    const x2 = d.x + d.w - margin - 20;
-    const yPos = d.y + d.h * walkerYPositions[i];
-    const dur = 4 + i * 1.5;
-    const delay = i * 0.8;
-    const goRight = i % 2 === 0;
+    const startX = d.x + margin;
+    const yPos   = d.y + d.h * walkerRows[i];
+    const dur    = 3.5 + i * 1.2;
+    const delay  = -(i * dur * 0.25); // negative delay = start mid-animation
 
     el.style.cssText = `
-      left:${goRight ? x1 : x2}px;
+      left:${startX}px;
       top:${yPos}px;
-      --dx1:${x1}px; --dx2:${x2}px;
-      animation: ${goRight ? 'dist-walk-r' : 'dist-walk-l'} ${dur}s ${delay}s ease-in-out infinite alternate,
-                 bounce 0.5s ${delay}s ease-in-out infinite;
+      --dw-range:${walkWidth}px;
+      animation: dw-pace ${dur}s ${delay}s linear infinite;
     `;
     world.appendChild(el);
   });
 
-  // Add floating sparkles inside the district
+  // Floating sparkles at 3 spots within district
   sparkles.slice(0, 3).forEach((emoji, i) => {
     const el = document.createElement('div');
     el.className = 'sparkle';
-    const xOff = 30 + (d.w * (i + 1)) / 4;
-    const yOff = d.h * 0.6;
-    const dur = 2.5 + i * 0.7;
-    const delay = i * 1.1;
-    el.style.cssText = `
-      left:${d.x + xOff}px; top:${d.y + yOff}px;
-      --sd:${dur}s; --sdelay:${delay}s;
-    `;
     el.textContent = emoji;
+    const xPos = d.x + (d.w / 4) * (i + 1);
+    const yPos = d.y + d.h * 0.55;
+    el.style.cssText = `
+      left:${xPos}px; top:${yPos}px;
+      --sp-dur:${2.2 + i * 0.6}s;
+      --sp-delay:${i * 0.9}s;
+    `;
     world.appendChild(el);
   });
 }
