@@ -465,6 +465,7 @@
     <div class="card__atmo" id="cardAtmo"></div>
     <div class="card__profs" id="cardProfs"></div>
     <a class="card__btn" id="cardBtn">Исследовать район →</a>
+    <a class="card__btn" id="cardDayBtn" style="margin-top:8px;background:rgba(255,255,255,.12);font-size:14px">🗓️ День в районе</a>
   </div>
 </div>
 
@@ -958,6 +959,7 @@ function openCard(d){
   const btn = document.getElementById('cardBtn');
   btn.textContent = `Исследовать район →`;
   btn.href = `district.html?id=${d.id}`;
+  document.getElementById('cardDayBtn').href = `daylife.html?district=${d.id}`;
   btn.style.background = d.color;
   const overlay = document.getElementById('card-overlay');
   overlay.style.display = 'flex';

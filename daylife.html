@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>День в районе — Профиленд</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #111;
+  min-height: 100vh;
+  overflow: hidden;
+  color: #fff;
+}
+
+/* Background scene */
+#bg {
+  position: fixed; inset: 0;
+  background: var(--district-color, #6c5ce7);
+  transition: background 1s ease;
+  z-index: 0;
+}
+#bg::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.75) 100%);
+  z-index: 1;
+}
+#bg-emoji {
+  position: fixed;
+  font-size: clamp(120px, 25vw, 220px);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -60%);
+  opacity: .18;
+  z-index: 2;
+  transition: all .8s ease;
+  pointer-events: none;
+  filter: drop-shadow(0 0 60px rgba(255,255,255,.2));
+}
+
+/* Progress bar */
+#progress-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 4px; background: rgba(255,255,255,.15);
+  z-index: 100;
+}
+#progress-fill {
+  height: 100%; background: var(--district-color, #FFD700);
+  filter: brightness(1.5);
+  transition: width .5s ease;
+}
+
+/* Top info */
+#top-bar {
+  position: fixed; top: 12px; left: 0; right: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 16px; z-index: 100;
+}
+#time-place {
+  background: rgba(0,0,0,.4); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 13px; color: rgba(255,255,255,.8);
+}
+#scene-counter {
+  background: rgba(0,0,0,.4); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 13px; color: rgba(255,255,255,.6);
+}
+#back-btn {
+  background: rgba(0,0,0,.4); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 13px; color: rgba(255,255,255,.7);
+  text-decoration: none; cursor: pointer;
+}
+
+/* Characters on stage */
+#stage {
+  position: fixed;
+  bottom: 220px; left: 0; right: 0;
+  display: flex; justify-content: center; align-items: flex-end;
+  gap: 40px; z-index: 10; pointer-events: none;
+  padding: 0 20px;
+}
+.stage-char {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  animation: char-appear .4s ease;
+  transition: opacity .4s ease, transform .4s ease;
+}
+.stage-char.dim { opacity: .3; transform: scale(.92); }
+.stage-char.active { opacity: 1; transform: scale(1.05); }
+.stage-char .char-emoji {
+  font-size: clamp(48px, 10vw, 72px);
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,.6));
+  animation: char-float 3s ease-in-out infinite;
+}
+.stage-char:nth-child(2) .char-emoji { animation-delay: .8s; }
+.stage-char:nth-child(3) .char-emoji { animation-delay: 1.6s; }
+.stage-char .char-label {
+  background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+  border-radius: 12px; padding: 4px 10px;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+  border: 1px solid rgba(255,255,255,.15);
+}
+@keyframes char-float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes char-appear {
+  from { opacity: 0; transform: translateY(20px) scale(.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Dialog panel */
+#dialog {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 50; padding: 0 12px 20px;
+}
+#dialog-inner {
+  background: rgba(10,10,20,.88); backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px; padding: 20px 22px 16px;
+  max-width: 700px; margin: 0 auto;
+}
+#speaker-name {
+  font-size: 14px; font-weight: 700; margin-bottom: 10px;
+  color: var(--district-color, #FFD700);
+  filter: brightness(1.4);
+  display: flex; align-items: center; gap: 6px;
+}
+#dialog-text {
+  font-size: clamp(15px, 2.2vw, 17px);
+  line-height: 1.65; color: rgba(255,255,255,.92);
+  min-height: 60px;
+}
+#dialog-text .cursor {
+  display: inline-block; width: 2px; height: 1em;
+  background: currentColor; animation: blink .7s infinite;
+  vertical-align: middle; margin-left: 1px;
+}
+@keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+#next-btn {
+  margin-top: 14px; padding: 11px 28px;
+  background: var(--district-color, #6c5ce7);
+  filter: brightness(1.2);
+  border: none; border-radius: 24px;
+  color: #fff; font-size: 15px; font-weight: 700;
+  cursor: pointer; float: right;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+}
+#next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+#next-btn:disabled { opacity: .4; cursor: default; transform: none; }
+.clearfix::after { content: ''; display: table; clear: both; }
+
+/* End screen */
+#end-screen {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(20px);
+  flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 32px 20px;
+}
+#end-screen.show { display: flex; animation: fadeIn .6s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+#end-emoji { font-size: 80px; margin-bottom: 20px; animation: end-bounce 2s ease-in-out infinite; }
+@keyframes end-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+#end-title { font-size: 28px; font-weight: 800; color: #FFD700; margin-bottom: 12px; }
+#end-sub { color: rgba(255,255,255,.7); font-size: 16px; max-width: 400px; line-height: 1.6; margin-bottom: 32px; }
+.end-btn {
+  padding: 14px 32px; border: none; border-radius: 24px;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  margin: 6px; text-decoration: none; display: inline-block;
+  transition: transform .15s;
+}
+.end-btn:hover { transform: translateY(-2px); }
+.end-btn.primary { background: linear-gradient(135deg,#FFD700,#FFA500); color: #1a0a00; }
+.end-btn.secondary { background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.2); }
+
+/* Intro screen */
+#intro-screen {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.9); backdrop-filter: blur(20px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 32px 20px;
+}
+#intro-district { font-size: 14px; font-weight: 600; opacity: .6; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+#intro-emoji { font-size: 72px; margin: 12px 0; animation: char-float 3s ease-in-out infinite; }
+#intro-char-name { font-size: 24px; font-weight: 800; color: var(--district-color, #FFD700); filter: brightness(1.3); margin-bottom: 6px; }
+#intro-char-job { font-size: 16px; color: rgba(255,255,255,.6); margin-bottom: 20px; }
+#intro-desc { font-size: 15px; color: rgba(255,255,255,.75); max-width: 360px; line-height: 1.6; margin-bottom: 32px; }
+#start-btn {
+  padding: 16px 40px; border: none; border-radius: 28px;
+  font-size: 18px; font-weight: 800; cursor: pointer;
+  background: var(--district-color, #6c5ce7); filter: brightness(1.3);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(0,0,0,.4);
+  animation: pulse-btn 2s ease-in-out infinite;
+}
+@keyframes pulse-btn {
+  0%,100% { box-shadow: 0 6px 24px rgba(0,0,0,.4); transform: scale(1); }
+  50%      { box-shadow: 0 8px 32px rgba(0,0,0,.6); transform: scale(1.03); }
+}
+
+/* Floating particles */
+.particle {
+  position: fixed; pointer-events: none; z-index: 5;
+  font-size: 1.2rem; opacity: 0;
+  animation: particle-rise var(--pr-dur) var(--pr-delay) ease-in infinite;
+}
+@keyframes particle-rise {
+  0%   { opacity:0; transform: translateY(0) rotate(0deg); }
+  15%  { opacity:.8; }
+  100% { opacity:0; transform: translateY(-120px) rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+  #stage { bottom: 200px; }
+  .stage-char .char-emoji { font-size: 44px; }
+}
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div id="bg-emoji"></div>
+
+<div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
+
+<div id="top-bar">
+  <a id="back-btn" href="map.html">← Карта</a>
+  <div id="time-place">🕗 08:30 · Район</div>
+  <div id="scene-counter">1 / 10</div>
+</div>
+
+<div id="stage"></div>
+
+<div id="dialog">
+  <div id="dialog-inner">
+    <div id="speaker-name">👤 Персонаж</div>
+    <div id="dialog-text"></div>
+    <div class="clearfix">
+      <button id="next-btn" onclick="advance()">Дальше →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Intro screen -->
+<div id="intro-screen">
+  <div id="intro-district"></div>
+  <div id="intro-emoji"></div>
+  <div id="intro-char-name"></div>
+  <div id="intro-char-job"></div>
+  <div id="intro-desc"></div>
+  <button id="start-btn" onclick="startDay()">▶ Начать день</button>
+</div>
+
+<!-- End screen -->
+<div id="end-screen">
+  <div id="end-emoji"></div>
+  <div id="end-title">Хороший день!</div>
+  <div id="end-sub"></div>
+  <div>
+    <button class="end-btn primary" onclick="location.href='map.html'">🗺️ На карту</button>
+    <button class="end-btn secondary" id="district-btn" onclick="goDistrict()">Изучить район →</button>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const districtId = params.get('district') || '';
+
+const COLORS = {
+  medical:'#FF6B6B', social:'#4ECDC4', creative:'#FFE66D', music:'#A29BFE',
+  tech:'#6C5CE7', science:'#00B894', nature:'#55EFC4', construction:'#FDCB6E',
+  business:'#0984E3', media:'#E17055', culinary:'#FD79A8', transport:'#74B9FF',
+  military:'#636E72', sports:'#00CEC9', agro:'#6AB04C', education:'#F9CA24',
+  service:'#F0932B', tourism:'#EB4D4B', industrial:'#7F8C8D', gaming:'#9B59B6'
+};
+
+let dayData = null;
+let scenes = [];
+let currentScene = 0;
+let typing = false;
+let typeTimeout = null;
+
+const color = COLORS[districtId] || '#6c5ce7';
+document.documentElement.style.setProperty('--district-color', color);
+document.getElementById('bg').style.background =
+  `linear-gradient(135deg, ${color}33 0%, #0a0a15 100%)`;
+
+async function init() {
+  const res = await fetch('data/daylife.json');
+  const data = await res.json();
+  dayData = data.days[districtId];
+
+  if (!dayData) {
+    document.getElementById('intro-screen').innerHTML = `
+      <div style="text-align:center">
+        <div style="font-size:64px">🚧</div>
+        <h2 style="color:rgba(255,255,255,.6);margin:16px 0">Район не найден</h2>
+        <a href="map.html" style="color:${color};font-size:16px">← На карту</a>
+      </div>`;
+    return;
+  }
+
+  scenes = dayData.scenes;
+
+  // Intro
+  document.getElementById('intro-district').textContent = dayData.district_name + ' · День в районе';
+  document.getElementById('intro-emoji').textContent = dayData.main_emoji;
+  document.getElementById('intro-char-name').textContent = dayData.main_character;
+  document.getElementById('intro-char-job').textContent = dayData.main_job;
+  document.getElementById('intro-desc').textContent = dayData.intro_desc;
+  document.getElementById('back-btn').href = `map.html`;
+
+  // Spawn particles
+  spawnParticles(dayData.particles || ['✨','⭐','💫']);
+}
+
+function spawnParticles(emojis) {
+  emojis.forEach((e, i) => {
+    const el = document.createElement('div');
+    el.className = 'particle';
+    el.textContent = e;
+    el.style.cssText = `
+      left:${15 + Math.random() * 70}%;
+      bottom:${10 + Math.random() * 30}%;
+      --pr-dur:${3 + Math.random() * 2}s;
+      --pr-delay:${i * 1.2}s;
+    `;
+    document.body.appendChild(el);
+  });
+}
+
+function startDay() {
+  document.getElementById('intro-screen').style.display = 'none';
+  renderScene(0);
+}
+
+function renderScene(idx) {
+  const s = scenes[idx];
+  currentScene = idx;
+
+  // Progress
+  document.getElementById('progress-fill').style.width = `${(idx / scenes.length) * 100}%`;
+  document.getElementById('scene-counter').textContent = `${idx + 1} / ${scenes.length}`;
+  document.getElementById('time-place').textContent = `${s.time_emoji || '🕐'} ${s.time} · ${s.place}`;
+
+  // BG emoji
+  document.getElementById('bg-emoji').textContent = s.place_emoji || dayData.main_emoji;
+
+  // Stage characters
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '';
+  (s.chars || []).forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'stage-char' + (c.active ? ' active' : ' dim');
+    div.innerHTML = `
+      <div class="char-emoji">${c.emoji}</div>
+      <div class="char-label">${c.name}</div>`;
+    stage.appendChild(div);
+  });
+
+  // Speaker
+  const speaker = s.speaker || (s.chars && s.chars.find(c => c.active)?.name) || dayData.main_character;
+  const speakerEmoji = (s.chars && s.chars.find(c => c.active)?.emoji) || dayData.main_emoji;
+  document.getElementById('speaker-name').textContent = `${speakerEmoji} ${speaker}`;
+
+  // Typewriter
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.disabled = true;
+  nextBtn.textContent = idx < scenes.length - 1 ? 'Дальше →' : 'Конец дня ✨';
+  typeText(s.text, () => { nextBtn.disabled = false; });
+}
+
+function typeText(text, onDone) {
+  const el = document.getElementById('dialog-text');
+  el.innerHTML = '';
+  typing = true;
+  let i = 0;
+  const speed = 28;
+
+  function tick() {
+    if (i < text.length) {
+      el.innerHTML = text.slice(0, i + 1) + '<span class="cursor"></span>';
+      i++;
+      typeTimeout = setTimeout(tick, speed);
+    } else {
+      el.innerHTML = text;
+      typing = false;
+      if (onDone) onDone();
+    }
+  }
+  tick();
+}
+
+function advance() {
+  // Tap while typing → skip to end
+  if (typing) {
+    clearTimeout(typeTimeout);
+    const s = scenes[currentScene];
+    document.getElementById('dialog-text').innerHTML = s.text;
+    typing = false;
+    document.getElementById('next-btn').disabled = false;
+    return;
+  }
+
+  const next = currentScene + 1;
+  if (next >= scenes.length) {
+    showEnd();
+  } else {
+    renderScene(next);
+  }
+}
+
+function showEnd() {
+  document.getElementById('progress-fill').style.width = '100%';
+  const end = document.getElementById('end-screen');
+  document.getElementById('end-emoji').textContent = dayData.end_emoji || '🌟';
+  document.getElementById('end-title').textContent = dayData.end_title || 'Хороший день!';
+  document.getElementById('end-sub').textContent = dayData.end_sub || `Ты провела день вместе с ${dayData.main_character} и увидела как устроена жизнь в ${dayData.district_name}.`;
+  end.classList.add('show');
+}
+
+function goDistrict() {
+  location.href = `district.html?id=${districtId}`;
+}
+
+init();
+</script>
+</body>
+</html>
