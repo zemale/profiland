@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Детектив профессий — Профиленд</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+  min-height: 100vh; color: #fff;
+  padding: 20px 16px 60px;
+}
+.container { max-width: 560px; margin: 0 auto; }
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.1); color: #fff;
+  border: 1px solid rgba(255,255,255,.2); border-radius: 20px;
+  padding: 8px 16px; font-size: 14px; cursor: pointer;
+  text-decoration: none; margin-bottom: 24px; transition: background .2s;
+}
+.back-btn:hover { background: rgba(255,255,255,.2); }
+
+/* Header */
+.game-header { text-align: center; margin-bottom: 28px; }
+.game-header h1 { font-size: 26px; font-weight: 800; }
+.game-header p { color: rgba(255,255,255,.5); font-size: 14px; margin-top: 4px; }
+
+/* Score & streak */
+.score-row {
+  display: flex; gap: 10px; margin-bottom: 20px;
+}
+.score-chip {
+  flex: 1; background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1); border-radius: 14px;
+  padding: 12px; text-align: center;
+}
+.score-chip .num { font-size: 22px; font-weight: 800; color: #FFD700; }
+.score-chip .lbl { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+/* Clue box */
+.clue-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px;
+}
+.clue-counter { font-size: 13px; color: rgba(255,255,255,.4); }
+.points-left {
+  background: linear-gradient(135deg,#FFD700,#FFA500);
+  color: #1a0a00; font-size: 12px; font-weight: 800;
+  padding: 4px 12px; border-radius: 20px;
+}
+
+.clue-card {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 18px; padding: 16px 20px; margin-bottom: 10px;
+  animation: clue-in .35s ease;
+}
+@keyframes clue-in { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.clue-num { font-size: 11px; font-weight: 700; color: rgba(255,215,0,.6);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.clue-text { font-size: 15px; color: rgba(255,255,255,.9); line-height: 1.5; }
+.clue-emoji { font-size: 1.3rem; margin-right: 6px; }
+
+/* Next clue button */
+.next-clue-btn {
+  width: 100%; padding: 13px; font-size: 15px; font-weight: 700;
+  background: rgba(108,92,231,.3); border: 1px solid rgba(108,92,231,.5);
+  color: #a29bfe; border-radius: 14px; cursor: pointer; margin-bottom: 16px;
+  transition: all .2s;
+}
+.next-clue-btn:hover { background: rgba(108,92,231,.5); }
+.next-clue-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+/* Answer area */
+.answer-section { margin-top: 8px; }
+.answer-label { font-size: 13px; color: rgba(255,255,255,.5); margin-bottom: 8px; }
+.answer-input {
+  width: 100%; padding: 14px 18px; font-size: 16px;
+  background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.15);
+  border-radius: 14px; color: #fff; outline: none;
+  transition: border-color .2s;
+}
+.answer-input:focus { border-color: rgba(255,215,0,.5); }
+.answer-input::placeholder { color: rgba(255,255,255,.25); }
+
+.submit-btn {
+  width: 100%; padding: 15px; font-size: 17px; font-weight: 800;
+  background: linear-gradient(135deg,#FFD700,#FFA500);
+  color: #1a0a00; border: none; border-radius: 14px; cursor: pointer;
+  margin-top: 10px; transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 20px rgba(255,165,0,.4);
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 26px rgba(255,165,0,.6); }
+
+/* Feedback */
+.feedback {
+  border-radius: 14px; padding: 16px 18px; margin-top: 12px;
+  font-size: 15px; line-height: 1.6; display: none;
+  animation: clue-in .3s ease;
+}
+.feedback.correct { background: rgba(0,200,100,.15); border: 1px solid rgba(0,200,100,.3); color: #4dff9a; }
+.feedback.wrong   { background: rgba(255,50,50,.12);  border: 1px solid rgba(255,50,50,.25);  color: #ff8080; }
+.feedback.show { display: block; }
+
+.next-puzzle-btn {
+  width: 100%; padding: 14px; font-size: 16px; font-weight: 700;
+  background: linear-gradient(135deg,#6c5ce7,#a29bfe);
+  color: #fff; border: none; border-radius: 14px; cursor: pointer;
+  margin-top: 12px; display: none; transition: transform .15s;
+}
+.next-puzzle-btn:hover { transform: translateY(-2px); }
+.next-puzzle-btn.show { display: block; }
+
+/* End screen */
+#end-screen {
+  display: none; text-align: center; padding: 40px 20px;
+}
+#end-screen.show { display: block; animation: clue-in .5s ease; }
+#end-screen .big-emoji { font-size: 72px; margin-bottom: 16px; }
+#end-screen h2 { font-size: 26px; font-weight: 800; color: #FFD700; margin-bottom: 10px; }
+#end-screen p { color: rgba(255,255,255,.7); font-size: 15px; margin-bottom: 24px; line-height: 1.6; }
+.restart-btn {
+  padding: 14px 32px; background: linear-gradient(135deg,#FFD700,#FFA500);
+  color: #1a0a00; font-weight: 800; font-size: 16px;
+  border: none; border-radius: 20px; cursor: pointer; margin: 6px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back-btn">← На главную</a>
+  <div class="game-header">
+    <h1>🔍 Детектив профессий</h1>
+    <p>Улики открываются по одной — угадай раньше, получи больше очков</p>
+  </div>
+
+  <div class="score-row">
+    <div class="score-chip"><div class="num" id="score-num">0</div><div class="lbl">очков</div></div>
+    <div class="score-chip"><div class="num" id="solved-num">0</div><div class="lbl">разгадано</div></div>
+    <div class="score-chip"><div class="num" id="streak-num">0</div><div class="lbl">серия 🔥</div></div>
+  </div>
+
+  <div id="game-area">
+    <div class="clue-header">
+      <span class="clue-counter" id="clue-counter">Улика 1 из 4</span>
+      <span class="points-left" id="pts-badge">+40 очков</span>
+    </div>
+
+    <div id="clues-container"></div>
+
+    <button class="next-clue-btn" id="next-clue-btn" onclick="revealClue()">
+      👁️ Следующая улика (−10 очков)
+    </button>
+
+    <div class="answer-section">
+      <div class="answer-label">🎯 Кто этот специалист? Напиши название профессии:</div>
+      <input class="answer-input" id="answer-input" type="text"
+             placeholder="например: врач, пилот, архитектор..."
+             oninput="checkHint(this.value)"
+             onkeydown="if(event.key==='Enter')submitAnswer()">
+      <button class="submit-btn" onclick="submitAnswer()">Разгадать!</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+    <button class="next-puzzle-btn" id="next-puzzle-btn" onclick="nextPuzzle()">
+      Следующая загадка →
+    </button>
+  </div>
+
+  <div id="end-screen">
+    <div class="big-emoji" id="end-emoji"></div>
+    <h2 id="end-title"></h2>
+    <p id="end-desc"></p>
+    <button class="restart-btn" onclick="restartGame()">🔄 Играть снова</button>
+    <button class="restart-btn" style="background:rgba(255,255,255,.1);color:#fff" onclick="location.href='index.html'">На главную</button>
+  </div>
+</div>
+
+<script>
+const PUZZLES = [
+  {
+    profession: 'хирург',
+    aliases: ['врач','хирург','surgeon'],
+    emoji: '🩺',
+    clues: [
+      { emoji:'🏥', text:'Этот человек проводит на работе иногда по 12 часов подряд.' },
+      { emoji:'✋', text:'Ему нужны очень твёрдые руки — ни единого лишнего движения.' },
+      { emoji:'😴', text:'Он может войти в операционную прямо посреди ночи — пациент не ждёт.' },
+      { emoji:'🩺', text:'Он буквально держит чью-то жизнь в руках — иногда в прямом смысле.' },
+    ]
+  },
+  {
+    profession: 'пилот',
+    aliases: ['пилот','лётчик','pilot'],
+    emoji: '✈️',
+    clues: [
+      { emoji:'🌅', text:'Этот человек видит рассвет с высоты 10 километров.' },
+      { emoji:'⏰', text:'Его смена может начаться в 3 ночи или закончиться в другой стране.' },
+      { emoji:'🎓', text:'Ему нужно 1500 часов практики прежде чем доверят больше 100 пассажиров.' },
+      { emoji:'✈️', text:'Он управляет машиной весом 70 тонн, летящей со скоростью 900 км/ч.' },
+    ]
+  },
+  {
+    profession: 'архитектор',
+    aliases: ['архитектор','architect'],
+    emoji: '🏛️',
+    clues: [
+      { emoji:'📐', text:'Этот человек рисует здания ещё до того как положен первый кирпич.' },
+      { emoji:'💻', text:'Большую часть дня он проводит за компьютером — но не как программист.' },
+      { emoji:'🏗️', text:'Он знает что случится со зданием через 100 лет если неправильно рассчитать нагрузку.' },
+      { emoji:'🏛️', text:'Он создаёт пространство в котором люди будут жить, работать или учиться.' },
+    ]
+  },
+  {
+    profession: 'геймдизайнер',
+    aliases: ['геймдизайнер','дизайнер игр','game designer','разработчик игр'],
+    emoji: '🎮',
+    clues: [
+      { emoji:'🎲', text:'Этот человек думает о том почему тебе хочется нажимать кнопку снова и снова.' },
+      { emoji:'📊', text:'Он смотрит на таблицы с цифрами и видит в них — веселье или скуку игрока.' },
+      { emoji:'🧩', text:'Он придумывает правила, которые делают игру справедливой и интересной одновременно.' },
+      { emoji:'🎮', text:'Его работа — создавать ощущения. Радость, напряжение, триумф — всё это он проектирует.' },
+    ]
+  },
+  {
+    profession: 'журналист',
+    aliases: ['журналист','репортёр','journalist'],
+    emoji: '📰',
+    clues: [
+      { emoji:'❓', text:'Этот человек задаёт много вопросов — даже тем кто не хочет отвечать.' },
+      { emoji:'⏱️', text:'У него есть дедлайн — и он никогда не двигается.' },
+      { emoji:'🔍', text:'Прежде чем написать одно слово, он проверяет факт минимум в двух источниках.' },
+      { emoji:'📰', text:'Его слова читают тысячи людей — поэтому каждое должно быть точным и честным.' },
+    ]
+  },
+  {
+    profession: 'психолог',
+    aliases: ['психолог','психотерапевт','психиатр'],
+    emoji: '🧠',
+    clues: [
+      { emoji:'👂', text:'Этот человек очень много слушает — и почти не говорит.' },
+      { emoji:'🤔', text:'Он замечает вещи которые люди не говорят вслух, по жестам и паузам.' },
+      { emoji:'📓', text:'После каждой встречи он пишет заметки — но никому их не показывает.' },
+      { emoji:'🧠', text:'Он помогает людям понять себя — не советами, а правильными вопросами.' },
+    ]
+  },
+  {
+    profession: 'шеф-повар',
+    aliases: ['повар','шеф','шеф-повар','cook','chef'],
+    emoji: '👨‍🍳',
+    clues: [
+      { emoji:'⏰', text:'Рабочий день этого человека начинается до рассвета и заканчивается за полночь.' },
+      { emoji:'🌡️', text:'Он точно знает разницу между 180 и 182 градусами — на вкус.' },
+      { emoji:'👥', text:'Он управляет командой из 10-20 человек одновременно в очень маленьком пространстве.' },
+      { emoji:'👨‍🍳', text:'Его имя может стоять на вывеске ресторана — и это его наивысшее достижение.' },
+    ]
+  },
+  {
+    profession: 'программист',
+    aliases: ['программист','разработчик','developer','coder'],
+    emoji: '💻',
+    clues: [
+      { emoji:'🐛', text:'Этот человек иногда тратит целый день на поиск одной буквы не на своём месте.' },
+      { emoji:'☕', text:'Говорят что он превращает кофе в код — и это почти правда.' },
+      { emoji:'🤔', text:'Прежде чем написать программу, он долго думает как её не писать.' },
+      { emoji:'💻', text:'Он создаёт вещи которые нельзя потрогать руками — но ими пользуются миллионы.' },
+    ]
+  },
+  {
+    profession: 'эколог',
+    aliases: ['эколог','биолог','природовед'],
+    emoji: '🌿',
+    clues: [
+      { emoji:'🌊', text:'Этот человек берёт пробы воды, почвы и воздуха — и это его обычный рабочий день.' },
+      { emoji:'📊', text:'Он смотрит на данные и видит что произойдёт с лесом через 20 лет.' },
+      { emoji:'🦋', text:'Исчезновение одного вида насекомых — для него серьёзный тревожный сигнал.' },
+      { emoji:'🌍', text:'Он защищает то что не может говорить само за себя.' },
+    ]
+  },
+  {
+    profession: 'аниматор',
+    aliases: ['аниматор','animator','мультипликатор'],
+    emoji: '🎨',
+    clues: [
+      { emoji:'🖥️', text:'Этот человек может провести три часа за одной секундой своей работы.' },
+      { emoji:'👀', text:'Он изучает как двигается человек — чтобы персонаж выглядел живым.' },
+      { emoji:'😭', text:'Зрители плачут над его работой — а он знает что это потребовало 847 кадров.' },
+      { emoji:'🎨', text:'Он вдыхает жизнь в рисунки — кадр за кадром, движение за движением.' },
+    ]
+  },
+  {
+    profession: 'тренер',
+    aliases: ['тренер','спортивный тренер','coach'],
+    emoji: '🏋️',
+    clues: [
+      { emoji:'📊', text:'Этот человек смотрит видеозапись забега 30 раз — чтобы найти одну лишнюю секунду.' },
+      { emoji:'🧠', text:'Он знает что победа на соревнованиях зависит от головы не меньше чем от ног.' },
+      { emoji:'📓', text:'На каждого своего спортсмена он ведёт дневник уже несколько лет.' },
+      { emoji:'🏅', text:'Его имя никогда не будет в таблице рекордов — но без него рекорда бы не было.' },
+    ]
+  },
+  {
+    profession: 'стилист',
+    aliases: ['стилист','stylist','имиджмейкер'],
+    emoji: '✂️',
+    clues: [
+      { emoji:'👀', text:'Этот человек смотрит на незнакомца и сразу видит три вещи которые можно улучшить.' },
+      { emoji:'🎨', text:'Он знает что синий цвет бывает двадцати разных оттенков — и каждый подходит по-разному.' },
+      { emoji:'📋', text:'Перед работой он собирает доску с картинками — и долго смотрит на неё молча.' },
+      { emoji:'✂️', text:'Его работа — сделать так чтобы человек чувствовал себя собой, только лучшей версией.' },
+    ]
+  },
+];
+
+let currentPuzzle = null;
+let puzzleQueue = [];
+let revealedClues = 0;
+let score = 0;
+let solved = 0;
+let streak = 0;
+let answered = false;
+const MAX_CLUES = 4;
+const POINTS_PER_CLUE = [40, 30, 20, 10]; // очки за угадывание с 1,2,3,4 улики
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - .5); }
+
+function startGame() {
+  puzzleQueue = shuffle(PUZZLES);
+  score = 0; solved = 0; streak = 0;
+  updateScoreUI();
+  document.getElementById('end-screen').classList.remove('show');
+  document.getElementById('game-area').style.display = 'block';
+  nextPuzzle();
+}
+
+function nextPuzzle() {
+  if (puzzleQueue.length === 0) {
+    showEnd();
+    return;
+  }
+  currentPuzzle = puzzleQueue.pop();
+  revealedClues = 1;
+  answered = false;
+
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('next-puzzle-btn').className = 'next-puzzle-btn';
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-input').disabled = false;
+  document.querySelector('.submit-btn').disabled = false;
+
+  renderClues();
+  updateClueBtn();
+}
+
+function renderClues() {
+  const container = document.getElementById('clues-container');
+  container.innerHTML = '';
+  for (let i = 0; i < revealedClues; i++) {
+    const c = currentPuzzle.clues[i];
+    const div = document.createElement('div');
+    div.className = 'clue-card';
+    div.innerHTML = `
+      <div class="clue-num">Улика ${i+1}</div>
+      <div class="clue-text"><span class="clue-emoji">${c.emoji}</span>${c.text}</div>`;
+    container.appendChild(div);
+  }
+  document.getElementById('clue-counter').textContent = `Улика ${revealedClues} из ${MAX_CLUES}`;
+  document.getElementById('pts-badge').textContent = `+${POINTS_PER_CLUE[revealedClues-1]} очков`;
+}
+
+function updateClueBtn() {
+  const btn = document.getElementById('next-clue-btn');
+  const nextNum = revealedClues + 1;
+  if (revealedClues >= MAX_CLUES || answered) {
+    btn.disabled = true;
+    btn.textContent = revealedClues >= MAX_CLUES ? '👁️ Все улики открыты' : '✅ Уже разгадано';
+  } else {
+    btn.disabled = false;
+    btn.textContent = `👁️ Улика ${nextNum} из ${MAX_CLUES} (−10 очков)`;
+  }
+}
+
+function revealClue() {
+  if (revealedClues >= MAX_CLUES || answered) return;
+  revealedClues++;
+  renderClues();
+  updateClueBtn();
+}
+
+function normalize(str) {
+  return str.toLowerCase().trim()
+    .replace(/ё/g,'е').replace(/й/g,'и')
+    .replace(/[-_\s]+/g,' ');
+}
+
+function checkAnswer(input) {
+  const norm = normalize(input);
+  const aliases = currentPuzzle.aliases.map(normalize);
+  return aliases.some(a => norm.includes(a) || a.includes(norm));
+}
+
+function checkHint(val) {
+  // Live hint — green border if looks right
+  const input = document.getElementById('answer-input');
+  if (val.length > 2 && checkAnswer(val)) {
+    input.style.borderColor = 'rgba(0,200,100,.6)';
+  } else {
+    input.style.borderColor = 'rgba(255,255,255,.15)';
+  }
+}
+
+function submitAnswer() {
+  if (answered) return;
+  const input = document.getElementById('answer-input');
+  const val = input.value.trim();
+  if (!val) return;
+
+  answered = true;
+  input.disabled = true;
+  document.querySelector('.submit-btn').disabled = true;
+
+  const correct = checkAnswer(val);
+  const pts = correct ? POINTS_PER_CLUE[revealedClues - 1] : 0;
+
+  const fb = document.getElementById('feedback');
+  if (correct) {
+    score += pts;
+    solved++;
+    streak++;
+    fb.className = 'feedback correct show';
+    fb.innerHTML = `✅ Правильно! Это <strong>${currentPuzzle.profession}</strong> ${currentPuzzle.emoji}<br>
+      +${pts} очков${streak > 1 ? ` · Серия ${streak} 🔥` : ''}`;
+    // Add XP
+    const xp = parseInt(localStorage.getItem('profiland_xp') || '0') + pts;
+    localStorage.setItem('profiland_xp', xp);
+  } else {
+    streak = 0;
+    // Reveal all clues
+    revealedClues = MAX_CLUES;
+    renderClues();
+    fb.className = 'feedback wrong show';
+    fb.innerHTML = `❌ Не угадала. Это был <strong>${currentPuzzle.profession}</strong> ${currentPuzzle.emoji}<br>
+      Твой ответ: «${val}»`;
+  }
+
+  updateClueBtn();
+  updateScoreUI();
+  document.getElementById('next-puzzle-btn').className = 'next-puzzle-btn show';
+}
+
+function updateScoreUI() {
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('solved-num').textContent = solved;
+  document.getElementById('streak-num').textContent = streak;
+}
+
+function showEnd() {
+  document.getElementById('game-area').style.display = 'none';
+  const end = document.getElementById('end-screen');
+  end.classList.add('show');
+
+  const pct = Math.round((solved / PUZZLES.length) * 100);
+  let emoji = '🔍', title = 'Детектив-стажёр', desc = '';
+  if (pct >= 90) { emoji = '🏆'; title = 'Мастер-детектив!'; }
+  else if (pct >= 70) { emoji = '🥇'; title = 'Опытный детектив'; }
+  else if (pct >= 50) { emoji = '🥈'; title = 'Хороший детектив'; }
+  else { emoji = '🔎'; title = 'Детектив-стажёр'; }
+
+  desc = `Ты разгадала ${solved} из ${PUZZLES.length} профессий и набрала ${score} очков.\n${
+    pct >= 70 ? 'Ты отлично знаешь мир профессий!' : 'Изучи больше районов — и результат улучшится!'
+  }`;
+
+  document.getElementById('end-emoji').textContent = emoji;
+  document.getElementById('end-title').textContent = title;
+  document.getElementById('end-desc').textContent = desc;
+
+  // Save best score
+  const best = parseInt(localStorage.getItem('profiland_detective_best') || '0');
+  if (score > best) localStorage.setItem('profiland_detective_best', score);
+}
+
+function restartGame() {
+  startGame();
+}
+
+startGame();
+</script>
+<script src="pet-widget.js"></script>
+</body>
+</html>

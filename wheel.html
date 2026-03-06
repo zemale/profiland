@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Колесо фортуны — Профиленд</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f0c29;
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 16px 60px;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* Stars */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+  pointer-events: none;
+}
+
+.container { position: relative; z-index: 1; width: 100%; max-width: 480px; }
+
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.1); color: #fff;
+  border: 1px solid rgba(255,255,255,.2); border-radius: 20px;
+  padding: 8px 16px; font-size: 14px; cursor: pointer;
+  text-decoration: none; margin-bottom: 24px;
+  transition: background .2s;
+}
+.back-btn:hover { background: rgba(255,255,255,.2); }
+
+h1 { text-align: center; font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+.subtitle { text-align: center; color: rgba(255,255,255,.5); font-size: 14px; margin-bottom: 28px; }
+
+/* Spins counter */
+.spins-bar {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px; padding: 12px 20px; margin-bottom: 24px;
+}
+.spin-dot { width: 16px; height: 16px; border-radius: 50%; transition: all .3s; }
+.spin-dot.used { background: rgba(255,255,255,.15); }
+.spin-dot.avail { background: linear-gradient(135deg, #FFD700, #FFA500); box-shadow: 0 0 8px rgba(255,165,0,.6); }
+.spins-label { font-size: 13px; color: rgba(255,255,255,.6); margin-left: 6px; }
+
+/* Wheel */
+.wheel-wrap {
+  position: relative; display: flex; justify-content: center;
+  align-items: center; margin-bottom: 24px;
+}
+.wheel-pointer {
+  position: absolute; top: -14px; z-index: 10;
+  font-size: 28px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.5));
+  animation: pointer-bob 1.5s ease-in-out infinite;
+}
+@keyframes pointer-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+canvas#wheel { border-radius: 50%; box-shadow: 0 0 40px rgba(255,215,0,.3), 0 0 0 4px rgba(255,215,0,.2); }
+
+/* Spin button */
+.spin-btn {
+  width: 100%; padding: 18px; font-size: 20px; font-weight: 800;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1a0a00; border: none; border-radius: 20px; cursor: pointer;
+  box-shadow: 0 6px 24px rgba(255,165,0,.5);
+  transition: transform .15s, box-shadow .15s;
+  margin-bottom: 20px;
+}
+.spin-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255,165,0,.7); }
+.spin-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+/* Result popup */
+#result-popup {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.8); backdrop-filter: blur(16px);
+  flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 32px 24px;
+}
+#result-popup.show { display: flex; animation: pop-in .4s cubic-bezier(.34,1.56,.64,1); }
+@keyframes pop-in { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
+.result-emoji { font-size: 80px; margin-bottom: 16px; animation: spin-emoji 1s ease; }
+@keyframes spin-emoji { from{transform:rotate(-180deg) scale(0)} to{transform:rotate(0) scale(1)} }
+.result-title { font-size: 24px; font-weight: 800; color: #FFD700; margin-bottom: 10px; }
+.result-desc { font-size: 16px; color: rgba(255,255,255,.8); max-width: 320px; line-height: 1.6; margin-bottom: 24px; }
+.result-close {
+  padding: 14px 36px; background: linear-gradient(135deg,#FFD700,#FFA500);
+  color: #1a0a00; font-weight: 800; font-size: 16px;
+  border: none; border-radius: 20px; cursor: pointer;
+}
+
+/* History */
+.history-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.4);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,.05); border-radius: 12px; padding: 10px 14px;
+  font-size: 13px; color: rgba(255,255,255,.7);
+}
+.history-item .h-emoji { font-size: 1.2rem; }
+
+/* Cooldown */
+.cooldown-card {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px;
+}
+.cooldown-timer { font-size: 32px; font-weight: 800; color: rgba(255,255,255,.4);
+  font-family: monospace; margin: 8px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back-btn">← На главную</a>
+  <h1>🎡 Колесо фортуны</h1>
+  <p class="subtitle">3 кручения в день — что выпадет?</p>
+
+  <div class="spins-bar">
+    <div class="spin-dot" id="dot0"></div>
+    <div class="spin-dot" id="dot1"></div>
+    <div class="spin-dot" id="dot2"></div>
+    <span class="spins-label" id="spins-label">осталось кручений</span>
+  </div>
+
+  <div id="cooldown-block" style="display:none">
+    <div class="cooldown-card">
+      <div style="font-size:36px">⏰</div>
+      <div style="font-size:15px;color:rgba(255,255,255,.6);margin:8px 0">До новых кручений:</div>
+      <div class="cooldown-timer" id="cd-time">--:--:--</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.3)">Возвращайся завтра!</div>
+    </div>
+  </div>
+
+  <div class="wheel-wrap">
+    <div class="wheel-pointer">▼</div>
+    <canvas id="wheel" width="320" height="320"></canvas>
+  </div>
+
+  <button class="spin-btn" id="spin-btn" onclick="spin()">🎡 Крутить!</button>
+
+  <div class="history-title">Прошлые выпадения</div>
+  <div class="history-list" id="history-list">
+    <div style="color:rgba(255,255,255,.3);font-size:13px;padding:8px">Пока ничего — крути колесо!</div>
+  </div>
+</div>
+
+<div id="result-popup">
+  <div class="result-emoji" id="r-emoji"></div>
+  <div class="result-title" id="r-title"></div>
+  <div class="result-desc" id="r-desc"></div>
+  <button class="result-close" onclick="closeResult()">Забрать! ✨</button>
+</div>
+
+<script>
+const MAX_SPINS = 3;
+const WHEEL_KEY  = 'profiland_wheel';
+const HIST_KEY   = 'profiland_wheel_history';
+
+// Segments — хорошее выпадает чаще (веса)
+const SEGMENTS = [
+  { emoji:'⭐', label:'Бонус XP',       color:'#FFD700', weight:25,
+    title:'Бонус XP!', desc:'Ты получаешь 20 бонусных XP за исследование нового района сегодня!',
+    action: () => addXP(20) },
+  { emoji:'🎁', label:'+50 XP',         color:'#FFA500', weight:20,
+    title:'Щедрый подарок!', desc:'Сегодня особенный день — +50 XP прямо сейчас!',
+    action: () => addXP(50) },
+  { emoji:'💡', label:'Факт дня',       color:'#6c5ce7', weight:20,
+    title:'Интересный факт!', desc: getRandomFact,
+    action: () => {} },
+  { emoji:'🔮', label:'Подсказка',      color:'#a29bfe', weight:15,
+    title:'Подсказка к секрету', desc:'Секретные профессии спят в каждом районе — трофей разбудит их!',
+    action: () => {} },
+  { emoji:'🌟', label:'+100 XP',        color:'#fd79a8', weight:10,
+    title:'Джекпот! 🎉', desc:'Невероятная удача — целых +100 XP! Такое редко бывает!',
+    action: () => addXP(100) },
+  { emoji:'😄', label:'Шутка',          color:'#55efc4', weight:5,
+    title:'Шутка дня', desc: getRandomJoke,
+    action: () => {} },
+  { emoji:'🃏', label:'Пусто',          color:'#636e72', weight:5,
+    title:'Увы, пусто...', desc:'Бывает! Зато интереснее в следующий раз 😄',
+    action: () => {} },
+];
+
+const FACTS = [
+  'Хирург делает около 600 операций за карьеру. Каждая уникальна.',
+  'Среднестатистический шеф-повар пробует блюдо 15-20 раз прежде чем оно попадёт в меню.',
+  'Пилоты видят закат дважды в день — если летят на восток быстрее вращения Земли.',
+  'Первый программист в истории — Ада Лавлейс. Она написала алгоритм в 1843 году.',
+  'Профессия "аниматор" появилась благодаря Уолту Диснею в 1920-х годах.',
+  'Логопеды работают с более чем 100 различными нарушениями речи и языка.',
+  'Архитектор Гауди работал над собором Саграда Фамилия 43 года и не успел закончить.',
+  'Средний ветеринар осматривает до 25 животных в день — и каждое не может сказать что болит.',
+  'Геймдизайнер Minecraft Маркус Перссон создал первую версию игры за 6 дней.',
+  'Детектив Агаты Кристи Эркюль Пуаро — самый экранизируемый детектив в истории.',
+];
+
+const JOKES = [
+  'Почему программист пошёл к психологу? Потому что у него было слишком много багов в голове.',
+  'Шеф-повар спрашивает ученика: «Ты посолил суп?» — «Дважды, но он упал обратно».',
+  'Почему учитель носит очки? Потому что у него плохие ученики — то есть ученики.',
+  'Врач пациенту: «Хорошая новость — вы проживёте 80 лет». — «Мне уже 79». — «Вот и спешите».',
+  'Геймдизайнер назвал дочь Алина. Баги при рождении: имя слишком длинное для UI.',
+];
+
+function getRandomFact() { return FACTS[Math.floor(Math.random() * FACTS.length)]; }
+function getRandomJoke() { return JOKES[Math.floor(Math.random() * JOKES.length)]; }
+
+function addXP(amount) {
+  const xp = parseInt(localStorage.getItem('profiland_xp') || '0') + amount;
+  localStorage.setItem('profiland_xp', xp);
+}
+
+// Weighted random
+function pickSegment() {
+  const total = SEGMENTS.reduce((s, seg) => s + seg.weight, 0);
+  let r = Math.random() * total;
+  for (const seg of SEGMENTS) { r -= seg.weight; if (r <= 0) return seg; }
+  return SEGMENTS[0];
+}
+
+// State
+function getState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(WHEEL_KEY) || '{}');
+    const today = new Date().toDateString();
+    if (s.date !== today) return { date: today, used: 0 };
+    return s;
+  } catch { return { date: new Date().toDateString(), used: 0 }; }
+}
+function saveState(s) { localStorage.setItem(WHEEL_KEY, JSON.stringify(s)); }
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch { return []; }
+}
+function addHistory(seg) {
+  const h = getHistory();
+  h.unshift({ emoji: seg.emoji, label: seg.label, time: new Date().toLocaleTimeString('ru', {hour:'2-digit',minute:'2-digit'}) });
+  localStorage.setItem(HIST_KEY, JSON.stringify(h.slice(0, 10)));
+}
+
+// Canvas wheel
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const R = 155;
+let currentAngle = 0;
+let spinning = false;
+
+function drawWheel(angle) {
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const total = SEGMENTS.reduce((s, seg) => s + seg.weight, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  let start = angle;
+  SEGMENTS.forEach((seg, i) => {
+    const slice = (seg.weight / total) * Math.PI * 2;
+    // Sector
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, start, start + slice);
+    ctx.closePath();
+    ctx.fillStyle = seg.color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + slice / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 13px Segoe UI';
+    ctx.shadowColor = 'rgba(0,0,0,.5)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(seg.label, R - 10, 5);
+    ctx.font = '18px serif';
+    ctx.fillText(seg.emoji, R - 80, 6);
+    ctx.restore();
+
+    start += slice;
+  });
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 24, 0, Math.PI * 2);
+  ctx.fillStyle = '#0f0c29';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,215,0,.5)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.fillStyle = '#FFD700';
+  ctx.font = 'bold 16px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🎡', cx, cy);
+}
+
+// Determine which segment is at top (pointer)
+function getSegmentAtTop(angle) {
+  const total = SEGMENTS.reduce((s, seg) => s + seg.weight, 0);
+  // Normalize angle to [0, 2π)
+  let norm = ((-angle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  // pointer is at top = π/2 from start, but wheel starts at 0
+  // Actually pointer is at top of canvas, which is -π/2 in canvas coords
+  // We want the segment under the pointer at top (-π/2 from positive x-axis, i.e. 3π/2)
+  let target = (Math.PI * 2 - (Math.PI / 2)) % (Math.PI * 2);
+  // Find which segment contains target in normalized space
+  let pos = norm;
+  let cumulative = 0;
+  for (const seg of SEGMENTS) {
+    const slice = (seg.weight / total) * Math.PI * 2;
+    if (target >= cumulative && target < cumulative + slice) return seg;
+    cumulative += slice;
+  }
+  return SEGMENTS[0];
+}
+
+function spin() {
+  if (spinning) return;
+  const state = getState();
+  if (state.used >= MAX_SPINS) return;
+
+  spinning = true;
+  document.getElementById('spin-btn').disabled = true;
+
+  // Pick result first, then calculate stop angle
+  const chosen = pickSegment();
+  const total = SEGMENTS.reduce((s, seg) => s + seg.weight, 0);
+
+  // Find segment's middle angle
+  let segStart = 0;
+  for (const seg of SEGMENTS) {
+    const slice = (seg.weight / total) * Math.PI * 2;
+    if (seg === chosen) {
+      // We want this segment's middle to end up at top pointer
+      // Pointer is at angle -π/2 from center (top)
+      const segMid = segStart + slice / 2;
+      // Target: after spinning, currentAngle should be such that segMid lands at top
+      // top = 3π/2 in unit circle (pointing up = -y direction)
+      const spins = 6 + Math.random() * 4; // 6-10 full rotations
+      const targetAngle = -(segMid - Math.PI * 1.5) + Math.PI * 2 * spins;
+      animateSpin(targetAngle, chosen);
+      break;
+    }
+    segStart += (seg.weight / total) * Math.PI * 2;
+  }
+}
+
+function animateSpin(targetDelta, chosen) {
+  const duration = 3500 + Math.random() * 1000;
+  const startAngle = currentAngle;
+  const endAngle = startAngle + targetDelta;
+  const startTime = performance.now();
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+  function frame(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    currentAngle = startAngle + (endAngle - startAngle) * easeOut(t);
+    drawWheel(currentAngle);
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      currentAngle = endAngle;
+      drawWheel(currentAngle);
+      spinning = false;
+      onSpinDone(chosen);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function onSpinDone(seg) {
+  const state = getState();
+  state.used++;
+  saveState(state);
+  addHistory(seg);
+  seg.action();
+
+  // Show result
+  document.getElementById('r-emoji').textContent = seg.emoji;
+  document.getElementById('r-title').textContent = seg.title;
+  const desc = typeof seg.desc === 'function' ? seg.desc() : seg.desc;
+  document.getElementById('r-desc').textContent = desc;
+  document.getElementById('result-popup').classList.add('show');
+
+  updateUI();
+}
+
+function closeResult() {
+  document.getElementById('result-popup').classList.remove('show');
+}
+
+function updateUI() {
+  const state = getState();
+  const remaining = MAX_SPINS - state.used;
+
+  // Dots
+  for (let i = 0; i < MAX_SPINS; i++) {
+    const dot = document.getElementById('dot' + i);
+    if (dot) dot.className = 'spin-dot ' + (i < remaining ? 'avail' : 'used');
+  }
+
+  document.getElementById('spins-label').textContent =
+    remaining > 0 ? `${remaining} кручени${remaining === 1 ? 'е' : 'я'} осталось` : 'Все кручения использованы';
+
+  const btn = document.getElementById('spin-btn');
+  if (remaining <= 0) {
+    btn.disabled = true;
+    btn.textContent = '⏰ Возвращайся завтра!';
+    startCooldownTimer();
+    document.getElementById('cooldown-block').style.display = 'block';
+  } else {
+    btn.disabled = false;
+    btn.textContent = '🎡 Крутить!';
+    document.getElementById('cooldown-block').style.display = 'none';
+  }
+
+  // History
+  const h = getHistory();
+  const histEl = document.getElementById('history-list');
+  if (h.length === 0) {
+    histEl.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:13px;padding:8px">Пока ничего — крути колесо!</div>';
+  } else {
+    histEl.innerHTML = h.map(item => `
+      <div class="history-item">
+        <span class="h-emoji">${item.emoji}</span>
+        <span>${item.label}</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.3);font-size:11px">${item.time}</span>
+      </div>`).join('');
+  }
+}
+
+function startCooldownTimer() {
+  function tick() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setHours(0,0,0,0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const diff = tomorrow - now;
+    const h = String(Math.floor(diff / 3600000)).padStart(2,'0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
+    const el = document.getElementById('cd-time');
+    if (el) el.textContent = `${h}:${m}:${s}`;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// Init
+drawWheel(0);
+updateUI();
+</script>
+<script src="pet-widget.js"></script>
+</body>
+</html>
