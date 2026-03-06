@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Путь карьеры — Профиленд</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(ellipse at top, #1b2735 0%, #090a0f 100%);
+  min-height: 100vh; color: #fff;
+  padding: 20px 16px 100px;
+}
+.container { max-width: 640px; margin: 0 auto; }
+
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.1); color: #fff;
+  border: 1px solid rgba(255,255,255,.2); border-radius: 20px;
+  padding: 8px 16px; font-size: 14px; cursor: pointer;
+  text-decoration: none; margin-bottom: 20px; transition: background .2s;
+}
+.back-btn:hover { background: rgba(255,255,255,.2); }
+
+/* Шапка */
+.page-header { text-align: center; margin-bottom: 28px; }
+.page-header h1 { font-size: 1.8rem; font-weight: 900; }
+.page-header p { color: rgba(255,255,255,.45); font-size: .9rem; margin-top: 6px; }
+
+/* Статистика */
+.stats-row {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+  margin-bottom: 28px;
+}
+.stat-chip {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px; padding: 12px;
+  text-align: center;
+}
+.stat-chip .num { font-size: 1.5rem; font-weight: 900; color: #FFD700; }
+.stat-chip .lbl { font-size: .7rem; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+/* Секции */
+.section-label {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .75rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: rgba(255,255,255,.35);
+  margin: 24px 0 14px;
+}
+.section-label::after {
+  content: ''; flex: 1;
+  height: 1px; background: rgba(255,255,255,.08);
+}
+
+/* Путь — список карточек */
+.path-list { position: relative; }
+
+/* Соединительная линия */
+.path-list::before {
+  content: '';
+  position: absolute;
+  left: 28px; top: 30px; bottom: 30px;
+  width: 2px;
+  background: linear-gradient(to bottom, rgba(255,215,0,.5), rgba(255,215,0,.05));
+  z-index: 0;
+}
+
+.path-node {
+  display: flex; gap: 14px; align-items: flex-start;
+  margin-bottom: 14px; position: relative; z-index: 1;
+  animation: node-in .4s ease backwards;
+}
+@keyframes node-in { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+
+/* Точка на линии */
+.node-dot {
+  width: 56px; height: 56px; flex-shrink: 0;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  border: 3px solid rgba(255,255,255,.15);
+  background: rgba(10,10,20,.8);
+  transition: transform .2s;
+  position: relative;
+}
+.node-dot.mastered {
+  border-color: #FFD700;
+  box-shadow: 0 0 16px rgba(255,215,0,.4);
+}
+.node-dot.explored { border-color: rgba(162,155,254,.6); }
+.node-dot.visited  { border-color: rgba(255,255,255,.2); }
+
+/* Звёздочка-избранное */
+.star-btn {
+  position: absolute; top: -4px; right: -4px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(10,10,20,.9);
+  border: 1px solid rgba(255,255,255,.2);
+  cursor: pointer; font-size: .65rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .2s;
+}
+.star-btn:hover { transform: scale(1.3); }
+.star-btn.starred { border-color: #FFD700; background: rgba(255,215,0,.2); }
+
+/* Карточка профессии */
+.node-card {
+  flex: 1;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px; padding: 14px 16px;
+  transition: border-color .2s;
+}
+.node-card:hover { border-color: rgba(255,255,255,.2); }
+.node-card.starred { border-color: rgba(255,215,0,.35); background: rgba(255,215,0,.06); }
+
+.node-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.node-name { font-size: 1rem; font-weight: 800; }
+.node-district {
+  font-size: .68rem; font-weight: 700; padding: 3px 10px;
+  border-radius: 10px; white-space: nowrap; flex-shrink: 0;
+  opacity: .85;
+}
+
+.node-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.nbadge {
+  font-size: .68rem; padding: 3px 9px; border-radius: 8px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.6);
+}
+.nbadge.done { background: rgba(77,255,154,.1); border-color: rgba(77,255,154,.3); color: #4dff9a; }
+
+.node-actions {
+  display: flex; gap: 6px; margin-top: 10px;
+}
+.node-link {
+  font-size: .72rem; font-weight: 700; padding: 5px 12px;
+  border-radius: 8px; text-decoration: none; color: #fff;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
+  transition: background .2s;
+}
+.node-link:hover { background: rgba(255,255,255,.16); }
+
+/* Пустое состояние */
+.empty-state {
+  text-align: center; padding: 48px 24px;
+  color: rgba(255,255,255,.35);
+}
+.empty-state .big { font-size: 4rem; margin-bottom: 14px; }
+.empty-state p { font-size: .95rem; line-height: 1.6; }
+.empty-state a {
+  display: inline-block; margin-top: 18px; padding: 12px 24px;
+  background: linear-gradient(135deg,#FFD700,#FFA500);
+  color: #1a0a00; font-weight: 800; border-radius: 14px;
+  text-decoration: none; font-size: .9rem;
+}
+
+/* Рекомендации */
+.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rec-card {
+  background: rgba(255,255,255,.05);
+  border: 1px dashed rgba(255,255,255,.15);
+  border-radius: 16px; padding: 14px;
+  text-decoration: none; color: #fff;
+  transition: all .2s; display: block;
+}
+.rec-card:hover { background: rgba(255,255,255,.1); border-style: solid; }
+.rec-card-emoji { font-size: 1.8rem; margin-bottom: 6px; }
+.rec-card-name { font-size: .88rem; font-weight: 800; margin-bottom: 3px; }
+.rec-card-why { font-size: .7rem; color: rgba(255,255,255,.45); line-height: 1.4; }
+
+/* Итог-баннер (если много пройдено) */
+.summary-banner {
+  background: linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,165,0,.08));
+  border: 1px solid rgba(255,215,0,.25);
+  border-radius: 18px; padding: 18px 20px; margin-top: 28px;
+  text-align: center;
+}
+.summary-banner h3 { font-size: 1rem; font-weight: 800; color: #FFD700; margin-bottom: 6px; }
+.summary-banner p { font-size: .82rem; color: rgba(255,255,255,.6); line-height: 1.5; }
+
+/* Фильтры */
+.filter-row {
+  display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px;
+}
+.filter-btn {
+  flex-shrink: 0; padding: 7px 14px; border-radius: 16px; font-size: .78rem; font-weight: 700;
+  cursor: pointer; border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06); color: rgba(255,255,255,.6);
+  transition: all .2s;
+}
+.filter-btn.active { background: rgba(255,215,0,.15); border-color: rgba(255,215,0,.4); color: #FFD700; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back-btn">← На главную</a>
+
+  <div class="page-header">
+    <h1>🗺️ Путь карьеры</h1>
+    <p>Профессии которые ты изучила — и куда идти дальше</p>
+  </div>
+
+  <div class="stats-row" id="stats-row"></div>
+
+  <div id="path-content"></div>
+</div>
+
+<script>
+const DISTRICT_COLORS = {
+  medical:'#FF6B6B', social:'#4ECDC4', creative:'#FFE66D', music:'#A29BFE',
+  tech:'#6C5CE7', science:'#00B894', nature:'#55EFC4', construction:'#FDCB6E',
+  business:'#0984E3', media:'#E17055', culinary:'#FD79A8', transport:'#74B9FF',
+  military:'#636E72', sports:'#00CEC9', agro:'#6AB04C', education:'#F9CA24',
+  service:'#F0932B', tourism:'#EB4D4B', industrial:'#7F8C8D', gaming:'#9B59B6'
+};
+const DISTRICT_NAMES = {
+  medical:'Медицина', social:'Соцпомощь', creative:'Творчество', music:'Музыка',
+  tech:'Технологии', science:'Наука', nature:'Природа', construction:'Строительство',
+  business:'Бизнес', media:'Медиа', culinary:'Кулинария', transport:'Транспорт',
+  military:'Силовые', sports:'Спорт', agro:'Агро', education:'Образование',
+  service:'Сервис', tourism:'Туризм', industrial:'Индустрия', gaming:'Геймдев'
+};
+
+let allProfs = [];
+let favorites = new Set(JSON.parse(localStorage.getItem('profiland_career_favs') || '[]'));
+let currentFilter = 'all';
+
+async function init() {
+  const data = await fetch('data/professions.json').then(r => r.json());
+  allProfs = data.districts.flatMap(d => d.professions.map(p => ({ ...p, district: d.id, districtName: DISTRICT_NAMES[d.id] || d.id })));
+
+  const badges    = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
+  const quizDone  = new Set(JSON.parse(localStorage.getItem('profiland_quiz_done') || '[]'));
+  const scenDone  = new Set(JSON.parse(localStorage.getItem('profiland_scenario_done') || '[]'));
+  const taskBadges= JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
+
+  // Обогащаем профессии статусом
+  const enriched = allProfs.map(p => ({
+    ...p,
+    hasBadge:    badges.has(p.id),
+    hasQuiz:     quizDone.has(p.id),
+    hasScenario: scenDone.has(p.id),
+    hasTask:     !!taskBadges[p.id],
+    get status() {
+      const score = (this.hasBadge?4:0)+(this.hasQuiz?2:0)+(this.hasScenario?2:0)+(this.hasTask?1:0);
+      if (score >= 6) return 'mastered';
+      if (score >= 2) return 'explored';
+      if (score >= 1) return 'visited';
+      return 'none';
+    }
+  }));
+
+  const explored = enriched.filter(p => p.status !== 'none');
+  const mastered = enriched.filter(p => p.status === 'mastered');
+
+  // Статистика
+  renderStats(explored.length, mastered.length, enriched.filter(p=>favorites.has(p.id)).length);
+
+  if (explored.length === 0) {
+    renderEmpty();
+    return;
+  }
+
+  // Сортировка: мастера → изученные → посещённые, внутри — избранные первыми
+  explored.sort((a,b) => {
+    const statusOrder = {mastered:0, explored:1, visited:2};
+    if (statusOrder[a.status] !== statusOrder[b.status]) return statusOrder[a.status]-statusOrder[b.status];
+    const aFav = favorites.has(a.id) ? 0 : 1;
+    const bFav = favorites.has(b.id) ? 0 : 1;
+    return aFav - bFav;
+  });
+
+  renderContent(explored, enriched);
+}
+
+function renderStats(total, mastered, favCount) {
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-chip"><div class="num">${total}</div><div class="lbl">профессий изучено</div></div>
+    <div class="stat-chip"><div class="num">${mastered}</div><div class="lbl">освоено полностью</div></div>
+    <div class="stat-chip"><div class="num">${favCount}</div><div class="lbl">в избранном ⭐</div></div>`;
+}
+
+function renderContent(explored, all) {
+  const content = document.getElementById('path-content');
+
+  // Фильтры
+  const filters = [
+    {id:'all', label:'Все'},
+    {id:'mastered', label:'🏅 Освоено'},
+    {id:'explored', label:'🔍 Изучено'},
+    {id:'fav', label:'⭐ Избранное'},
+  ];
+
+  content.innerHTML = `
+    <div class="filter-row">
+      ${filters.map(f => `
+        <button class="filter-btn ${f.id===currentFilter?'active':''}" onclick="setFilter('${f.id}')">
+          ${f.label}
+        </button>`).join('')}
+    </div>
+    <div class="section-label">Мой путь</div>
+    <div class="path-list" id="path-list"></div>
+    <div class="section-label" id="rec-label">Рекомендую дальше</div>
+    <div class="rec-grid" id="rec-grid"></div>
+  `;
+
+  renderList(explored);
+  renderRecommendations(explored, all);
+  renderSummary(explored.length, content);
+}
+
+function renderList(explored) {
+  let filtered = explored;
+  if (currentFilter === 'mastered') filtered = explored.filter(p=>p.status==='mastered');
+  else if (currentFilter === 'explored') filtered = explored.filter(p=>p.status==='explored');
+  else if (currentFilter === 'fav') filtered = explored.filter(p=>favorites.has(p.id));
+
+  const list = document.getElementById('path-list');
+  if (!list) return;
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:.85rem;padding:16px 0">Здесь пока пусто</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map((p, i) => {
+    const color = DISTRICT_COLORS[p.district] || '#888';
+    const isFav = favorites.has(p.id);
+    const statusClass = p.status;
+    return `
+      <div class="path-node" style="animation-delay:${i*0.05}s">
+        <div class="node-dot ${statusClass}">
+          <span>${p.emoji || '💼'}</span>
+          <div class="star-btn ${isFav?'starred':''}" onclick="toggleFav('${p.id}',event)">${isFav?'⭐':'☆'}</div>
+        </div>
+        <div class="node-card ${isFav?'starred':''}">
+          <div class="node-top">
+            <div class="node-name">${p.name}</div>
+            <div class="node-district" style="background:${color}22;color:${color};border:1px solid ${color}44">${p.districtName}</div>
+          </div>
+          <div class="node-badges">
+            <span class="nbadge ${p.hasBadge?'done':''}">🏅 Значок</span>
+            <span class="nbadge ${p.hasQuiz?'done':''}">📝 Квиз</span>
+            <span class="nbadge ${p.hasScenario?'done':''}">🎭 Сценарий</span>
+            <span class="nbadge ${p.hasTask?'done':''}">⚡ Задание</span>
+          </div>
+          <div class="node-actions">
+            <a href="district.html?id=${p.district}" class="node-link">🏙️ Район</a>
+            ${!p.hasQuiz ? `<a href="quiz.html?prof=${p.id}&district=${p.district}" class="node-link">📝 Квиз</a>` : ''}
+            ${!p.hasScenario ? `<a href="scenario.html?prof=${p.id}" class="node-link">🎭 Сценарий</a>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderRecommendations(explored, all) {
+  const exploredIds = new Set(explored.map(p=>p.id));
+  // Найдём районы которые чаще всего встречаются у изученных
+  const districtCounts = {};
+  explored.forEach(p => { districtCounts[p.district] = (districtCounts[p.district]||0)+1; });
+  const topDistricts = Object.entries(districtCounts).sort((a,b)=>b[1]-a[1]).map(e=>e[0]);
+
+  // Рекомендуем неизученные профессии из любимых районов
+  const recs = [];
+  for (const dist of [...topDistricts, ...Object.keys(DISTRICT_NAMES)]) {
+    if (recs.length >= 4) break;
+    const candidates = all.filter(p => p.district === dist && !exploredIds.has(p.id));
+    if (candidates.length > 0) recs.push(candidates[Math.floor(Math.random()*candidates.length)]);
+  }
+
+  const grid = document.getElementById('rec-grid');
+  const label = document.getElementById('rec-label');
+  if (!grid || recs.length === 0) { if(label) label.style.display='none'; return; }
+
+  grid.innerHTML = recs.slice(0,4).map(p => {
+    const color = DISTRICT_COLORS[p.district] || '#888';
+    return `
+      <a class="rec-card" href="district.html?id=${p.district}">
+        <div class="rec-card-emoji">${p.emoji || '💼'}</div>
+        <div class="rec-card-name">${p.name}</div>
+        <div class="rec-card-why" style="color:${color}">
+          ${p.districtName} — похоже на то что тебе нравится
+        </div>
+      </a>`;
+  }).join('');
+}
+
+function renderSummary(total, parent) {
+  if (total < 5) return;
+  let msg = '';
+  if (total >= 30) msg = 'Ты настоящий исследователь профессий! Мало кто добирается до такого результата.';
+  else if (total >= 15) msg = 'Ты уже хорошо знакома с миром профессий. Попробуй освоить новые районы!';
+  else msg = 'Хорошее начало пути! Продолжай изучать — каждая профессия открывает новые горизонты.';
+
+  const banner = document.createElement('div');
+  banner.className = 'summary-banner';
+  banner.innerHTML = `<h3>🌟 Твоя карьерная история</h3><p>${msg}</p>`;
+  parent.appendChild(banner);
+}
+
+function renderEmpty() {
+  document.getElementById('path-content').innerHTML = `
+    <div class="empty-state">
+      <div class="big">🗺️</div>
+      <p>Ты ещё не изучала профессии.<br>Начни с любого района — и твой путь появится здесь!</p>
+      <a href="index.html">Исследовать районы →</a>
+    </div>`;
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  // Перерисовать список
+  const badges    = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
+  const quizDone  = new Set(JSON.parse(localStorage.getItem('profiland_quiz_done') || '[]'));
+  const scenDone  = new Set(JSON.parse(localStorage.getItem('profiland_scenario_done') || '[]'));
+  const taskBadges= JSON.parse(localStorage.getItem('profiland_task_badges') || '{}');
+  const explored = allProfs.map(p => ({
+    ...p,
+    hasBadge: badges.has(p.id), hasQuiz: quizDone.has(p.id),
+    hasScenario: scenDone.has(p.id), hasTask: !!taskBadges[p.id],
+    get status() {
+      const s = (this.hasBadge?4:0)+(this.hasQuiz?2:0)+(this.hasScenario?2:0)+(this.hasTask?1:0);
+      return s>=6?'mastered':s>=2?'explored':s>=1?'visited':'none';
+    }
+  })).filter(p => p.status !== 'none');
+  explored.sort((a,b) => {
+    const o = {mastered:0,explored:1,visited:2};
+    if (o[a.status]!==o[b.status]) return o[a.status]-o[b.status];
+    return (favorites.has(a.id)?0:1)-(favorites.has(b.id)?0:1);
+  });
+  renderList(explored);
+}
+
+function toggleFav(id, e) {
+  e.stopPropagation();
+  if (favorites.has(id)) favorites.delete(id);
+  else favorites.add(id);
+  localStorage.setItem('profiland_career_favs', JSON.stringify([...favorites]));
+  // Обновляем только кнопку и карточку
+  const node = e.target.closest('.path-node');
+  const starBtn = e.target;
+  const card = node?.querySelector('.node-card');
+  const dot = node?.querySelector('.node-dot');
+  const isFav = favorites.has(id);
+  if (starBtn) { starBtn.textContent = isFav?'⭐':'☆'; starBtn.classList.toggle('starred', isFav); }
+  if (card) card.classList.toggle('starred', isFav);
+
+  // Обновить счётчик избранного
+  const chips = document.querySelectorAll('.stat-chip');
+  if (chips[2]) chips[2].querySelector('.num').textContent = favorites.size;
+}
+
+init();
+</script>
+<script src="pet-widget.js?v=3"></script>
+</body>
+</html>
