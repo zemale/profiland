@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Машина времени — Профиленд</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh; color: #fff;
+  background: #050510;
+  overflow-x: hidden;
+}
+
+/* Анимированный фон */
+#bg-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+}
+
+.container {
+  position: relative; z-index: 2;
+  max-width: 640px; margin: 0 auto;
+  padding: 20px 16px 80px;
+}
+
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.1); color: #fff;
+  border: 1px solid rgba(255,255,255,.2); border-radius: 20px;
+  padding: 8px 16px; font-size: 14px; cursor: pointer;
+  text-decoration: none; margin-bottom: 20px;
+}
+.back-btn:hover { background: rgba(255,255,255,.2); }
+
+/* Шапка */
+.page-header { text-align: center; margin-bottom: 32px; }
+.tm-logo { font-size: 3.5rem; margin-bottom: 10px; animation: tm-spin 8s linear infinite; display: inline-block; }
+@keyframes tm-spin { 0%,100%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} }
+.page-header h1 { font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg,#a29bfe,#FFD700); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.page-header p { color: rgba(255,255,255,.45); font-size: .9rem; margin-top: 6px; }
+
+/* Профессия-заголовок */
+.prof-header {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px; padding: 16px 20px;
+  margin-bottom: 28px;
+}
+.prof-emoji { font-size: 2.5rem; }
+.prof-name { font-size: 1.2rem; font-weight: 900; }
+.prof-district { font-size: .75rem; color: rgba(255,255,255,.45); margin-top: 3px; }
+
+/* Таймлайн */
+.timeline {
+  position: relative;
+  display: flex; flex-direction: column; gap: 0;
+}
+
+/* Горизонтальная ось времени (только на широких) */
+.timeline-axis {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; padding: 0 28px;
+}
+.axis-item { text-align: center; flex: 1; }
+.axis-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  margin: 0 auto 6px; border: 2px solid rgba(255,255,255,.3);
+}
+.axis-dot.past-dot { background: #636e72; border-color: #636e72; }
+.axis-dot.present-dot { background: #00b894; border-color: #00b894; box-shadow: 0 0 12px rgba(0,184,148,.5); }
+.axis-dot.future-dot { background: #6c5ce7; border-color: #6c5ce7; box-shadow: 0 0 12px rgba(108,92,231,.5); }
+.axis-line {
+  flex: 1; height: 2px; margin-bottom: 20px;
+  background: linear-gradient(90deg, #636e72, #00b894, #6c5ce7);
+}
+.axis-label { font-size: .7rem; color: rgba(255,255,255,.4); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+
+/* Карточки эпох */
+.era-card {
+  border-radius: 22px; padding: 22px 20px; margin-bottom: 14px;
+  position: relative; overflow: hidden;
+  border: 1px solid transparent;
+  transition: transform .2s, box-shadow .2s;
+  animation: card-in .5s ease backwards;
+}
+.era-card:hover { transform: translateY(-3px); }
+
+@keyframes card-in { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.era-card.past {
+  background: linear-gradient(135deg, rgba(99,110,114,.15), rgba(45,52,54,.2));
+  border-color: rgba(99,110,114,.3);
+}
+.era-card.present {
+  background: linear-gradient(135deg, rgba(0,184,148,.12), rgba(0,121,107,.08));
+  border-color: rgba(0,184,148,.4);
+  box-shadow: 0 4px 24px rgba(0,184,148,.15);
+}
+.era-card.future {
+  background: linear-gradient(135deg, rgba(108,92,231,.12), rgba(162,155,254,.06));
+  border-color: rgba(108,92,231,.4);
+  box-shadow: 0 4px 24px rgba(108,92,231,.15);
+}
+
+/* Декоративная полоска слева */
+.era-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 2px 0 0 2px;
+}
+.era-card.past::before { background: #636e72; }
+.era-card.present::before { background: #00b894; }
+.era-card.future::before { background: #6c5ce7; }
+
+/* Декоративный узор */
+.era-card::after {
+  content: ''; position: absolute; right: -20px; top: -20px;
+  width: 120px; height: 120px; border-radius: 50%;
+  opacity: .04;
+}
+.era-card.past::after { background: #fff; }
+.era-card.present::after { background: #00b894; }
+.era-card.future::after { background: #a29bfe; }
+
+.era-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .72rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1px; padding: 4px 12px; border-radius: 10px;
+  margin-bottom: 12px;
+}
+.past .era-tag { background: rgba(99,110,114,.25); color: #b2bec3; }
+.present .era-tag { background: rgba(0,184,148,.2); color: #55efc4; }
+.future .era-tag { background: rgba(108,92,231,.2); color: #a29bfe; }
+
+.era-emoji-title {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.era-emoji { font-size: 2rem; }
+.era-title { font-size: 1.05rem; font-weight: 900; }
+
+.era-text {
+  font-size: .9rem; line-height: 1.7;
+  color: rgba(255,255,255,.8);
+}
+
+.era-fact {
+  margin-top: 14px; padding: 10px 14px;
+  background: rgba(255,255,255,.06);
+  border-radius: 12px; border-left: 3px solid rgba(255,215,0,.4);
+  font-size: .78rem; color: rgba(255,215,0,.85);
+  line-height: 1.5;
+}
+.era-fact::before { content: '💡 '; }
+
+/* Коннектор между карточками */
+.connector {
+  display: flex; align-items: center; justify-content: center;
+  height: 28px; gap: 6px;
+  color: rgba(255,255,255,.2); font-size: .75rem;
+}
+.connector-line { flex: 1; height: 1px; background: rgba(255,255,255,.08); }
+
+/* Блок "нет данных" */
+.no-data {
+  text-align: center; padding: 32px;
+  background: rgba(255,255,255,.04);
+  border: 1px dashed rgba(255,255,255,.15);
+  border-radius: 20px; margin-bottom: 14px;
+}
+.no-data-emoji { font-size: 3rem; margin-bottom: 12px; }
+.no-data p { color: rgba(255,255,255,.4); font-size: .9rem; }
+
+/* Другие профессии */
+.others-section { margin-top: 28px; }
+.others-title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,.3); margin-bottom: 12px; }
+.others-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.other-chip {
+  padding: 7px 14px; background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12); border-radius: 20px;
+  font-size: .8rem; font-weight: 700; color: rgba(255,255,255,.7);
+  cursor: pointer; text-decoration: none;
+  transition: all .2s;
+}
+.other-chip:hover { background: rgba(255,255,255,.14); color: #fff; }
+.other-chip.active { background: rgba(255,215,0,.15); border-color: rgba(255,215,0,.4); color: #FFD700; }
+
+/* XP награда */
+.xp-banner {
+  background: linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,165,0,.08));
+  border: 1px solid rgba(255,215,0,.25);
+  border-radius: 16px; padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 20px;
+}
+.xp-banner .big { font-size: 2rem; }
+.xp-banner .text { font-size: .85rem; color: rgba(255,255,255,.7); }
+.xp-banner .pts { font-size: 1rem; font-weight: 900; color: #FFD700; }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="container">
+  <a href="index.html" class="back-btn" id="back-link">← На главную</a>
+
+  <div class="page-header">
+    <div class="tm-logo">⏳</div>
+    <h1>Машина времени</h1>
+    <p>Как менялась профессия — и какой она станет</p>
+  </div>
+
+  <div id="prof-header-el" style="display:none">
+    <div class="prof-header">
+      <div class="prof-emoji" id="ph-emoji"></div>
+      <div>
+        <div class="prof-name" id="ph-name"></div>
+        <div class="prof-district" id="ph-district"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="timeline-content"></div>
+
+  <div class="others-section" id="others-section" style="display:none">
+    <div class="others-title">Другие профессии в машине времени</div>
+    <div class="others-chips" id="others-chips"></div>
+  </div>
+</div>
+
+<script>
+const DISTRICT_NAMES = {
+  medical:'Медицинский район', social:'Район соцпомощи', creative:'Творческий квартал',
+  music:'Музыкальный квартал', tech:'Технологический район', science:'Научный район',
+  nature:'Природный заповедник', construction:'Строительный район', business:'Деловой центр',
+  media:'Медиа-квартал', culinary:'Кулинарный рынок', transport:'Транспортный узел',
+  military:'Силовой район', sports:'Спортивная арена', agro:'Агрорайон',
+  education:'Образовательный квартал', service:'Сервисный район', tourism:'Туристический район',
+  industrial:'Промышленный район', gaming:'Геймдев-квартал'
+};
+
+let allData = {};
+let allProfs = [];
+let currentProfId = null;
+
+async function init() {
+  const params = new URLSearchParams(location.search);
+  const profId = params.get('prof');
+  const fromPage = params.get('from');
+
+  const [tmData, profsData] = await Promise.all([
+    fetch('data/timemachine.json').then(r=>r.json()),
+    fetch('data/professions.json').then(r=>r.json())
+  ]);
+
+  allData = tmData;
+  allProfs = profsData.districts.flatMap(d =>
+    d.professions.map(p => ({ ...p, district: d.id }))
+  );
+
+  // Обратная ссылка
+  if (fromPage === 'district') {
+    const distId = params.get('district');
+    document.getElementById('back-link').href = `district.html?id=${distId}`;
+    document.getElementById('back-link').textContent = '← Назад в район';
+  }
+
+  // Загружаем профессию или первую из доступных
+  const toLoad = profId || Object.keys(tmData)[0];
+  loadProfession(toLoad);
+
+  // Другие профессии
+  renderOthers(toLoad);
+
+  // Фон
+  initBg();
+
+  // +XP за посещение
+  giveXP();
+}
+
+function loadProfession(profId) {
+  currentProfId = profId;
+  const data = allData[profId];
+  const profInfo = allProfs.find(p => p.id === profId);
+
+  // Шапка профессии
+  if (profInfo) {
+    document.getElementById('prof-header-el').style.display = 'block';
+    document.getElementById('ph-emoji').textContent = profInfo.emoji || '💼';
+    document.getElementById('ph-name').textContent = profInfo.name;
+    document.getElementById('ph-district').textContent = DISTRICT_NAMES[profInfo.district] || profInfo.district;
+  }
+
+  const content = document.getElementById('timeline-content');
+
+  if (!data) {
+    content.innerHTML = `
+      <div class="no-data">
+        <div class="no-data-emoji">🔭</div>
+        <p>Для этой профессии машина времени ещё в разработке.<br>Выбери другую из списка ниже.</p>
+      </div>`;
+    renderOthers(profId);
+    return;
+  }
+
+  const eras = [
+    { key: 'past', cls: 'past', tagEmoji: '📜', tagText: 'Прошлое' },
+    { key: 'present', cls: 'present', tagEmoji: '📍', tagText: 'Сегодня' },
+    { key: 'future', cls: 'future', tagEmoji: '🔮', tagText: 'Будущее' },
+  ];
+
+  content.innerHTML = eras.map((era, i) => {
+    const e = data[era.key];
+    if (!e) return '';
+    return `
+      ${i > 0 ? `<div class="connector"><div class="connector-line"></div><span>↓</span><div class="connector-line"></div></div>` : ''}
+      <div class="era-card ${era.cls}" style="animation-delay:${i*0.15}s">
+        <div class="era-tag">${era.tagEmoji} ${e.era}</div>
+        <div class="era-emoji-title">
+          <div class="era-emoji">${e.emoji}</div>
+          <div class="era-title">${e.title}</div>
+        </div>
+        <div class="era-text">${e.text}</div>
+        <div class="era-fact">${e.fact}</div>
+      </div>`;
+  }).join('');
+
+  renderOthers(profId);
+}
+
+function renderOthers(currentId) {
+  const section = document.getElementById('others-section');
+  const chips = document.getElementById('others-chips');
+  const available = Object.keys(allData);
+
+  if (available.length <= 1) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  chips.innerHTML = available.map(id => {
+    const p = allProfs.find(p => p.id === id);
+    const label = p ? `${p.emoji || ''} ${p.name}` : id;
+    return `<a class="other-chip ${id===currentId?'active':''}" href="timemachine.html?prof=${id}">${label}</a>`;
+  }).join('');
+}
+
+function giveXP() {
+  const key = `profiland_tm_visited`;
+  const visited = JSON.parse(localStorage.getItem(key) || '[]');
+  if (!visited.includes(currentProfId)) {
+    visited.push(currentProfId);
+    localStorage.setItem(key, JSON.stringify(visited));
+    const xp = parseInt(localStorage.getItem('profiland_xp')||'0') + 5;
+    localStorage.setItem('profiland_xp', xp);
+    if (window.PET_BONUS?.xpBonus()) localStorage.setItem('profiland_xp', xp + 10);
+  }
+}
+
+// Фон — звёздное поле + "искажение времени"
+function initBg() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, stars = [], particles = [];
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Звёзды
+  for (let i = 0; i < 120; i++) {
+    stars.push({ x: Math.random()*1000, y: Math.random()*1000, r: Math.random()*1.2+.3, a: Math.random() });
+  }
+
+  // Световые частицы
+  for (let i = 0; i < 8; i++) {
+    particles.push({ x: Math.random(), y: Math.random(), vx: (Math.random()-.5)*.0003, vy: (Math.random()-.5)*.0003, size: Math.random()*2+1, color: ['#a29bfe','#FFD700','#00b894'][Math.floor(Math.random()*3)] });
+  }
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0,0,w,h);
+    // Фон
+    const grd = ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,Math.max(w,h)*.7);
+    grd.addColorStop(0,'#0d0d2b'); grd.addColorStop(1,'#020208');
+    ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
+    // Звёзды
+    stars.forEach(s => {
+      const pulse = .5 + .5*Math.sin(t*.02 + s.a*10);
+      ctx.beginPath();
+      ctx.arc(s.x/1000*w, s.y/1000*h, s.r*pulse, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,255,255,${.3+.4*pulse})`;
+      ctx.fill();
+    });
+    // Световые шлейфы
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x<0) p.x=1; if (p.x>1) p.x=0;
+      if (p.y<0) p.y=1; if (p.y>1) p.y=0;
+      ctx.beginPath();
+      ctx.arc(p.x*w, p.y*h, p.size, 0, Math.PI*2);
+      ctx.fillStyle = p.color+'55'; ctx.fill();
+    });
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+init();
+</script>
+<script src="pet-widget.js?v=3"></script>
+</body>
+</html>
