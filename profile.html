@@ -254,6 +254,15 @@ body[data-theme="candy"]{background:linear-gradient(135deg,#2d0030,#6b0050,#001a
   </div>
 </div>
 
+<!-- PETS -->
+<div class="section" id="pets-section">
+  <div class="section-title">🐾 Мой отряд питомцев</div>
+  <div id="pets-big-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px"></div>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.35);line-height:1.5">
+    Питомцы отражают твой прогресс и реагируют на погоду Профиленда. Нажми на карточку чтобы добавить в отряд.
+  </p>
+</div>
+
 <!-- CHALLENGES -->
 <div class="section" id="challenges-section" style="display:none">
   <div class="section-title">🎯 Активные челленджи <span id="challengeCount" style="font-size:.75rem;font-weight:500;opacity:.6"></span></div>
@@ -721,6 +730,8 @@ function render() {
     }).join('');
   }
 
+  // Pets
+  renderProfilePets();
   // Challenges
   renderChallenges(districtTrophies, badges);
 
@@ -737,6 +748,51 @@ function render() {
         <div>→</div>
       </div>`;
   }
+}
+
+function renderProfilePets() {
+  const grid = document.getElementById('pets-big-grid');
+  if (!grid) return;
+  const PETS_DATA = {
+    desman:{ emoji:'🦦', name:'Выхухоль', desc:'Всегда рядом с первого дня',    unlock:'Доступна сразу', check:()=>true },
+    lion:  { emoji:'🦁', name:'Лев',      desc:'За 10 значков',                 unlock:'10 значков',     check:d=>d.badges>=10 },
+    snake: { emoji:'🐍', name:'Змея',     desc:'За 5 пройденных квизов',        unlock:'5 квизов',       check:d=>d.quizzes>=5 },
+    raven: { emoji:'🪶', name:'Ворон',    desc:'За первый районный трофей',     unlock:'1 трофей',       check:d=>d.trophies>=1 },
+    deer:  { emoji:'🦌', name:'Олень',    desc:'За посещение 10 районов',       unlock:'10 районов',     check:d=>d.districts>=10 },
+  };
+  const badges   = JSON.parse(localStorage.getItem('profiland_badges') || '[]');
+  const quizzes  = JSON.parse(localStorage.getItem('profiland_quiz_done') || '[]');
+  const trophies = JSON.parse(localStorage.getItem('profiland_trophies') || '[]');
+  const distMap  = JSON.parse(localStorage.getItem('profiland_district_map') || '{}');
+  const districts= new Set(badges.map(b=>distMap[b]).filter(Boolean)).size;
+  const d = { badges:badges.length, quizzes:quizzes.length, trophies:trophies.length, districts };
+  const selected = JSON.parse(localStorage.getItem('profiland_selected_pets') || '["desman"]');
+
+  grid.innerHTML = Object.entries(PETS_DATA).map(([id, pet]) => {
+    const unlocked = pet.check(d);
+    const isSelected = selected.includes(id);
+    return `
+      <div onclick="${unlocked ? `profileTogglePet('${id}')` : ''}" style="
+        background:${isSelected ? 'rgba(255,215,0,.12)' : 'rgba(255,255,255,.05)'};
+        border:2px solid ${isSelected ? 'rgba(255,215,0,.5)' : 'rgba(255,255,255,.08)'};
+        border-radius:16px;padding:16px;text-align:center;
+        cursor:${unlocked ? 'pointer' : 'not-allowed'};
+        opacity:${unlocked ? '1' : '0.4'};
+        transition:all .2s;filter:${unlocked ? 'none' : 'grayscale(.8)'}">
+        <div style="font-size:2.4rem;margin-bottom:8px">${pet.emoji}</div>
+        <div style="font-weight:700;font-size:.9rem;color:#fff">${pet.name} ${isSelected ? '✅' : ''}</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-top:4px">${unlocked ? pet.desc : '🔒 ' + pet.unlock}</div>
+      </div>`;
+  }).join('');
+}
+
+function profileTogglePet(id) {
+  let sel = JSON.parse(localStorage.getItem('profiland_selected_pets') || '["desman"]');
+  if (sel.includes(id)) { if (sel.length > 1) sel = sel.filter(s => s !== id); }
+  else sel.push(id);
+  localStorage.setItem('profiland_selected_pets', JSON.stringify(sel));
+  renderProfilePets();
+  if (typeof renderPetWidget === 'function') renderPetWidget();
 }
 
 // District challenges (same data as trophy_challenge.html)
@@ -829,5 +885,6 @@ render();
 renderMainAvatar();
 loadDistrictMap().then(render);
 </script>
+<script src="pet-widget.js"></script>
 </body>
 </html>
