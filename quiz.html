@@ -569,8 +569,13 @@ function showResult() {
   subjectsDiv.innerHTML = `<h3>📚 Предметы для этой профессии:</h3>` +
     quizData.subjects.map(s => `<div class="subject-item">${subjectIcons[s]||'📖'} ${s}</div>`).join('');
 
-  // Уведомляем питомцев
+  // Сохраняем факт прохождения квиза
   const profId = new URLSearchParams(location.search).get('prof');
+  if (profId) {
+    const done = new Set(JSON.parse(localStorage.getItem('profiland_quiz_done') || '[]'));
+    done.add(profId);
+    localStorage.setItem('profiland_quiz_done', JSON.stringify([...done]));
+  }
   if (window.PET_BONUS) window.PET_BONUS.notifyTaskDone('quiz', profId || 'any');
   // Олень: +10 XP
   if (window.PET_BONUS?.xpBonus()) {

@@ -171,14 +171,30 @@ function checkQuestDone(petId) {
 }
 
 // ── Ежедневные задания ──
+function pickBestTask(pet) {
+  // Сначала пробуем подобрать задание по интересам пользователя
+  const visited = Object.keys(load('profiland_district_map', {}));
+  const badges  = load('profiland_badges', []);
+  // Профессии из посещённых районов — берём из значков
+  const preferred = new Set([...badges, ...visited]);
+
+  // Задания которые совпадают с интересами и ещё не выполнены
+  const fresh = pet.tasks.filter(t => !isTaskCompleted(t));
+  const matched = fresh.filter(t => t.id === 'any' || preferred.has(t.id));
+
+  // Приоритет: совпадающее + невыполненное → просто невыполненное → любое
+  const pool = matched.length > 0 ? matched : (fresh.length > 0 ? fresh : pet.tasks);
+  return pet.tasks.indexOf(pool[Math.floor(Math.random() * pool.length)]);
+}
+
 function getDailyTask(petId) {
   const daily = load(KEYS.dailyTasks, {});
   const entry = daily[petId];
   if (entry && entry.date === today()) return entry;
-  // Новый день — новое задание
+  // Новый день — новое задание с учётом интересов
   const pet = PETS[petId];
   if (!pet) return null;
-  const idx = Math.floor(Math.random() * pet.tasks.length);
+  const idx = pickBestTask(pet);
   const task = pet.tasks[idx];
   // Если задание уже выполнено — сразу happy
   const done = isTaskCompleted(task);
