@@ -495,6 +495,25 @@ function renderQuestion() {
     btn.onclick = () => selectAnswer(btn, origIdx === q.correct, q.hint, color);
     optEl.appendChild(btn);
   });
+
+  // 🪶 Бонус Ворона — подсказка на текущий вопрос
+  if (window.PET_BONUS?.trophyHint()) {
+    const ravenBtn = document.getElementById('raven-hint-btn') || (() => {
+      const b = document.createElement('button');
+      b.id = 'raven-hint-btn';
+      b.style.cssText = 'margin-top:10px;width:100%;padding:9px;font-size:.8rem;font-weight:700;background:rgba(99,110,114,.2);border:1px solid rgba(99,110,114,.5);color:#b2bec3;border-radius:12px;cursor:pointer';
+      b.textContent = '🪶 Подсказка Ворона';
+      b.onclick = () => {
+        const hintEl = document.getElementById('q-hint');
+        hintEl.innerHTML = `🪶 Ворон шепчет: ${q.hint}`;
+        hintEl.classList.add('show');
+        b.style.display = 'none';
+      };
+      optEl.parentNode.insertBefore(b, optEl.nextSibling);
+      return b;
+    })();
+    ravenBtn.style.display = 'block';
+  }
 }
 
 function selectAnswer(clickedBtn, isCorrect, hint, color) {
