@@ -508,22 +508,44 @@ function renderSquadTab(content, owned, selected) {
   }).join('');
 }
 
+function refreshDailyTask(petId) {
+  const daily = load(KEYS.dailyTasks, {});
+  delete daily[petId]; // сбрасываем кэш
+  save(KEYS.dailyTasks, daily);
+  pwRender('tasks');
+}
+
 function renderTasksTab(content, owned) {
-  if (owned.length === 0) { content.innerHTML = '<div style="color:rgba(255,255,255,.4);font-size:.85rem">Сначала получи питомцев!</div>'; return; }
+  if (owned.length === 0) {
+    content.innerHTML = '<div style="color:rgba(255,255,255,.4);font-size:.85rem">Сначала получи питомцев!</div>';
+    return;
+  }
 
   content.innerHTML = owned.map(id => {
     const pet = PETS[id];
     const daily = getDailyTask(id);
     if (!daily) return '';
     const task = pet.tasks[daily.taskIdx];
-    const mood = getMood(id);
+
+    // Проверяем актуальность выполнения
+    if (!daily.done && isTaskCompleted(task)) {
+      markDailyDone(id);
+      daily.done = true;
+    }
+
     return `
-      <div class="pw-task-card" style="border-color:${daily.done ? 'rgba(77,255,154,.3)' : 'rgba(255,255,255,.08)'}">
+      <div class="pw-task-card" style="border-color:${daily.done ? 'rgba(77,255,154,.3)' : `${pet.color}44`}">
         <div class="pw-task-pet" style="color:${pet.color}">${pet.emoji} ${pet.name}</div>
-        <div class="pw-task-text">${task?.text || ''}</div>
+        <div class="pw-task-text" style="margin:6px 0">${task?.text || ''}</div>
         ${daily.done
-          ? `<div class="pw-task-done">✅ Выполнено! Бонус активен</div>`
-          : `<div class="pw-task-bonus" style="color:${pet.color}">🎁 Бонус: ${pet.bonus}</div>`}
+          ? `<div class="pw-task-done">✅ Выполнено — бонус активен!</div>`
+          : `<div>
+               <div class="pw-task-bonus" style="color:${pet.color}">🎁 Бонус: ${pet.bonus}</div>
+               <button onclick="refreshDailyTask('${id}')" style="margin-top:8px;font-size:.7rem;padding:5px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);border-radius:8px;cursor:pointer">
+                 🔄 Другое задание
+               </button>
+             </div>`
+        }
       </div>`;
   }).join('');
 }
@@ -582,13 +604,18 @@ function pwCheckQuest(petId) {
   const done = checkQuestDone(petId);
   if (done) {
     showPetNotification(petId);
-    // Move to squad tab
-    setTimeout(() => { pwTab('squad'); }, 500);
+    setTimeout(() => { pwTab('squad'); }, 600);
   } else {
-    const btn = event?.target;
-    if (btn) { btn.textContent = '❌ Ещё не выполнено'; setTimeout(() => { btn.textContent = '✅ Проверить выполнение'; }, 2000); }
+    // Показываем фидбек прямо внутри карточки
+    const btn = document.querySelector(`[onclick="pwCheckQuest('${petId}')"]`);
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = '❌ Ещё не выполнено — пройди задание!';
+      btn.style.background = 'rgba(255,100,100,.3)';
+      setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 3000);
+    }
   }
-  pwRender('unlock');
+  if (done) setTimeout(() => pwRender('unlock'), 700);
 }
 
 // Авто-инициализация
