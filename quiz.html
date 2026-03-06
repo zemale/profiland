@@ -369,6 +369,21 @@ function renderQuestion() {
 
   // unlock list
   list.querySelectorAll('.answer-item').forEach(el => el.classList.remove('locked'));
+
+  // 🦦 Бонус Выхухоли — убрать один неверный вариант
+  if (window.PET_BONUS?.quizHint()) {
+    const wrongItems = [...list.querySelectorAll('.answer-item')].filter((el, i) => !shuffled[i]?.correct);
+    if (wrongItems.length > 0) {
+      const toHide = wrongItems[Math.floor(Math.random() * wrongItems.length)];
+      toHide.style.opacity = '0.25';
+      toHide.style.pointerEvents = 'none';
+      toHide.title = '🦦 Выхухоль подсказала: этот вариант неверный';
+      const hint = document.createElement('div');
+      hint.style.cssText = 'font-size:.7rem;color:#00CEC9;margin-bottom:6px;text-align:right';
+      hint.textContent = '🦦 Выхухоль убрала один неверный вариант';
+      list.parentNode.insertBefore(hint, list);
+    }
+  }
 }
 
 function toggleAnswer(idx) {
@@ -554,8 +569,14 @@ function showResult() {
   subjectsDiv.innerHTML = `<h3>📚 Предметы для этой профессии:</h3>` +
     quizData.subjects.map(s => `<div class="subject-item">${subjectIcons[s]||'📖'} ${s}</div>`).join('');
 
-  // Выдаём значок за прохождение квиза
+  // Уведомляем питомцев
   const profId = new URLSearchParams(location.search).get('prof');
+  if (window.PET_BONUS) window.PET_BONUS.notifyTaskDone('quiz', profId || 'any');
+  // Олень: +10 XP
+  if (window.PET_BONUS?.xpBonus()) {
+    const xp = parseInt(localStorage.getItem('profiland_xp')||'0') + 10;
+    localStorage.setItem('profiland_xp', xp);
+  }
   const isNew = profId && earnBadge(profId);
   if (profId) checkDistrictTrophy(profId);
   if (isNew) {

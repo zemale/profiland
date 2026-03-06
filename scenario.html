@@ -596,8 +596,13 @@ function showResult() {
 
   document.getElementById('outroText').innerHTML = `<strong style="color:${color}">${label}</strong><br><br>${scenario.outro}`;
 
-  // Выдаём значок за прохождение сценария
+  // Уведомляем питомцев
   const profId = new URLSearchParams(location.search).get('prof');
+  if (window.PET_BONUS) window.PET_BONUS.notifyTaskDone('scenario', profId || 'any');
+  if (window.PET_BONUS?.xpBonus()) {
+    const xp = parseInt(localStorage.getItem('profiland_xp')||'0') + 10;
+    localStorage.setItem('profiland_xp', xp);
+  }
   const isNew = profId && earnBadge(profId);
   if (profId) checkDistrictTrophy(profId);
   if (isNew) {

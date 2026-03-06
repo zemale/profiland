@@ -153,6 +153,10 @@ body {
     <button class="next-clue-btn" id="next-clue-btn" onclick="revealClue()">
       👁️ Следующая улика (−10 очков)
     </button>
+    <button class="next-clue-btn" id="snake-btn" onclick="snakeFreeClue()"
+            style="display:none;border-color:rgba(106,176,76,.5);color:#6AB04C">
+      🐍 Улика от Змеи (бесплатно!)
+    </button>
 
     <div class="answer-section">
       <div class="answer-label">🎯 Кто этот специалист? Напиши название профессии:</div>
@@ -336,6 +340,10 @@ function startGame() {
 }
 
 function nextPuzzle() {
+  // Показываем кнопку Змеи если питомец счастлив
+  const snakeBtn = document.getElementById('snake-btn');
+  if (snakeBtn) snakeBtn.style.display = (window.PET_BONUS?.detectiveClue() && revealedClues === 0) ? 'block' : 'none';
+
   if (puzzleQueue.length === 0) {
     showEnd();
     return;
@@ -387,6 +395,16 @@ function revealClue() {
   revealedClues++;
   renderClues();
   updateClueBtn();
+}
+
+// 🐍 Бонус Змеи — бесплатная улика (не теряет очки)
+function snakeFreeClue() {
+  if (revealedClues >= MAX_CLUES || answered) return;
+  revealedClues++;
+  renderClues();
+  updateClueBtn();
+  // Не уменьшаем очки — это бесплатная улика
+  document.getElementById('snake-btn').style.display = 'none';
 }
 
 function normalize(str) {
@@ -457,6 +475,7 @@ function updateScoreUI() {
 }
 
 function showEnd() {
+  if (window.PET_BONUS) window.PET_BONUS.notifyTaskDone('detective', 'any');
   document.getElementById('game-area').style.display = 'none';
   const end = document.getElementById('end-screen');
   end.classList.add('show');
