@@ -85,6 +85,58 @@ const PETS = {
       { type:'scenario', id:'game_designer',text:'Пройди сценарий геймдизайнера' },
     ]
   },
+  bee: {
+    emoji:'🐝', name:'Пчела',
+    desc:'Весенний питомец. За прохождение весенней истории.',
+    unlockCondition:'Пройди весеннюю историю',
+    bonus:'+5 XP за каждый новый посещённый район',
+    bonusKey:'district_xp',
+    seasonal: true, season:'spring',
+    tasks:[
+      { type:'quiz', id:'ecologist', text:'Пройди квиз эколога' },
+      { type:'scenario', id:'agronomist', text:'Пройди сценарий агронома' },
+      { type:'quiz', id:'any', text:'Пройди любой квиз' },
+    ]
+  },
+  fox: {
+    emoji:'🦊', name:'Лиса',
+    desc:'Летний питомец. За прохождение летней истории.',
+    unlockCondition:'Пройди летнюю историю',
+    bonus:'Подсвечивает хороший выбор в сценарии',
+    bonusKey:'scenario_hint',
+    seasonal: true, season:'summer',
+    tasks:[
+      { type:'scenario', id:'guide', text:'Пройди сценарий гида' },
+      { type:'quiz', id:'sports_journalist', text:'Пройди квиз спортивного журналиста' },
+      { type:'scenario', id:'any', text:'Пройди любой сценарий' },
+    ]
+  },
+  hedgehog: {
+    emoji:'🦔', name:'Ёжик',
+    desc:'Осенний питомец. За прохождение осенней истории.',
+    unlockCondition:'Пройди осеннюю историю',
+    bonus:'Сохраняет сложный вопрос квиза для повтора',
+    bonusKey:'quiz_save',
+    seasonal: true, season:'autumn',
+    tasks:[
+      { type:'scenario', id:'teacher', text:'Пройди сценарий учителя' },
+      { type:'quiz', id:'journalist', text:'Пройди квиз журналиста' },
+      { type:'quiz', id:'any', text:'Пройди любой квиз' },
+    ]
+  },
+  wolf: {
+    emoji:'🐺', name:'Волк',
+    desc:'Зимний питомец. За прохождение зимней истории.',
+    unlockCondition:'Пройди зимнюю историю',
+    bonus:'Удваивает XP с колеса фортуны',
+    bonusKey:'wheel_double',
+    seasonal: true, season:'winter',
+    tasks:[
+      { type:'quiz', id:'programmer', text:'Пройди квиз программиста' },
+      { type:'scenario', id:'programmer', text:'Пройди сценарий программиста' },
+      { type:'quiz', id:'any', text:'Пройди любой квиз' },
+    ]
+  },
   deer: {
     emoji:'🦌', name:'Олень',
     desc:'Грациозный странник. За 10 районов.',
@@ -551,6 +603,16 @@ function renderTasksTab(content, owned) {
 }
 
 function renderUnlockTab(content, owned) {
+  // Авто-проверяем сезонных питомцев
+  Object.entries(PETS).forEach(([id, pet]) => {
+    if (!pet.seasonal || owned.includes(id)) return;
+    const key = `profiland_season_${pet.season}`;
+    const d = JSON.parse(localStorage.getItem(key) || '{}');
+    if (d.done && !owned.includes(id)) {
+      const o = getOwned(); o.push(id); save(KEYS.owned, o);
+    }
+  });
+
   const locked = Object.entries(PETS).filter(([id]) => !owned.includes(id) && id !== 'desman');
   if (locked.length === 0) { content.innerHTML = '<div style="color:#4dff9a;font-size:.85rem;text-align:center;padding:20px">🎉 Ты собрала весь отряд!</div>'; return; }
 
@@ -574,6 +636,17 @@ function renderUnlockTab(content, owned) {
         </div>`;
     }
 
+    if (pet.seasonal) {
+      return `
+        <div class="pw-quest-card" style="border-color:rgba(255,215,0,.15)">
+          <div class="pw-quest-title">${pet.emoji} ${pet.name} <span style="font-size:.65rem;opacity:.6">(сезонный)</span></div>
+          <div class="pw-quest-text" style="color:rgba(255,255,255,.6)">${pet.desc}</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.4);margin-top:4px">Бонус: ${pet.bonus}</div>
+          <a href="seasons.html" style="display:block;margin-top:8px;padding:8px;text-align:center;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.3);color:#FFD700;font-size:.78rem;font-weight:700;border-radius:10px;text-decoration:none">
+            🌸 Сезонные события →
+          </a>
+        </div>`;
+    }
     return `
       <div class="pw-quest-card">
         <div class="pw-quest-title">${pet.emoji} ${pet.name}</div>

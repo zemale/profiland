@@ -23,6 +23,22 @@
   </header>
 
   <!-- HERO -->
+  <!-- Сезонный баннер -->
+  <div id="season-banner" style="display:none;margin:12px 16px 0;padding:14px 18px;border-radius:18px;cursor:pointer;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.15)" onclick="location.href='seasons.html'">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="sb-emoji" style="font-size:2rem"></span>
+      <div style="flex:1">
+        <div style="font-size:.78rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px">Сезонное событие</div>
+        <div id="sb-title" style="font-size:1rem;font-weight:800;margin-top:2px"></div>
+        <div id="sb-sub" style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:2px"></div>
+      </div>
+      <span style="font-size:1.2rem;color:rgba(255,255,255,.4)">→</span>
+    </div>
+    <div style="margin-top:10px;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">
+      <div id="sb-progress" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#FFD700,#FFA500);transition:width .5s"></div>
+    </div>
+  </div>
+
   <section class="hero">
     <div class="hero__content">
       <h1 class="hero__title">Профиленд</h1>
@@ -63,7 +79,33 @@
   </footer>
 
   <script src="script.js"></script>
-  <script src="pet-widget.js?v=3"></script>
+  <script>
+// Сезонный баннер
+(async () => {
+  try {
+    const res = await fetch('data/seasons.json');
+    const seasons = await res.json();
+    const m = new Date().getMonth();
+    const sid = m>=2&&m<=4?'spring':m>=5&&m<=7?'summer':m>=8&&m<=10?'autumn':'winter';
+    const s = seasons[sid];
+    const d = JSON.parse(localStorage.getItem(`profiland_season_${sid}`) || '{}');
+    const progress = d.progress || 0;
+    const total = s.scenes.length;
+    const pct = Math.round(progress / total * 100);
+    const banner = document.getElementById('season-banner');
+    const bgs = {spring:'rgba(113,178,128,.15)',summer:'rgba(247,151,30,.15)',autumn:'rgba(218,165,32,.15)',winter:'rgba(15,52,96,.5)'};
+    const borders = {spring:'rgba(113,178,128,.4)',summer:'rgba(247,151,30,.4)',autumn:'rgba(218,165,32,.4)',winter:'rgba(100,149,237,.4)'};
+    banner.style.background = bgs[sid];
+    banner.style.borderColor = borders[sid];
+    document.getElementById('sb-emoji').textContent = s.emoji;
+    document.getElementById('sb-title').textContent = s.title;
+    document.getElementById('sb-sub').textContent = d.done ? '✅ История пройдена!' : `Сцена ${progress} из ${total}`;
+    document.getElementById('sb-progress').style.width = pct + '%';
+    banner.style.display = 'block';
+  } catch(e) {}
+})();
+</script>
+<script src="pet-widget.js?v=3"></script>
   <script>
   // ══ ПОГОДА В ПРОФИЛЕНДЕ ══
   (function(){

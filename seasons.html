@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сезонные события — Профиленд</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f0c29;
+  min-height: 100vh;
+  color: #fff;
+}
+
+/* Фон сезона */
+#season-bg {
+  position: fixed; inset: 0; z-index: 0;
+  transition: background 1s ease;
+}
+#season-particles {
+  position: fixed; inset: 0; z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.particle {
+  position: absolute;
+  animation: fall linear infinite;
+  opacity: .7;
+  user-select: none;
+}
+@keyframes fall {
+  from { transform: translateY(-20px) rotate(0deg); }
+  to   { transform: translateY(110vh) rotate(360deg); }
+}
+
+.container {
+  position: relative; z-index: 2;
+  max-width: 600px; margin: 0 auto;
+  padding: 20px 16px 80px;
+}
+
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.1); color: #fff;
+  border: 1px solid rgba(255,255,255,.2); border-radius: 20px;
+  padding: 8px 16px; font-size: 14px; cursor: pointer;
+  text-decoration: none; margin-bottom: 20px; transition: background .2s;
+}
+.back-btn:hover { background: rgba(255,255,255,.2); }
+
+/* Переключатель сезонов */
+.season-tabs {
+  display: flex; gap: 8px; margin-bottom: 24px;
+  overflow-x: auto; padding-bottom: 4px;
+}
+.season-tab {
+  flex-shrink: 0; padding: 10px 16px;
+  background: rgba(255,255,255,.07);
+  border: 2px solid transparent;
+  border-radius: 20px; cursor: pointer;
+  font-size: .85rem; font-weight: 700;
+  color: rgba(255,255,255,.5);
+  transition: all .25s;
+}
+.season-tab:hover { background: rgba(255,255,255,.12); color: #fff; }
+.season-tab.active { border-color: rgba(255,215,0,.6); color: #FFD700; background: rgba(255,215,0,.1); }
+.season-tab.current-season::after { content: ' 📍'; font-size:.7rem; }
+
+/* Заголовок сезона */
+.season-hero {
+  text-align: center; margin-bottom: 28px;
+  padding: 28px 24px;
+  background: rgba(0,0,0,.3);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 24px;
+}
+.season-emoji { font-size: 4rem; margin-bottom: 12px; display: block; }
+.season-title { font-size: 1.6rem; font-weight: 900; margin-bottom: 6px; }
+.season-sub { color: rgba(255,255,255,.6); font-size: .9rem; margin-bottom: 16px; }
+.season-dates { font-size: .75rem; color: rgba(255,255,255,.35); letter-spacing: .5px; }
+
+/* Прогресс */
+.progress-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.progress-bar-bg {
+  height: 8px; background: rgba(255,255,255,.1);
+  border-radius: 4px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, #FFD700, #FFA500);
+  transition: width .5s ease;
+}
+
+/* Награды */
+.rewards-row {
+  display: flex; gap: 12px; margin: 20px 0;
+}
+.reward-card {
+  flex: 1; background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px; padding: 14px 12px;
+  text-align: center;
+}
+.reward-card.earned { border-color: rgba(255,215,0,.4); background: rgba(255,215,0,.08); }
+.reward-emoji { font-size: 2rem; margin-bottom: 6px; }
+.reward-name { font-size: .75rem; font-weight: 700; color: rgba(255,255,255,.8); }
+.reward-sub { font-size: .65rem; color: rgba(255,255,255,.4); margin-top: 3px; }
+
+/* Кнопка начать */
+.start-btn {
+  width: 100%; padding: 18px;
+  font-size: 1.1rem; font-weight: 800;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1a0a00; border: none; border-radius: 18px;
+  cursor: pointer; margin-bottom: 12px;
+  box-shadow: 0 6px 24px rgba(255,165,0,.4);
+  transition: transform .15s, box-shadow .15s;
+}
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,165,0,.6); }
+.start-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.done-badge {
+  text-align: center; padding: 12px;
+  font-size: .9rem; color: #4dff9a; font-weight: 700;
+}
+
+/* ─── VN движок ─── */
+#vn-screen { display: none; }
+#vn-screen.show { display: block; }
+
+.vn-progress {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.vn-progress-dots { display: flex; gap: 4px; flex: 1; }
+.vn-dot {
+  width: 24px; height: 6px; border-radius: 3px;
+  background: rgba(255,255,255,.15); transition: background .3s;
+}
+.vn-dot.done { background: #FFD700; }
+.vn-dot.current { background: rgba(255,215,0,.5); }
+.vn-score-chip {
+  background: rgba(255,215,0,.15); border: 1px solid rgba(255,215,0,.3);
+  padding: 4px 12px; border-radius: 12px;
+  font-size: .78rem; font-weight: 800; color: #FFD700;
+}
+
+.vn-card {
+  background: rgba(0,0,0,.4); backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px; overflow: hidden; margin-bottom: 14px;
+}
+.vn-speaker-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.vn-avatar { font-size: 1.6rem; }
+.vn-speaker-name { font-weight: 800; font-size: .9rem; }
+.vn-speaker-role { font-size: .72rem; color: rgba(255,255,255,.45); margin-top: 1px; }
+.vn-text {
+  padding: 14px 18px 18px;
+  font-size: .95rem; line-height: 1.65;
+  color: rgba(255,255,255,.9);
+}
+
+/* Выборы */
+.vn-choices { display: flex; flex-direction: column; gap: 10px; }
+.vn-choice {
+  padding: 14px 18px; font-size: .88rem; line-height: 1.4;
+  background: rgba(255,255,255,.07);
+  border: 2px solid rgba(255,255,255,.12);
+  border-radius: 14px; cursor: pointer; color: #fff;
+  text-align: left; font-family: inherit;
+  transition: all .2s;
+}
+.vn-choice:hover { background: rgba(255,255,255,.13); border-color: rgba(255,215,0,.4); }
+.vn-choice:disabled { cursor: not-allowed; }
+.vn-choice.chosen { border-color: #FFD700; background: rgba(255,215,0,.12); }
+.vn-choice.not-chosen { opacity: .35; }
+
+/* Результат выбора */
+.vn-result {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-left: 3px solid #FFD700;
+  border-radius: 12px; padding: 12px 16px;
+  font-size: .85rem; line-height: 1.5;
+  margin-top: 10px; color: rgba(255,255,255,.85);
+  display: none;
+  animation: fade-in .3s ease;
+}
+.vn-result.show { display: block; }
+@keyframes fade-in { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.vn-pts { color: #FFD700; font-weight: 800; }
+
+.vn-next-btn {
+  width: 100%; padding: 14px;
+  font-size: 1rem; font-weight: 700;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: #fff; border: none; border-radius: 14px; cursor: pointer;
+  margin-top: 12px; display: none;
+  transition: transform .15s;
+}
+.vn-next-btn:hover { transform: translateY(-2px); }
+.vn-next-btn.show { display: block; }
+
+/* Финальный экран */
+#vn-end { display: none; text-align: center; padding: 32px 16px; }
+#vn-end.show { display: block; animation: fade-in .5s ease; }
+.end-emoji { font-size: 5rem; margin-bottom: 14px; }
+.end-title { font-size: 1.5rem; font-weight: 900; color: #FFD700; margin-bottom: 10px; }
+.end-score { font-size: 1rem; color: rgba(255,255,255,.7); margin-bottom: 20px; }
+.end-reward {
+  background: rgba(255,215,0,.1); border: 1px solid rgba(255,215,0,.3);
+  border-radius: 16px; padding: 16px; margin-bottom: 20px;
+}
+.end-reward-title { font-size: .8rem; color: rgba(255,215,0,.7); font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.end-reward-item { font-size: 1rem; font-weight: 700; margin: 6px 0; }
+.end-btn {
+  padding: 14px 28px; background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1a0a00; font-weight: 800; font-size: .95rem;
+  border: none; border-radius: 18px; cursor: pointer; margin: 6px;
+}
+</style>
+</head>
+<body>
+
+<div id="season-bg"></div>
+<div id="season-particles"></div>
+
+<div class="container">
+  <a href="index.html" class="back-btn">← На главную</a>
+
+  <!-- Переключатель сезонов -->
+  <div class="season-tabs" id="season-tabs"></div>
+
+  <!-- Главный экран сезона -->
+  <div id="main-screen">
+    <div class="season-hero" id="season-hero">
+      <span class="season-emoji" id="s-emoji"></span>
+      <div class="season-title" id="s-title"></div>
+      <div class="season-sub" id="s-sub"></div>
+      <div class="season-dates" id="s-dates"></div>
+
+      <div style="margin-top:18px">
+        <div class="progress-row">
+          <span style="font-size:.78rem;color:rgba(255,255,255,.5)">Прогресс истории</span>
+          <span style="font-size:.78rem;color:#FFD700;font-weight:700" id="s-progress-text">0 / 10</span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="s-progress-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="rewards-row">
+      <div class="reward-card" id="badge-card">
+        <div class="reward-emoji" id="r-badge-emoji"></div>
+        <div class="reward-name" id="r-badge-name"></div>
+        <div class="reward-sub">Значок сезона</div>
+      </div>
+      <div class="reward-card" id="pet-card">
+        <div class="reward-emoji" id="r-pet-emoji"></div>
+        <div class="reward-name" id="r-pet-name"></div>
+        <div class="reward-sub" id="r-pet-bonus"></div>
+      </div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startStory()">🌟 Начать историю</button>
+    <div class="done-badge" id="done-badge" style="display:none">✅ История пройдена! Награды получены.</div>
+  </div>
+
+  <!-- VN экран -->
+  <div id="vn-screen">
+    <div class="vn-progress">
+      <div class="vn-progress-dots" id="vn-dots"></div>
+      <div class="vn-score-chip">⭐ <span id="vn-score">0</span></div>
+    </div>
+
+    <div class="vn-card">
+      <div class="vn-speaker-row">
+        <div class="vn-avatar" id="vn-avatar">👤</div>
+        <div>
+          <div class="vn-speaker-name" id="vn-speaker"></div>
+          <div class="vn-speaker-role" id="vn-role"></div>
+        </div>
+      </div>
+      <div class="vn-text" id="vn-text"></div>
+    </div>
+
+    <div class="vn-choices" id="vn-choices"></div>
+    <div class="vn-result" id="vn-result"></div>
+    <button class="vn-next-btn" id="vn-next-btn" onclick="nextScene()">Продолжить →</button>
+  </div>
+
+  <!-- Финал -->
+  <div id="vn-end">
+    <div class="end-emoji" id="end-emoji"></div>
+    <div class="end-title" id="end-title"></div>
+    <div class="end-score" id="end-score"></div>
+    <div class="end-reward" id="end-reward"></div>
+    <button class="end-btn" onclick="showMain()">← К сезонам</button>
+    <button class="end-btn" style="background:rgba(255,255,255,.1);color:#fff" onclick="location.href='index.html'">На главную</button>
+  </div>
+</div>
+
+<script>
+const SEASON_MONTHS = {
+  spring: [2,3,4],
+  summer: [5,6,7],
+  autumn: [8,9,10],
+  winter: [11,0,1]
+};
+const SEASON_NAMES = {
+  spring: 'Весна (март–май)',
+  summer: 'Лето (июнь–август)',
+  autumn: 'Осень (сентябрь–ноябрь)',
+  winter: 'Зима (декабрь–февраль)'
+};
+const SEASON_AVATARS = { spring:'🌿', summer:'☀️', autumn:'🍂', winter:'💻' };
+const SEASON_ORDER = ['spring','summer','autumn','winter'];
+
+function getCurrentSeason() {
+  const m = new Date().getMonth();
+  for (const [s, months] of Object.entries(SEASON_MONTHS))
+    if (months.includes(m)) return s;
+  return 'winter';
+}
+
+let allSeasons = {};
+let activeSeason = getCurrentSeason();
+let currentScene = 0;
+let totalScore = 0;
+let choiceMade = false;
+let storyData = null;
+
+// ── Загрузка ──
+async function init() {
+  const res = await fetch('data/seasons.json');
+  allSeasons = await res.json();
+  renderTabs();
+  showSeason(activeSeason);
+}
+
+function renderTabs() {
+  const cur = getCurrentSeason();
+  document.getElementById('season-tabs').innerHTML = SEASON_ORDER.map(sid => {
+    const s = allSeasons[sid];
+    const isCur = sid === cur;
+    const isActive = sid === activeSeason;
+    return `<div class="season-tab ${isActive?'active':''} ${isCur?'current-season':''}"
+                 onclick="showSeason('${sid}')">${s.emoji} ${sid==='spring'?'Весна':sid==='summer'?'Лето':sid==='autumn'?'Осень':'Зима'}</div>`;
+  }).join('');
+}
+
+function showSeason(sid) {
+  activeSeason = sid;
+  storyData = allSeasons[sid];
+  renderTabs();
+
+  const cur = getCurrentSeason();
+  const bg = document.getElementById('season-bg');
+  bg.style.background = storyData.bg;
+  renderParticles(sid);
+
+  // Прогресс
+  const progress = getProgress(sid);
+  const isDone = isDoneSeason(sid);
+
+  document.getElementById('s-emoji').textContent = storyData.emoji;
+  document.getElementById('s-title').textContent = storyData.title;
+  document.getElementById('s-sub').textContent = storyData.subtitle;
+  document.getElementById('s-dates').textContent = SEASON_NAMES[sid];
+
+  const pct = Math.round(progress / storyData.scenes.length * 100);
+  document.getElementById('s-progress-text').textContent = `${progress} / ${storyData.scenes.length}`;
+  document.getElementById('s-progress-bar').style.width = pct + '%';
+
+  // Награды
+  const hasBadge = hasSeason('badge', sid);
+  const hasPet = hasSeason('pet', sid);
+  document.getElementById('r-badge-emoji').textContent = storyData.badge.emoji + (hasBadge ? ' ✅' : '');
+  document.getElementById('r-badge-name').textContent = storyData.badge.name;
+  document.getElementById('badge-card').classList.toggle('earned', hasBadge);
+  document.getElementById('r-pet-emoji').textContent = storyData.pet.emoji + (hasPet ? ' ✅' : '');
+  document.getElementById('r-pet-name').textContent = storyData.pet.name;
+  document.getElementById('r-pet-bonus').textContent = storyData.pet.bonus;
+  document.getElementById('pet-card').classList.toggle('earned', hasPet);
+
+  const isCurrentSeason = sid === cur;
+  const startBtn = document.getElementById('start-btn');
+  const doneBadge = document.getElementById('done-badge');
+
+  if (isDone) {
+    startBtn.style.display = 'none';
+    doneBadge.style.display = 'block';
+  } else if (!isCurrentSeason) {
+    startBtn.textContent = `🔒 Доступно ${sid==='spring'?'весной':sid==='summer'?'летом':sid==='autumn'?'осенью':'зимой'}`;
+    startBtn.disabled = true;
+    startBtn.style.display = 'block';
+    doneBadge.style.display = 'none';
+  } else {
+    startBtn.textContent = progress > 0 ? '▶️ Продолжить историю' : '🌟 Начать историю';
+    startBtn.disabled = false;
+    startBtn.style.display = 'block';
+    doneBadge.style.display = 'none';
+  }
+
+  document.getElementById('main-screen').style.display = 'block';
+  document.getElementById('vn-screen').classList.remove('show');
+  document.getElementById('vn-end').classList.remove('show');
+}
+
+// ── VN движок ──
+function startStory() {
+  currentScene = getProgress(activeSeason);
+  totalScore = getSavedScore(activeSeason);
+  choiceMade = false;
+
+  document.getElementById('main-screen').style.display = 'none';
+  document.getElementById('vn-screen').classList.add('show');
+  renderScene();
+}
+
+function renderScene() {
+  const scenes = storyData.scenes;
+  if (currentScene >= scenes.length) { showEnd(); return; }
+
+  const scene = scenes[currentScene];
+
+  // Точки прогресса
+  document.getElementById('vn-dots').innerHTML = scenes.map((_,i) =>
+    `<div class="vn-dot ${i < currentScene ? 'done' : i === currentScene ? 'current' : ''}"></div>`
+  ).join('');
+  document.getElementById('vn-score').textContent = totalScore;
+
+  document.getElementById('vn-avatar').textContent = SEASON_AVATARS[activeSeason];
+  document.getElementById('vn-speaker').textContent = scene.speaker;
+  document.getElementById('vn-role').textContent = scene.speakerRole;
+  document.getElementById('vn-text').textContent = scene.text;
+
+  document.getElementById('vn-result').className = 'vn-result';
+  document.getElementById('vn-next-btn').className = 'vn-next-btn';
+
+  const choicesEl = document.getElementById('vn-choices');
+  choicesEl.innerHTML = '';
+  scene.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'vn-choice';
+    btn.textContent = c.text;
+    btn.onclick = () => choose(i, btn);
+    choicesEl.appendChild(btn);
+  });
+
+  choiceMade = false;
+}
+
+function choose(idx, btn) {
+  if (choiceMade) return;
+  choiceMade = true;
+
+  const scene = storyData.scenes[currentScene];
+  const choice = scene.choices[idx];
+  const pts = choice.points;
+  totalScore += pts;
+
+  // Подсветка
+  document.querySelectorAll('.vn-choice').forEach((b, i) => {
+    b.disabled = true;
+    b.classList.add(i === idx ? 'chosen' : 'not-chosen');
+  });
+
+  const resultEl = document.getElementById('vn-result');
+  resultEl.innerHTML = `${choice.result} <span class="vn-pts">+${pts}</span>`;
+  resultEl.classList.add('show');
+
+  document.getElementById('vn-score').textContent = totalScore;
+  document.getElementById('vn-next-btn').classList.add('show');
+
+  // Сохраняем прогресс
+  saveProgress(activeSeason, currentScene + 1, totalScore);
+}
+
+function nextScene() {
+  currentScene++;
+  if (currentScene >= storyData.scenes.length) { showEnd(); return; }
+  renderScene();
+}
+
+function showEnd() {
+  document.getElementById('vn-screen').classList.remove('show');
+  const end = document.getElementById('vn-end');
+  end.classList.add('show');
+
+  const max = storyData.scenes.reduce((s,sc) => s + Math.max(...sc.choices.map(c=>c.points)), 0);
+  const pct = Math.round(totalScore / max * 100);
+
+  let emoji = '⭐', title = 'Хорошая история!';
+  if (pct >= 90) { emoji = '🏆'; title = 'Идеальное прохождение!'; }
+  else if (pct >= 70) { emoji = '🥇'; title = 'Отличный результат!'; }
+  else if (pct >= 50) { emoji = '🥈'; title = 'Хорошая история!'; }
+  else { emoji = '🌱'; title = 'Есть куда расти!'; }
+
+  document.getElementById('end-emoji').textContent = emoji;
+  document.getElementById('end-title').textContent = title;
+  document.getElementById('end-score').textContent = `${totalScore} из ${max} очков (${pct}%)`;
+
+  // Выдаём награды
+  giveRewards();
+
+  document.getElementById('end-reward').innerHTML = `
+    <div class="end-reward-title">🎁 Награды получены</div>
+    <div class="end-reward-item">${storyData.badge.emoji} ${storyData.badge.name}</div>
+    <div class="end-reward-item">${storyData.pet.emoji} Питомец ${storyData.pet.name} теперь в твоём отряде!</div>`;
+}
+
+function showMain() {
+  document.getElementById('vn-end').classList.remove('show');
+  showSeason(activeSeason);
+}
+
+// ── Данные ──
+function getKey(sid) { return `profiland_season_${sid}`; }
+
+function getProgress(sid) {
+  const d = JSON.parse(localStorage.getItem(getKey(sid)) || '{}');
+  return d.progress || 0;
+}
+
+function getSavedScore(sid) {
+  const d = JSON.parse(localStorage.getItem(getKey(sid)) || '{}');
+  return d.score || 0;
+}
+
+function isDoneSeason(sid) {
+  const d = JSON.parse(localStorage.getItem(getKey(sid)) || '{}');
+  return !!d.done;
+}
+
+function hasSeason(type, sid) {
+  const d = JSON.parse(localStorage.getItem(getKey(sid)) || '{}');
+  return !!(type === 'badge' ? d.badge : d.pet);
+}
+
+function saveProgress(sid, progress, score) {
+  const d = JSON.parse(localStorage.getItem(getKey(sid)) || '{}');
+  d.progress = progress; d.score = score;
+  localStorage.setItem(getKey(sid), JSON.stringify(d));
+}
+
+function giveRewards() {
+  const sid = activeSeason;
+  const d = JSON.parse(localStorage.getItem(getKey(sid)) || '{}');
+  if (d.done) return;
+
+  d.done = true; d.badge = true; d.pet = true;
+  localStorage.setItem(getKey(sid), JSON.stringify(d));
+
+  // Сезонный значок
+  const badges = new Set(JSON.parse(localStorage.getItem('profiland_badges') || '[]'));
+  badges.add(storyData.badge.id);
+  localStorage.setItem('profiland_badges', JSON.stringify([...badges]));
+
+  // Сезонный питомец — добавляем в owned
+  const owned = JSON.parse(localStorage.getItem('profiland_pets_owned') || '["desman"]');
+  if (!owned.includes(storyData.pet.id)) {
+    owned.push(storyData.pet.id);
+    localStorage.setItem('profiland_pets_owned', JSON.stringify(owned));
+  }
+
+  // XP
+  const xp = parseInt(localStorage.getItem('profiland_xp') || '0') + totalScore;
+  localStorage.setItem('profiland_xp', xp);
+}
+
+// ── Частицы ──
+function renderParticles(sid) {
+  const container = document.getElementById('season-particles');
+  container.innerHTML = '';
+  const chars = {spring:['🌸','🌿','🌼'], summer:['☀️','🌻','✨'], autumn:['🍂','🍁','🌰'], winter:['❄️','⛄','✨']};
+  const symbols = chars[sid] || ['✨'];
+  for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = symbols[i % symbols.length];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
+    p.style.animationDuration = (6 + Math.random() * 10) + 's';
+    p.style.animationDelay = (-Math.random() * 10) + 's';
+    container.appendChild(p);
+  }
+}
+
+init();
+</script>
+<script src="pet-widget.js?v=3"></script>
+</body>
+</html>
