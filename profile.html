@@ -246,6 +246,16 @@ body[data-theme="candy"]{background:linear-gradient(135deg,#2d0030,#6b0050,#001a
       <div class="quick-link__label">Тест профессии</div>
       <div class="quick-link__sub">Что тебе подходит?</div>
     </a>
+    <a href="#pets-section" onclick="document.getElementById('pets-section').scrollIntoView({behavior:'smooth'})" class="quick-link" style="background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.25)">
+      <div class="quick-link__emoji">🐾</div>
+      <div class="quick-link__label">Мой отряд</div>
+      <div class="quick-link__sub" id="petsCount">питомцы</div>
+    </a>
+    <a href="wheel.html" class="quick-link" style="background:rgba(255,165,0,.08);border-color:rgba(255,165,0,.25)">
+      <div class="quick-link__emoji">🎡</div>
+      <div class="quick-link__label">Колесо фортуны</div>
+      <div class="quick-link__sub">крути каждый день</div>
+    </a>
     <a href="secrets.html" class="quick-link" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(162,155,254,.1),rgba(253,203,110,.07));border-color:rgba(162,155,254,.3)">
       <div class="quick-link__emoji">🔓</div>
       <div class="quick-link__label">Секретные профессии</div>
@@ -255,7 +265,7 @@ body[data-theme="candy"]{background:linear-gradient(135deg,#2d0030,#6b0050,#001a
 </div>
 
 <!-- PETS -->
-<div class="section" id="pets-section">
+<div class="section" id="pets-section" style="border:2px solid rgba(255,215,0,.2);border-radius:20px">
   <div class="section-title">🐾 Мой отряд питомцев</div>
   <div id="pets-big-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px"></div>
   <p style="font-size:.8rem;color:rgba(255,255,255,.35);line-height:1.5">
@@ -884,6 +894,8 @@ applyTheme();
 render();
 renderMainAvatar();
 loadDistrictMap().then(render);
+// Гарантируем что питомцы отрисуются
+setTimeout(renderProfilePets, 100);
 </script>
 <script src="pet-widget.js"></script>
 </body>
