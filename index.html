@@ -54,6 +54,7 @@
         <a href="career-path.html" class="btn btn--hero" style="background:rgba(162,155,254,0.15);backdrop-filter:blur(8px);border:2px solid rgba(162,155,254,0.35);color:#a29bfe">🗺️ Путь карьеры</a>
         <a href="seasons.html" class="btn btn--hero" style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,0.2)">🌸 Сезонные события</a>
         <a href="secrets.html" class="btn btn--hero" style="background:linear-gradient(135deg,rgba(162,155,254,.2),rgba(253,203,110,.15));backdrop-filter:blur(8px);border:2px solid rgba(162,155,254,.4)">🔓 Секреты</a>
+        <a href="future-letter.html" class="btn btn--hero" id="futureLetterBtn" style="background:rgba(253,121,168,.15);backdrop-filter:blur(8px);border:2px solid rgba(253,121,168,.4);color:#fd79a8">📬 Письмо в будущее</a>
       </div>
     </div>
     <div class="hero__deco">
@@ -80,8 +81,29 @@
     </div>
   </footer>
 
+  <!-- Future letter reminder banner -->
+  <div id="letter-banner" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg,#fd79a8,#e84393);color:#fff;
+    border-radius:20px;padding:14px 22px;font-size:.95rem;font-weight:800;
+    box-shadow:0 4px 24px rgba(232,67,147,.5);z-index:600;cursor:pointer;
+    animation:letterBounce 1s ease infinite alternate;white-space:nowrap"
+    onclick="location.href='future-letter.html'">
+    💌 Твоё письмо из прошлого ждёт тебя!
+  </div>
+  <style>@keyframes letterBounce{from{transform:translateX(-50%) translateY(0)}to{transform:translateX(-50%) translateY(-6px)}}</style>
+
   <script src="script.js"></script>
   <script>
+// Letter reminder
+(function(){
+  try {
+    const d = JSON.parse(localStorage.getItem('profiland_future_letter'));
+    if(d && Date.now() >= d.openAt && !d.xpAwarded) {
+      document.getElementById('letter-banner').style.display = 'block';
+    }
+  } catch(e){}
+})();
+
 // Сезонный баннер
 (async () => {
   try {

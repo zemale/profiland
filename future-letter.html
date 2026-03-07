@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Письмо в будущее — Профиленд</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family:'Nunito',sans-serif;
+      color:#fff;
+      overflow-x:hidden;
+    }
+
+    /* Stars */
+    .stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
+    .star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) infinite var(--delay,0s) ease-in-out;}
+    @keyframes twinkle{0%,100%{opacity:.1;transform:scale(1)}50%{opacity:.9;transform:scale(1.3)}}
+
+    header{
+      position:relative;z-index:10;
+      padding:16px 20px;display:flex;align-items:center;gap:14px;
+    }
+    .back-btn{
+      background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+      color:#fff;border-radius:12px;padding:8px 16px;font-size:.9rem;
+      font-weight:700;text-decoration:none;transition:.2s;
+    }
+    .back-btn:hover{background:rgba(255,255,255,.18);}
+    .page-title{font-size:1.2rem;font-weight:900;}
+
+    /* ============ VIEWS ============ */
+    .view{display:none;position:relative;z-index:5;}
+    .view.active{display:block;}
+
+    /* ---- WRITE VIEW ---- */
+    .write-wrap{max-width:600px;margin:0 auto;padding:20px 16px 60px;}
+
+    .letter-hero{text-align:center;padding:30px 0 24px;}
+    .letter-hero .icon{font-size:4rem;display:block;margin-bottom:12px;
+      animation:float 3s ease-in-out infinite;}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+    .letter-hero h1{font-size:1.6rem;font-weight:900;margin-bottom:8px;}
+    .letter-hero p{font-size:.95rem;color:rgba(255,255,255,.65);line-height:1.5;}
+
+    /* Days selector */
+    .days-row{display:flex;gap:10px;justify-content:center;margin:24px 0 20px;flex-wrap:wrap;}
+    .day-btn{
+      padding:10px 20px;border-radius:16px;border:2px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);
+      font-size:.9rem;font-weight:800;cursor:pointer;transition:.2s;
+    }
+    .day-btn.active{
+      background:linear-gradient(135deg,#a29bfe,#6c5ce7);
+      border-color:#a29bfe;color:#fff;transform:scale(1.05);
+    }
+
+    /* Paper */
+    .paper{
+      background:linear-gradient(180deg,#fffef5 0%,#faf7e8 100%);
+      border-radius:20px;padding:28px 24px;position:relative;
+      box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.8);
+    }
+    .paper::before{
+      content:'';position:absolute;top:0;left:40px;right:40px;height:3px;
+      background:linear-gradient(90deg,transparent,rgba(162,155,254,.5),transparent);
+    }
+    .paper-lines{
+      position:absolute;inset:24px;pointer-events:none;
+      background:repeating-linear-gradient(transparent,transparent 31px,rgba(162,155,254,.15) 31px,rgba(162,155,254,.15) 32px);
+    }
+
+    .letter-date{
+      font-family:'Caveat',cursive;font-size:1rem;
+      color:rgba(100,80,60,.5);text-align:right;margin-bottom:16px;
+    }
+    #letter-text{
+      width:100%;min-height:280px;border:none;outline:none;resize:none;
+      background:transparent;font-family:'Caveat',cursive;
+      font-size:1.2rem;line-height:2rem;color:#3d3020;
+      position:relative;z-index:2;
+    }
+    #letter-text::placeholder{color:rgba(100,80,60,.35);}
+
+    .char-count{text-align:right;font-size:.75rem;color:rgba(255,255,255,.35);margin-top:8px;}
+
+    .seal-btn{
+      display:block;width:100%;margin-top:24px;padding:18px;
+      background:linear-gradient(135deg,#fd79a8,#e84393);
+      border:none;border-radius:20px;color:#fff;
+      font-size:1.1rem;font-weight:900;cursor:pointer;
+      box-shadow:0 4px 20px rgba(232,67,147,.4);
+      transition:.2s;font-family:'Nunito',sans-serif;
+    }
+    .seal-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(232,67,147,.5);}
+    .seal-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+    /* ---- SEALED VIEW ---- */
+    .sealed-wrap{max-width:500px;margin:0 auto;padding:30px 16px 60px;text-align:center;}
+
+    .envelope-container{
+      position:relative;display:inline-block;
+      margin:30px auto;cursor:default;
+    }
+    .envelope-svg{filter:drop-shadow(0 8px 30px rgba(162,155,254,.4));}
+
+    /* Wax seal */
+    .wax{
+      position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+      width:72px;height:72px;
+      background:radial-gradient(circle at 40% 35%,#e74c3c,#922b21);
+      border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:1.8rem;
+      box-shadow:0 4px 12px rgba(0,0,0,.4),inset 0 2px 4px rgba(255,255,255,.15);
+    }
+
+    /* Countdown ring */
+    .countdown-ring{
+      margin:24px auto;position:relative;width:160px;height:160px;display:flex;
+      align-items:center;justify-content:center;
+    }
+    .countdown-ring svg{position:absolute;inset:0;transform:rotate(-90deg);}
+    .ring-bg{fill:none;stroke:rgba(255,255,255,.08);stroke-width:8;}
+    .ring-progress{fill:none;stroke:url(#ringGrad);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .5s;}
+    .ring-inner{text-align:center;position:relative;z-index:1;}
+    .ring-days{font-size:2.4rem;font-weight:900;color:#fff;line-height:1;}
+    .ring-label{font-size:.7rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;}
+
+    .sealed-info h2{font-size:1.4rem;font-weight:900;margin-bottom:10px;}
+    .sealed-info p{font-size:.9rem;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:6px;}
+
+    .open-date-chip{
+      display:inline-block;margin:16px auto;padding:10px 22px;
+      background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+      border-radius:14px;font-size:.9rem;font-weight:700;
+    }
+
+    .delete-btn{
+      margin-top:30px;padding:12px 24px;
+      background:rgba(255,100,100,.1);border:1px solid rgba(255,100,100,.2);
+      color:rgba(255,120,120,.8);border-radius:14px;
+      font-size:.85rem;font-weight:700;cursor:pointer;
+      font-family:'Nunito',sans-serif;transition:.2s;
+    }
+    .delete-btn:hover{background:rgba(255,100,100,.2);}
+
+    /* ---- OPEN VIEW ---- */
+    .open-wrap{max-width:600px;margin:0 auto;padding:30px 16px 60px;}
+
+    /* Confetti */
+    .confetti-piece{
+      position:fixed;top:-20px;border-radius:3px;
+      animation:confettiFall linear forwards;pointer-events:none;z-index:100;
+    }
+    @keyframes confettiFall{
+      to{transform:translateY(110vh) rotate(720deg);opacity:0;}
+    }
+
+    /* Envelope open animation */
+    .open-envelope{
+      text-align:center;margin-bottom:30px;
+      animation:popIn .6s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn{from{transform:scale(0.3);opacity:0}to{transform:scale(1);opacity:1}}
+    .open-envelope .icon{font-size:5rem;display:block;margin-bottom:16px;}
+    .open-envelope h2{font-size:1.6rem;font-weight:900;margin-bottom:8px;}
+    .open-envelope p{font-size:.9rem;color:rgba(255,255,255,.6);}
+
+    /* Read letter paper */
+    .letter-read{
+      background:linear-gradient(180deg,#fffef5,#faf7e8);
+      border-radius:20px;padding:32px 28px;color:#3d3020;
+      box-shadow:0 8px 40px rgba(0,0,0,.4);
+      animation:slideUp .5s ease .2s both;
+    }
+    @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .letter-read .date{
+      font-family:'Caveat',cursive;font-size:.95rem;
+      color:rgba(100,80,60,.5);text-align:right;margin-bottom:20px;
+    }
+    .letter-read .body{
+      font-family:'Caveat',cursive;font-size:1.25rem;
+      line-height:1.9;white-space:pre-wrap;word-break:break-word;
+    }
+    .letter-read .signature{
+      font-family:'Caveat',cursive;font-size:1.1rem;
+      color:rgba(100,80,60,.6);text-align:right;margin-top:20px;
+    }
+
+    .open-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;}
+    .open-actions a,.open-actions button{
+      flex:1;min-width:130px;padding:14px;border-radius:16px;
+      font-size:.9rem;font-weight:800;cursor:pointer;text-align:center;
+      text-decoration:none;font-family:'Nunito',sans-serif;
+      transition:.2s;border:none;
+    }
+    .btn-new{background:linear-gradient(135deg,#fd79a8,#e84393);color:#fff;}
+    .btn-new:hover{transform:translateY(-2px);}
+    .btn-share{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;}
+    .btn-share:hover{background:rgba(255,255,255,.18);}
+
+    /* XP flash */
+    .xp-toast{
+      position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);
+      background:linear-gradient(135deg,#FFD700,#FFA500);
+      color:#000;font-weight:900;font-size:1.1rem;
+      padding:12px 28px;border-radius:20px;
+      box-shadow:0 4px 20px rgba(255,215,0,.5);
+      opacity:0;pointer-events:none;z-index:200;
+      transition:all .4s;
+    }
+    .xp-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="xp-toast" id="xpToast">+50 XP ✨</div>
+
+<header>
+  <a href="index.html" class="back-btn">← Главная</a>
+  <span class="page-title">📬 Письмо в будущее</span>
+</header>
+
+<!-- ========== VIEW: WRITE ========== -->
+<div class="view active" id="view-write">
+  <div class="write-wrap">
+    <div class="letter-hero">
+      <span class="icon">📬</span>
+      <h1>Напиши себе в будущее</h1>
+      <p>Запечатай письмо — и открой через 30, 90 или 180 дней.<br>Что ты думаешь о своём будущем прямо сейчас?</p>
+    </div>
+
+    <div class="days-row" id="daysRow">
+      <button class="day-btn active" data-days="30">30 дней</button>
+      <button class="day-btn" data-days="90">90 дней</button>
+      <button class="day-btn" data-days="180">180 дней</button>
+      <button class="day-btn" data-days="365">1 год</button>
+    </div>
+
+    <div class="paper">
+      <div class="paper-lines"></div>
+      <div class="letter-date" id="writeDateLabel"></div>
+      <textarea id="letter-text" maxlength="1500"
+        placeholder="Привет, будущий я!
+
+Сейчас я думаю, что хочу стать...
+
+Меня пугает...
+
+Я мечтаю о...
+
+Через это время я хочу..."></textarea>
+    </div>
+    <div class="char-count"><span id="charCount">0</span> / 1500</div>
+
+    <button class="seal-btn" id="sealBtn" onclick="sealLetter()" disabled>
+      🔒 Запечатать письмо
+    </button>
+  </div>
+</div>
+
+<!-- ========== VIEW: SEALED ========== -->
+<div class="view" id="view-sealed">
+  <div class="sealed-wrap">
+    <div class="envelope-container">
+      <svg class="envelope-svg" width="280" height="200" viewBox="0 0 280 200">
+        <defs>
+          <linearGradient id="envGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#a29bfe"/>
+            <stop offset="100%" stop-color="#6c5ce7"/>
+          </linearGradient>
+        </defs>
+        <!-- envelope body -->
+        <rect x="10" y="60" width="260" height="130" rx="12" fill="url(#envGrad)" opacity=".9"/>
+        <!-- flap closed -->
+        <path d="M10 60 L140 130 L270 60 Z" fill="#8b7ff0"/>
+        <!-- bottom flap lines -->
+        <path d="M10 190 L140 120 L270 190" fill="#9088ef" opacity=".7"/>
+        <!-- stars decoration -->
+        <text x="30" y="95" font-size="14" opacity=".4">⭐</text>
+        <text x="230" y="105" font-size="12" opacity=".3">✨</text>
+        <text x="50" y="160" font-size="10" opacity=".3">🌟</text>
+        <text x="210" y="170" font-size="11" opacity=".4">⭐</text>
+      </svg>
+      <div class="wax">🔒</div>
+    </div>
+
+    <div class="countdown-ring" id="countdownRing">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#fd79a8"/>
+            <stop offset="100%" stop-color="#a29bfe"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="80" cy="80" r="68"/>
+        <circle class="ring-progress" id="ringProgress" cx="80" cy="80" r="68"
+          stroke-dasharray="427" stroke-dashoffset="427"/>
+      </svg>
+      <div class="ring-inner">
+        <div class="ring-days" id="daysLeft">—</div>
+        <div class="ring-label">дней осталось</div>
+      </div>
+    </div>
+
+    <div class="sealed-info">
+      <h2>Письмо запечатано 🔒</h2>
+      <p>Оно терпеливо ждёт тебя.</p>
+      <div class="open-date-chip" id="openDateChip">Откроется: ...</div>
+      <p style="margin-top:16px;font-size:.8rem;">Мы напомним тебе баннером на главной, когда придёт время!</p>
+    </div>
+
+    <button class="delete-btn" onclick="deleteLetter()">🗑️ Удалить письмо</button>
+  </div>
+</div>
+
+<!-- ========== VIEW: OPEN ========== -->
+<div class="view" id="view-open">
+  <div class="open-wrap">
+    <div class="open-envelope">
+      <span class="icon">💌</span>
+      <h2>Письмо из прошлого!</h2>
+      <p id="fromDateLabel">Ты написал это ...</p>
+    </div>
+
+    <div class="letter-read">
+      <div class="date" id="readDateLabel"></div>
+      <div class="body" id="letterBody"></div>
+      <div class="signature" id="letterSig">— Я из прошлого 💙</div>
+    </div>
+
+    <div class="open-actions">
+      <button class="btn-new" onclick="newLetter()">✍️ Написать новое</button>
+      <button class="btn-share" onclick="shareLetter()">📤 Поделиться</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY = 'profiland_future_letter';
+
+// Stars
+(function(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const sz = Math.random()*3+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;opacity:${Math.random()*.7}`;
+    c.appendChild(s);
+  }
+})();
+
+let selectedDays = 30;
+
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function init(){
+  const data = loadLetter();
+
+  if(!data){
+    // write mode
+    showView('view-write');
+    document.getElementById('writeDateLabel').textContent = formatDate(new Date());
+    setupWrite();
+    return;
+  }
+
+  const now = Date.now();
+  const openAt = data.openAt;
+
+  if(now >= openAt){
+    showView('view-open');
+    renderOpenView(data);
+    // Award XP once
+    if(!data.xpAwarded){
+      awardXP(50);
+      data.xpAwarded = true;
+      saveLetter(data);
+    }
+  } else {
+    showView('view-sealed');
+    renderSealedView(data);
+  }
+}
+
+function setupWrite(){
+  // Days selector
+  document.querySelectorAll('.day-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedDays = +btn.dataset.days;
+    });
+  });
+  // Textarea
+  const ta = document.getElementById('letter-text');
+  const cc = document.getElementById('charCount');
+  const sb = document.getElementById('sealBtn');
+  ta.addEventListener('input',()=>{
+    cc.textContent = ta.value.length;
+    sb.disabled = ta.value.trim().length < 20;
+  });
+}
+
+function sealLetter(){
+  const text = document.getElementById('letter-text').value.trim();
+  if(text.length < 20) return;
+
+  const now = Date.now();
+  const openAt = now + selectedDays * 86400000;
+  const data = { text, writtenAt: now, openAt, days: selectedDays };
+  saveLetter(data);
+
+  showView('view-sealed');
+  renderSealedView(data);
+}
+
+function renderSealedView(data){
+  const now = Date.now();
+  const total = data.openAt - data.writtenAt;
+  const left = data.openAt - now;
+  const daysLeft = Math.max(0, Math.ceil(left / 86400000));
+
+  document.getElementById('daysLeft').textContent = daysLeft;
+
+  // Ring progress
+  const progress = Math.min(1, (total - left) / total);
+  const circumference = 427;
+  const offset = circumference * (1 - progress);
+  document.getElementById('ringProgress').style.strokeDashoffset = offset;
+
+  // Open date
+  const openDate = new Date(data.openAt);
+  document.getElementById('openDateChip').textContent = 'Откроется: ' + formatDate(openDate);
+}
+
+function renderOpenView(data){
+  const written = new Date(data.writtenAt);
+  document.getElementById('fromDateLabel').textContent = 'Ты написал это ' + formatDate(written);
+  document.getElementById('readDateLabel').textContent = formatDate(written);
+  document.getElementById('letterBody').textContent = data.text;
+  launchConfetti();
+}
+
+function deleteLetter(){
+  if(confirm('Удалить письмо? Оно исчезнет навсегда.')){
+    localStorage.removeItem(KEY);
+    showView('view-write');
+    location.reload();
+  }
+}
+
+function newLetter(){
+  localStorage.removeItem(KEY);
+  showView('view-write');
+  // Reset
+  document.getElementById('letter-text').value = '';
+  document.getElementById('charCount').textContent = '0';
+  document.getElementById('sealBtn').disabled = true;
+  setupWrite();
+}
+
+function shareLetter(){
+  const data = loadLetter();
+  if(!data) return;
+  const preview = data.text.substring(0,100) + (data.text.length>100?'...':'');
+  if(navigator.share){
+    navigator.share({title:'Моё письмо из прошлого 💌', text:'Я написал это в Профиленде:\n\n'+preview+'\n\n👉 zemale.github.io/profiland'});
+  } else {
+    navigator.clipboard.writeText(preview).then(()=>alert('Текст скопирован!'));
+  }
+}
+
+// ---- XP ----
+function awardXP(amount){
+  const xp = +(localStorage.getItem('profiland_xp')||0) + amount;
+  localStorage.setItem('profiland_xp', xp);
+  const toast = document.getElementById('xpToast');
+  toast.textContent = '+'+amount+' XP ✨';
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 2500);
+}
+
+// ---- CONFETTI ----
+function launchConfetti(){
+  const colors=['#FFD700','#fd79a8','#a29bfe','#55efc4','#fdcb6e','#74b9ff'];
+  for(let i=0;i<80;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.className='confetti-piece';
+      const size=8+Math.random()*8;
+      el.style.cssText=`left:${Math.random()*100}vw;width:${size}px;height:${size*0.6}px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*0.5}s;transform:rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),4000);
+    },i*30);
+  }
+}
+
+// ---- HELPERS ----
+function formatDate(d){
+  return d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+}
+function loadLetter(){
+  try{ return JSON.parse(localStorage.getItem(KEY)); } catch(e){ return null; }
+}
+function saveLetter(data){
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+// ---- Start ----
+init();
+</script>
+</body>
+</html>
