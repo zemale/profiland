@@ -40,13 +40,13 @@ body {
   text-align: center;
 }
 .stat-chip .num { font-size: 1.5rem; font-weight: 900; color: #FFD700; }
-.stat-chip .lbl { font-size: .7rem; color: rgba(255,255,255,.4); margin-top: 2px; }
+.stat-chip .lbl { font-size: .72rem; color: rgba(255,255,255,.6); margin-top: 2px; font-weight: 500; }
 
 /* Секции */
 .section-label {
   display: flex; align-items: center; gap: 10px;
-  font-size: .75rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 1px; color: rgba(255,255,255,.35);
+  font-size: .8rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1px; color: rgba(255,255,255,.55);
   margin: 24px 0 14px;
 }
 .section-label::after {
@@ -117,20 +117,19 @@ body {
 .node-card.starred { border-color: rgba(255,215,0,.35); background: rgba(255,215,0,.06); }
 
 .node-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.node-name { font-size: 1rem; font-weight: 800; }
+.node-name { font-size: 1.05rem; font-weight: 800; color: #fff; }
 .node-district {
-  font-size: .68rem; font-weight: 700; padding: 3px 10px;
+  font-size: .72rem; font-weight: 800; padding: 4px 12px;
   border-radius: 10px; white-space: nowrap; flex-shrink: 0;
-  opacity: .85;
 }
 
-.node-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.node-badges { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 .nbadge {
-  font-size: .68rem; padding: 3px 9px; border-radius: 8px;
-  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
-  color: rgba(255,255,255,.6);
+  font-size: .72rem; padding: 4px 10px; border-radius: 8px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.75); font-weight: 600;
 }
-.nbadge.done { background: rgba(77,255,154,.1); border-color: rgba(77,255,154,.3); color: #4dff9a; }
+.nbadge.done { background: rgba(77,255,154,.15); border-color: rgba(77,255,154,.4); color: #4dff9a; font-weight: 700; }
 
 .node-actions {
   display: flex; gap: 6px; margin-top: 10px;
